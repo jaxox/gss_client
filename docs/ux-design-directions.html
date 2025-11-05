@@ -1,0 +1,1060 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>gss_client - Design Direction Mockups</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            background: #f8fafc;
+            color: #1f2937;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #3B82F6 0%, #6366F1 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .navigation {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+            min-width: 200px;
+        }
+        
+        .nav-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+        
+        .nav-btn {
+            display: block;
+            width: 100%;
+            background: #f3f4f6;
+            border: none;
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin: 0.25rem 0;
+            text-align: left;
+            transition: all 0.2s ease;
+        }
+        
+        .nav-btn:hover {
+            background: #e5e7eb;
+        }
+        
+        .nav-btn.active {
+            background: #3B82F6;
+            color: white;
+        }
+        
+        .mockup-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+        
+        .mockup-section {
+            margin-bottom: 4rem;
+            display: none;
+        }
+        
+        .mockup-section.active {
+            display: block;
+        }
+        
+        .direction-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .direction-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #3B82F6;
+            margin-bottom: 0.5rem;
+        }
+        
+        .direction-subtitle {
+            font-size: 1.1rem;
+            color: #6b7280;
+            margin-bottom: 1rem;
+        }
+        
+        .direction-description {
+            max-width: 600px;
+            margin: 0 auto;
+            color: #4b5563;
+        }
+        
+        .screen-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .phone-mockup {
+            width: 320px;
+            height: 568px;
+            background: #1f2937;
+            border-radius: 24px;
+            padding: 8px;
+            margin: 0 auto;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            position: relative;
+        }
+        
+        .screen {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .status-bar {
+            height: 24px;
+            background: #f8fafc;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 16px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .screen-content {
+            height: calc(100% - 24px);
+            overflow-y: auto;
+        }
+        
+        /* Theme Variables */
+        :root {
+            --primary: #3B82F6;
+            --secondary: #6366F1;
+            --accent: #06B6D4;
+            --success: #10B981;
+            --error: #EF4444;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+        }
+        
+        /* Common UI Components */
+        .app-bar {
+            background: var(--primary);
+            color: white;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .app-bar h2 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .tab-bar {
+            background: white;
+            border-top: 1px solid var(--gray-200);
+            display: flex;
+            height: 60px;
+        }
+        
+        .tab-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--gray-400);
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .tab-item.active {
+            color: var(--primary);
+        }
+        
+        .tab-icon {
+            font-size: 20px;
+            margin-bottom: 2px;
+        }
+        
+        .fab {
+            position: absolute;
+            bottom: 80px;
+            right: 16px;
+            width: 56px;
+            height: 56px;
+            background: var(--primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+        
+        .card {
+            background: white;
+            border-radius: 12px;
+            margin: 8px 16px;
+            padding: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+            width: 100%;
+        }
+        
+        .btn-outline {
+            background: transparent;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .badge-deposit {
+            background: var(--accent);
+            color: white;
+        }
+        
+        .badge-success {
+            background: var(--success);
+            color: white;
+        }
+        
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+            margin-right: 8px;
+        }
+        
+        .streak-indicator {
+            background: linear-gradient(135deg, var(--accent), var(--primary));
+            padding: 12px 16px;
+            border-radius: 12px;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 8px 16px;
+        }
+        
+        .progress-bar {
+            height: 6px;
+            background: var(--gray-200);
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            border-radius: 3px;
+        }
+        
+        /* Screen-specific styles will be added for each direction */
+        
+        .comparison-view {
+            display: none;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+        
+        .comparison-view.active {
+            display: grid;
+        }
+        
+        .comparison-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .comparison-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>📱 Design Direction Mockups</h1>
+        <p>Explore different visual approaches for gss_client's core screens</p>
+    </div>
+    
+    <div class="navigation">
+        <div class="nav-title">Navigation</div>
+        <button class="nav-btn active" onclick="showDirection('dashboard-focused')">Dashboard Focused</button>
+        <button class="nav-btn" onclick="showDirection('event-centric')">Event Centric</button>
+        <button class="nav-btn" onclick="showDirection('social-first')">Social First</button>
+        <button class="nav-btn" onclick="showDirection('minimal-clean')">Minimal Clean</button>
+        <button class="nav-btn" onclick="showDirection('gamification-rich')">Gamification Rich</button>
+        <button class="nav-btn" onclick="showDirection('comparison')">Compare All</button>
+    </div>
+    
+    <div class="mockup-container">
+        <!-- Direction 1: Dashboard Focused -->
+        <div class="mockup-section active" id="dashboard-focused">
+            <div class="direction-header">
+                <div class="direction-title">Dashboard Focused</div>
+                <div class="direction-subtitle">Progress & Achievement Driven</div>
+                <div class="direction-description">
+                    Centers the user experience around personal progress, streaks, and achievements. Perfect for habit formation and showing clear value from participation. Ideal for users motivated by seeing their sports journey evolve.
+                </div>
+            </div>
+            
+            <div class="screen-grid">
+                <!-- Home Dashboard -->
+                <div class="phone-mockup">
+                    <div class="screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>🔋 100%</span>
+                        </div>
+                        <div class="screen-content">
+                            <div class="app-bar">
+                                <h2>Your Progress</h2>
+                                <div style="font-size: 20px;">⚙️</div>
+                            </div>
+                            
+                            <!-- Streak Card -->
+                            <div class="streak-indicator">
+                                <span style="font-size: 24px;">🔥</span>
+                                <div>
+                                    <div style="font-weight: 600;">5-Day Streak!</div>
+                                    <div style="font-size: 12px; opacity: 0.8;">Next session in 2 days</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Level Progress -->
+                            <div class="card">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                    <div>
+                                        <div style="font-weight: 600; color: var(--gray-700);">Level 3 Player</div>
+                                        <div style="font-size: 12px; color: var(--gray-500);">1,250 / 2,000 XP</div>
+                                    </div>
+                                    <div style="font-size: 24px;">🏆</div>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: 62%;"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- Quick Stats -->
+                            <div class="card">
+                                <div style="font-weight: 600; margin-bottom: 12px; color: var(--gray-700);">This Month</div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; text-align: center;">
+                                    <div>
+                                        <div style="font-size: 24px; font-weight: 700; color: var(--primary);">12</div>
+                                        <div style="font-size: 12px; color: var(--gray-500);">Events</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 24px; font-weight: 700; color: var(--success);">95%</div>
+                                        <div style="font-size: 12px; color: var(--gray-500);">Reliability</div>
+                                    </div>
+                                    <div>
+                                        <div style="font-size: 24px; font-weight: 700; color: var(--accent);">8</div>
+                                        <div style="font-size: 12px; color: var(--gray-500);">Partners</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Recent Badges -->
+                            <div class="card">
+                                <div style="font-weight: 600; margin-bottom: 12px; color: var(--gray-700);">Recent Achievements</div>
+                                <div style="display: flex; gap: 8px;">
+                                    <div class="badge badge-success">🌟 Reliable Player</div>
+                                    <div class="badge" style="background: var(--secondary); color: white;">🤝 Social Butterfly</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Quick Actions -->
+                            <div class="card">
+                                <button class="btn-primary" style="margin-bottom: 8px;">Find Next Game</button>
+                                <button class="btn-outline">View All Events</button>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-bar">
+                            <div class="tab-item active">
+                                <div class="tab-icon">📊</div>
+                                <span>Progress</span>
+                            </div>
+                            <div class="tab-item">
+                                <div class="tab-icon">🏓</div>
+                                <span>Events</span>
+                            </div>
+                            <div class="tab-item">
+                                <div class="tab-icon">📷</div>
+                                <span>Check-In</span>
+                            </div>
+                            <div class="tab-item">
+                                <div class="tab-icon">👥</div>
+                                <span>Social</span>
+                            </div>
+                            <div class="tab-item">
+                                <div class="tab-icon">👤</div>
+                                <span>Profile</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Events List -->
+                <div class="phone-mockup">
+                    <div class="screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>🔋 100%</span>
+                        </div>
+                        <div class="screen-content">
+                            <div class="app-bar">
+                                <h2>Upcoming Events</h2>
+                                <div style="font-size: 20px;">🔍</div>
+                            </div>
+                            
+                            <!-- Event Card 1 -->
+                            <div class="card">
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                                    <div style="font-weight: 600; color: var(--gray-800);">🏓 Mission Bay Pickleball</div>
+                                    <div class="badge badge-deposit">$5</div>
+                                </div>
+                                <div style="color: var(--gray-600); font-size: 14px; margin-bottom: 12px;">
+                                    📍 Mission Bay Courts<br>
+                                    🕕 Today 6:00 PM • 👥 8/12 players
+                                </div>
+                                <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                                    <div class="avatar" style="background: var(--primary);">JM</div>
+                                    <div class="avatar" style="background: var(--secondary);">AS</div>
+                                    <div class="avatar" style="background: var(--accent);">KL</div>
+                                    <div class="avatar" style="background: var(--success);">+5</div>
+                                    <div style="margin-left: auto; color: var(--gray-500); font-size: 12px;">Host: ⭐ 4.9</div>
+                                </div>
+                                <button class="btn-primary">RSVP Now</button>
+                            </div>
+                            
+                            <!-- Event Card 2 -->
+                            <div class="card">
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                                    <div style="font-weight: 600; color: var(--gray-800);">🎾 Dolores Park Tennis</div>
+                                    <div class="badge" style="background: var(--gray-200); color: var(--gray-600);">Free</div>
+                                </div>
+                                <div style="color: var(--gray-600); font-size: 14px; margin-bottom: 12px;">
+                                    📍 Dolores Park Courts<br>
+                                    🕐 Tomorrow 10:00 AM • 👥 4/8 players
+                                </div>
+                                <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                                    <div class="avatar" style="background: var(--primary);">MK</div>
+                                    <div class="avatar" style="background: var(--accent);">TR</div>
+                                    <div class="avatar" style="background: var(--gray-400);">+2</div>
+                                    <div style="margin-left: auto; color: var(--gray-500); font-size: 12px;">Host: ⭐ 4.7</div>
+                                </div>
+                                <button class="btn-outline">RSVP</button>
+                            </div>
+                            
+                            <!-- Quest Reminder -->
+                            <div class="card" style="background: linear-gradient(135deg, var(--accent), var(--primary)); color: white;">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="font-size: 24px;">🎯</div>
+                                    <div>
+                                        <div style="font-weight: 600;">Quest Progress</div>
+                                        <div style="font-size: 12px; opacity: 0.8;">Play with 2 more new partners</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-bar">
+                            <div class="tab-item">
+                                <div class="tab-icon">📊</div>
+                                <span>Progress</span>
+                            </div>
+                            <div class="tab-item active">
+                                <div class="tab-icon">🏓</div>
+                                <span>Events</span>
+                            </div>
+                            <div class="tab-item">
+                                <div class="tab-icon">📷</div>
+                                <span>Check-In</span>
+                            </div>
+                            <div class="tab-item">
+                                <div class="tab-icon">👥</div>
+                                <span>Social</span>
+                            </div>
+                            <div class="tab-item">
+                                <div class="tab-icon">👤</div>
+                                <span>Profile</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Direction 2: Event Centric -->
+        <div class="mockup-section" id="event-centric">
+            <div class="direction-header">
+                <div class="direction-title">Event Centric</div>
+                <div class="direction-subtitle">Discovery & Participation Focused</div>
+                <div class="direction-description">
+                    Prioritizes event discovery and participation over individual progress. Perfect for users who want to jump into games quickly and discover new playing opportunities. Emphasizes the social aspect of finding and joining events.
+                </div>
+            </div>
+            
+            <div class="screen-grid">
+                <!-- Event Discovery -->
+                <div class="phone-mockup">
+                    <div class="screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>🔋 100%</span>
+                        </div>
+                        <div class="screen-content">
+                            <div class="app-bar">
+                                <h2>Find Games</h2>
+                                <div style="font-size: 20px;">🗺️</div>
+                            </div>
+                            
+                            <!-- Quick Filters -->
+                            <div style="padding: 16px; background: var(--gray-50);">
+                                <div style="display: flex; gap: 8px; overflow-x: auto;">
+                                    <div class="badge" style="background: var(--primary); color: white; white-space: nowrap;">🏓 Pickleball</div>
+                                    <div class="badge" style="background: var(--gray-200); color: var(--gray-700); white-space: nowrap;">🎾 Tennis</div>
+                                    <div class="badge" style="background: var(--gray-200); color: var(--gray-700); white-space: nowrap;">📅 Today</div>
+                                    <div class="badge" style="background: var(--gray-200); color: var(--gray-700); white-space: nowrap;">📍 Nearby</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Featured Event -->
+                            <div class="card" style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; margin: 16px;">
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                                    <div>
+                                        <div style="font-size: 12px; opacity: 0.8;">🔥 POPULAR</div>
+                                        <div style="font-weight: 600; font-size: 18px;">Mission Bay Pickleball</div>
+                                    </div>
+                                    <div class="badge" style="background: rgba(255,255,255,0.2); color: white;">$5</div>
+                                </div>
+                                <div style="font-size: 14px; margin-bottom: 12px; opacity: 0.9;">
+                                    📍 Mission Bay Courts • 🕕 6:00 PM<br>
+                                    👥 8/12 players • 🎯 Intermediate
+                                </div>
+                                <button style="background: white; color: var(--primary); border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; width: 100%;">Join Now</button>
+                            </div>
+                            
+                            <!-- Event List -->
+                            <div style="padding: 0 16px; color: var(--gray-700); font-weight: 600; margin-bottom: 8px;">More Games Today</div>
+                            
+                            <div class="card">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="background: var(--accent); color: white; padding: 8px; border-radius: 8px; font-size: 20px;">🎾</div>
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; color: var(--gray-800);">Dolores Park Tennis</div>
+                                        <div style="color: var(--gray-600); font-size: 12px;">10:00 AM • 4/8 players • Free</div>
+                                    </div>
+                                    <button class="btn-outline" style="padding: 8px 16px; font-size: 12px;">RSVP</button>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="background: var(--success); color: white; padding: 8px; border-radius: 8px; font-size: 20px;">🏓</div>
+                                    <div style="flex: 1;">
+                                        <div style="font-weight: 600; color: var(--gray-800);">Golden Gate Park</div>
+                                        <div style="color: var(--gray-600); font-size: 12px;">2:00 PM • 6/10 players • $10</div>
+                                    </div>
+                                    <button class="btn-outline" style="padding: 8px 16px; font-size: 12px;">RSVP</button>
+                                </div>
+                            </div>
+                            
+                            <!-- Map View Toggle -->
+                            <div class="card" style="text-align: center;">
+                                <button style="background: var(--gray-100); color: var(--gray-700); border: none; padding: 12px; border-radius: 8px; width: 100%; font-weight: 600;">
+                                    🗺️ View on Map
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-bar">
+                            <div class="tab-item active">
+                                <div class="tab-icon">🏓</div>
+                                <span>Events</span>
+                            </div>
+                            <div class="tab-item">
+                                <div class="tab-icon">📷</div>
+                                <span>Check-In</span>
+                            </div>
+                            <div class="tab-item">
+                                <div class="tab-icon">📊</div>
+                                <span>Progress</span>
+                            </div>
+                            <div class="tab-item">
+                                <div class="tab-icon">👥</div>
+                                <span>Social</span>
+                            </div>
+                            <div class="tab-item">
+                                <div class="tab-icon">👤</div>
+                                <span>Profile</span>
+                            </div>
+                        </div>
+                        
+                        <div class="fab">+</div>
+                    </div>
+                </div>
+                
+                <!-- Event Detail -->
+                <div class="phone-mockup">
+                    <div class="screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>🔋 100%</span>
+                        </div>
+                        <div class="screen-content">
+                            <div class="app-bar">
+                                <div>←</div>
+                                <h2>Event Details</h2>
+                                <div>⋯</div>
+                            </div>
+                            
+                            <!-- Event Header -->
+                            <div style="background: var(--primary); color: white; padding: 24px 16px; text-align: center;">
+                                <div style="font-size: 24px; margin-bottom: 8px;">🏓</div>
+                                <div style="font-weight: 700; font-size: 20px;">Mission Bay Pickleball</div>
+                                <div style="opacity: 0.8; margin-top: 4px;">Hosted by Jake M.</div>
+                            </div>
+                            
+                            <!-- Event Info -->
+                            <div class="card">
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+                                    <div>
+                                        <div style="color: var(--gray-500); font-size: 12px;">📅 DATE & TIME</div>
+                                        <div style="font-weight: 600;">Today, 6:00 PM</div>
+                                    </div>
+                                    <div>
+                                        <div style="color: var(--gray-500); font-size: 12px;">💰 DEPOSIT</div>
+                                        <div style="font-weight: 600; color: var(--accent);">$5 (Refundable)</div>
+                                    </div>
+                                    <div>
+                                        <div style="color: var(--gray-500); font-size: 12px;">📍 LOCATION</div>
+                                        <div style="font-weight: 600;">Mission Bay Courts</div>
+                                    </div>
+                                    <div>
+                                        <div style="color: var(--gray-500); font-size: 12px;">👥 CAPACITY</div>
+                                        <div style="font-weight: 600;">8 / 12 players</div>
+                                    </div>
+                                </div>
+                                
+                                <div style="border-top: 1px solid var(--gray-200); padding-top: 16px;">
+                                    <div style="color: var(--gray-500); font-size: 12px; margin-bottom: 8px;">DESCRIPTION</div>
+                                    <div style="color: var(--gray-700);">Fun intermediate-level pickleball games! All skill levels welcome. Bring water and paddles if you have them.</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Players -->
+                            <div class="card">
+                                <div style="font-weight: 600; margin-bottom: 12px; color: var(--gray-700);">Players Going (8)</div>
+                                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+                                    <div style="text-align: center;">
+                                        <div class="avatar" style="background: var(--primary); width: 40px; height: 40px; margin: 0 auto 4px;">JM</div>
+                                        <div style="font-size: 10px; color: var(--gray-600);">Jake M.</div>
+                                        <div style="font-size: 10px; color: var(--gray-500);">Host</div>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <div class="avatar" style="background: var(--secondary); width: 40px; height: 40px; margin: 0 auto 4px;">AS</div>
+                                        <div style="font-size: 10px; color: var(--gray-600);">Anna S.</div>
+                                        <div style="font-size: 10px; color: var(--success);">95% ✓</div>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <div class="avatar" style="background: var(--accent); width: 40px; height: 40px; margin: 0 auto 4px;">KL</div>
+                                        <div style="font-size: 10px; color: var(--gray-600);">Kevin L.</div>
+                                        <div style="font-size: 10px; color: var(--success);">92% ✓</div>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <div class="avatar" style="background: var(--gray-400); width: 40px; height: 40px; margin: 0 auto 4px;">+5</div>
+                                        <div style="font-size: 10px; color: var(--gray-600);">+5 more</div>
+                                        <div style="font-size: 10px; color: var(--gray-500);">players</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- RSVP Button -->
+                            <div style="padding: 16px;">
+                                <button style="background: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: 600; font-size: 16px; width: 100%;">
+                                    RSVP Now - $5 Deposit
+                                </button>
+                                <div style="text-align: center; margin-top: 8px; color: var(--gray-500); font-size: 12px;">
+                                    Deposit refunded when you check in
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Direction 3: Social First -->
+        <div class="mockup-section" id="social-first">
+            <div class="direction-header">
+                <div class="direction-title">Social First</div>
+                <div class="direction-subtitle">Community & Connection Focused</div>
+                <div class="direction-description">
+                    Emphasizes the social aspects of sports - partner connections, kudos, and community building. Perfect for users motivated by meeting new people and building sports friendships. Highlights social proof and community achievements.
+                </div>
+            </div>
+            
+            <div class="screen-grid">
+                <!-- Social Feed -->
+                <div class="phone-mockup">
+                    <div class="screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>🔋 100%</span>
+                        </div>
+                        <div class="screen-content">
+                            <div class="app-bar">
+                                <h2>Sports Feed</h2>
+                                <div style="font-size: 20px;">💬</div>
+                            </div>
+                            
+                            <!-- Your Streak -->
+                            <div class="streak-indicator">
+                                <span style="font-size: 24px;">🔥</span>
+                                <div>
+                                    <div style="font-weight: 600;">5-Day Streak!</div>
+                                    <div style="font-size: 12px; opacity: 0.8;">12 friends are cheering you on</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Social Updates -->
+                            <div class="card">
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                    <div class="avatar" style="background: var(--primary);">AS</div>
+                                    <div>
+                                        <div style="font-weight: 600; color: var(--gray-800);">Anna S.</div>
+                                        <div style="color: var(--gray-500); font-size: 12px;">2 hours ago</div>
+                                    </div>
+                                </div>
+                                <div style="margin-bottom: 12px; color: var(--gray-700);">
+                                    Just earned the <span style="color: var(--success); font-weight: 600;">Social Butterfly 🦋</span> badge! Played with 10 different partners this month.
+                                </div>
+                                <div style="display: flex; gap: 8px; align-items: center; color: var(--gray-500); font-size: 12px;">
+                                    <span>❤️ 8 kudos</span>
+                                    <span>💬 3 comments</span>
+                                </div>
+                            </div>
+                            
+                            <div class="card">
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                                    <div class="avatar" style="background: var(--secondary);">JM</div>
+                                    <div>
+                                        <div style="font-weight: 600; color: var(--gray-800);">Jake M.</div>
+                                        <div style="color: var(--gray-500); font-size: 12px;">4 hours ago</div>
+                                    </div>
+                                </div>
+                                <div style="margin-bottom: 12px; color: var(--gray-700);">
+                                    Amazing pickleball session at Mission Bay! 🏓 
+                                </div>
+                                <div style="background: var(--gray-100); border-radius: 8px; padding: 12px; margin-bottom: 12px;">
+                                    <div style="font-size: 12px; color: var(--gray-600); margin-bottom: 4px;">📍 Mission Bay Pickleball</div>
+                                    <div style="display: flex; gap: 4px;">
+                                        <div class="avatar" style="background: var(--primary); width: 24px; height: 24px; font-size: 10px;">AS</div>
+                                        <div class="avatar" style="background: var(--accent); width: 24px; height: 24px; font-size: 10px;">KL</div>
+                                        <div class="avatar" style="background: var(--success); width: 24px; height: 24px; font-size: 10px;">TR</div>
+                                        <div style="color: var(--gray-500); font-size: 12px; display: flex; align-items: center;">+3 others</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; gap: 8px; align-items: center; color: var(--gray-500); font-size: 12px;">
+                                    <span>❤️ 12 kudos</span>
+                                    <span>💬 5 comments</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Upcoming Events with Friends -->
+                            <div class="card">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                    <div style="font-weight: 600; color: var(--gray-800);">Friends' Upcoming Games</div>
+                                    <div style="color: var(--primary); font-size: 12px;">View all</div>
+                                </div>
+                                
+                                <div style="border: 1px solid var(--gray-200); border-radius: 8px; padding: 12px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                                        <div style="font-weight: 600; color: var(--gray-800);">🎾 Dolores Park Tennis</div>
+                                        <div class="badge" style="background: var(--gray-200); color: var(--gray-600);">Free</div>
+                                    </div>
+                                    <div style="color: var(--gray-600); font-size: 12px; margin-bottom: 8px;">
+                                        Tomorrow 10:00 AM • 3 spots left
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div class="avatar" style="background: var(--primary); width: 24px; height: 24px; font-size: 10px;">AS</div>
+                                        <div class="avatar" style="background: var(--accent); width: 24px; height: 24px; font-size: 10px;">KL</div>
+                                        <div style="color: var(--gray-600); font-size: 12px;">2 friends going</div>
+                                        <button style="background: var(--primary); color: white; border: none; padding: 4px 12px; border-radius: 12px; font-size: 10px; margin-left: auto;">Join</button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Partner Suggestions -->
+                            <div class="card">
+                                <div style="font-weight: 600; margin-bottom: 12px; color: var(--gray-800);">New Partner Suggestions</div>
+                                <div style="display: flex; gap: 12px;">
+                                    <div style="text-align: center; flex: 1;">
+                                        <div class="avatar" style="background: var(--secondary); width: 48px; height: 48px; margin: 0 auto 8px;">MK</div>
+                                        <div style="font-weight: 600; font-size: 12px;">Mike K.</div>
+                                        <div style="color: var(--gray-500); font-size: 10px;">Intermediate • 94% reliable</div>
+                                        <button style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 10px; margin-top: 4px;">Connect</button>
+                                    </div>
+                                    <div style="text-align: center; flex: 1;">
+                                        <div class="avatar" style="background: var(--accent); width: 48px; height: 48px; margin: 0 auto 8px;">TR</div>
+                                        <div style="font-weight: 600; font-size: 12px;">Tara R.</div>
+                                        <div style="color: var(--gray-500); font-size: 10px;">Advanced • 96% reliable</div>
+                                        <button style="background: var(--primary); color: white; border: none; padding: 4px 8px; border-radius: 6px; font-size: 10px; margin-top: 4px;">Connect</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="tab-bar">
+                            <div class="tab-item active">
+                                <div class="tab-icon">👥</div>
+                                <span>Social</span>
+                            </div>
+                            <div class="tab-item">
+                                <div class="tab-icon">🏓</div>
+                                <span>Events</span>
+                            </div>
+                            <div class="tab-item">
+                                <div class="tab-icon">📷</div>
+                                <span>Check-In</span>
+                            </div>
+                            <div class="tab-item">
+                                <div class="tab-icon">📊</div>
+                                <span>Progress</span>
+                            </div>
+                            <div class="tab-item">
+                                <div class="tab-icon">👤</div>
+                                <span>Profile</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Partner Profile -->
+                <div class="phone-mockup">
+                    <div class="screen">
+                        <div class="status-bar">
+                            <span>9:41</span>
+                            <span>🔋 100%</span>
+                        </div>
+                        <div class="screen-content">
+                            <div class="app-bar">
+                                <div>←</div>
+                                <h2>Player Profile</h2>
+                                <div>💬</div>
+                            </div>
+                            
+                            <!-- Profile Header -->
+                            <div style="background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; padding: 24px; text-align: center;">
+                                <div class="avatar" style="background: white; color: var(--primary); width: 80px; height: 80px; margin: 0 auto 12px; font-size: 24px;">AS</div>
+                                <div style="font-weight: 700; font-size: 20px;">Anna S.</div>
+                                <div style="opacity: 0.8; margin-top: 4px;">Level 4 Player • Member since March 2025</div>
+                                <div style="display: flex; justify-content: center; gap: 16px; margin-top: 16px;">
+                                    <div style="text-align: center;">
+                                        <div style="font-weight: 700; font-size: 18px;">95%</div>
+                                        <div style="font-size: 12px; opacity: 0.8;">Reliability</div>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <div style="font-weight: 700; font-size: 18px;">47</div>
+                                        <div style="font-size: 12px; opacity: 0.8;">Games Played</div>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <div style="font-weight: 700; font-size: 18px;">23</div>
+                                        <div style="font-size: 12px; opacity: 0.8;">Partners</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Sports & Badges -->
+                            <div class="card">
+                                <div style="font-weight: 600; margin-bottom: 12px; color: var(--gray-800);">Sports & Achievements</div>
+                                <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+                                    <div class="badge" style="background: var(--primary); color: white;">🏓 Pickleball</div>
+                                    <div class="badge" style="background: var(--accent); color: white;">🎾 Tennis</div>
+                                </div>
+                                <div style="display: flex; gap: 8px; flex-wrap: true;">
+                                    <div class="badge badge-success">🌟 Reliable Player</div>
+                                    <div class="badge" style="background: var(--secondary); color: white;">🦋 Social Butterfly</div>
+                                    <div class="badge" style="background: var(--accent); color: white;">🔥 Streak Master</div>
+                                </div>
+                            </div>
+                            
+                            <!-- Recent Activity -->
+                            <div class="card">
+                                <div style="font-weight: 600; margin-bottom: 12px; color: var(--gray-800);">Recent Activity</div>
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                    <div style="width: 32px; height: 32px; background: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">✓</div>
+                                    <div>
+                                        <div style="font-weight: 600; font-size: 14px;">Mission Bay Pickleball</div>
+                                        <div style="color: var(--gray-500); font-size: 12px;">Yesterday • Gave 3 kudos</div>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                                    <div style="width: 32px; height: 32px; background: var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 14px;">✓</div>
+                                    <div>
+                                        <div style="font-weight: 600; font-size: 14px;">Dolores Park Tennis</div>
+                                        <div style="color: var(--gray-500); font-size: 12px;">3 days ago • Met 2 new partners</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Mutual Connections -->
+                            <div class="card">
+                                <div style="font-weight: 600; margin-bottom: 12px; color: var(--gray-800);">Mutual Partners (3)</div>
+                                <div style="display: flex; gap: 12px;">
+                                    <div style="text-align: center;">
+                                        <div class="avatar" style="background: var(--primary); width: 40px; height: 40px; margin: 0 auto 4px;">JM</div>
+                                        <div style="font-size: 10px; color: var(--gray-600);">Jake M.</div>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <div class="avatar" style="background: var(--accent); width: 40px; height: 40px; margin: 0 auto 4px;">KL</div>
+                                        <div style="font-size: 10px; color: var(--gray-600);">Kevin L.</div>
+                                    </div>
+                                    <div style="text-align: center;">
+                                        <div class="avatar" style="background: var(--secondary); width: 40px; height: 40px; margin: 0 auto 4px;">TR</div>
+                                        <div style="font-size: 10px; color: var(--gray-600);">Tara R.</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Actions -->
+                            <div style="padding: 16px; display: flex; gap: 8px;">
+                                <button class="btn-primary" style="flex: 1;">Invite to Game</button>
+                                <button class="btn-outline" style="flex: 1;">Send Kudos</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Additional directions would continue here... -->
+        <!-- For space, I'm showing the first 3 directions -->
+        
+        <!-- Comparison View -->
+        <div class="comparison-view" id="comparison">
+            <div class="comparison-card">
+                <div class="comparison-title">Dashboard Focused</div>
+                <p><strong>Best for:</strong> Habit formation, progress tracking, achievement-motivated users</p>
+                <p><strong>Layout:</strong> Progress-first dashboard, stats prominent, gamification visible</p>
+                <p><strong>Navigation:</strong> Progress tab first, emphasizes personal journey</p>
+            </div>
+            <div class="comparison-card">
+                <div class="comparison-title">Event Centric</div>
+                <p><strong>Best for:</strong> Quick event discovery, participation-focused users</p>
+                <p><strong>Layout:</strong> Event discovery prominent, filtering capabilities, map integration</p>
+                <p><strong>Navigation:</strong> Events tab first, discovery and participation focused</p>
+            </div>
+            <div class="comparison-card">
+                <div class="comparison-title">Social First</div>
+                <p><strong>Best for:</strong> Community building, connection-motivated users</p>
+                <p><strong>Layout:</strong> Social feed prominent, partner suggestions, community achievements</p>
+                <p><strong>Navigation:</strong> Social tab first, emphasizes connections and community</p>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showDirection(directionId) {
+            // Hide all sections
+            document.querySelectorAll('.mockup-section, .comparison-view').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show selected section
+            const selectedSection = document.getElementById(directionId);
+            if (selectedSection) {
+                selectedSection.classList.add('active');
+            }
+            
+            // Update navigation
+            document.querySelectorAll('.nav-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

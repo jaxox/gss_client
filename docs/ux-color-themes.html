@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>gss_client - Color Theme Explorer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            background: #f8f9fa;
+            color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .theme-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .theme-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 48px rgba(0,0,0,0.15);
+        }
+        
+        .theme-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e9ecef;
+        }
+        
+        .theme-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .theme-description {
+            color: #6c757d;
+            font-size: 0.95rem;
+        }
+        
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(60px, 1fr));
+            gap: 8px;
+            padding: 1.5rem;
+            background: #f8f9fa;
+        }
+        
+        .color-swatch {
+            height: 60px;
+            border-radius: 8px;
+            display: flex;
+            align-items: end;
+            justify-content: center;
+            padding: 4px;
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .color-swatch::after {
+            content: attr(data-hex);
+            position: absolute;
+            bottom: 4px;
+            font-size: 0.7rem;
+        }
+        
+        .components-demo {
+            padding: 1.5rem;
+        }
+        
+        .demo-section {
+            margin-bottom: 2rem;
+        }
+        
+        .demo-section h4 {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #6c757d;
+            margin-bottom: 1rem;
+        }
+        
+        .button-row {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .card-demo {
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .event-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+            margin-bottom: 1rem;
+        }
+        
+        .event-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+        
+        .event-title {
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        
+        .deposit-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .event-details {
+            color: #6c757d;
+            font-size: 0.85rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .attendees {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .form-demo {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #495057;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px var(--primary-light);
+        }
+        
+        .streak-indicator {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .comparison-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 1rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            z-index: 1000;
+        }
+        
+        .toggle-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            margin: 0.25rem;
+        }
+        
+        .toggle-btn.active {
+            background: #007bff;
+        }
+        
+        /* Theme-specific styles will be injected here */
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 gss_client Color Themes</h1>
+        <p>Explore visual directions for your social sports platform</p>
+    </div>
+    
+    <div class="comparison-controls">
+        <div style="font-weight: 600; margin-bottom: 0.5rem;">View Mode:</div>
+        <button class="toggle-btn active" onclick="setViewMode('grid')">Grid</button>
+        <button class="toggle-btn" onclick="setViewMode('side-by-side')">Compare</button>
+        <button class="toggle-btn" onclick="setViewMode('mobile')">Mobile</button>
+    </div>
+    
+    <div class="theme-grid" id="themeGrid">
+        <!-- Theme 1: Energetic Sports -->
+        <div class="theme-card" data-theme="energetic">
+            <div class="theme-header">
+                <div class="theme-name" style="color: #FF6B35;">Energetic Sports</div>
+                <div class="theme-description">Bold and motivating - captures the excitement of sports and achievement. Perfect for driving participation and celebrating victories.</div>
+            </div>
+            
+            <div class="color-palette">
+                <div class="color-swatch" style="background: #FF6B35;" data-hex="#FF6B35">Primary</div>
+                <div class="color-swatch" style="background: #FFB627;" data-hex="#FFB627">Secondary</div>
+                <div class="color-swatch" style="background: #FF3B77;" data-hex="#FF3B77">Accent</div>
+                <div class="color-swatch" style="background: #2ECC71;" data-hex="#2ECC71">Success</div>
+                <div class="color-swatch" style="background: #E74C3C;" data-hex="#E74C3C">Error</div>
+                <div class="color-swatch" style="background: #34495E;" data-hex="#34495E">Dark</div>
+            </div>
+            
+            <div class="components-demo">
+                <div class="demo-section">
+                    <h4>Buttons</h4>
+                    <div class="button-row">
+                        <button class="btn" style="background: #FF6B35; color: white;">RSVP Now</button>
+                        <button class="btn" style="background: transparent; border: 2px solid #FF6B35; color: #FF6B35;">Maybe Later</button>
+                        <button class="btn" style="background: #2ECC71; color: white;">✓ Checked In</button>
+                    </div>
+                </div>
+                
+                <div class="demo-section">
+                    <h4>Event Card</h4>
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="event-title">🏓 Mission Bay Pickleball</div>
+                            <div class="deposit-badge" style="background: #FFB627; color: white;">$5 Deposit</div>
+                        </div>
+                        <div class="event-details">
+                            📍 Mission Bay Courts • Today 6:00 PM<br>
+                            👥 8/12 players • Intermediate level
+                        </div>
+                        <div class="attendees">
+                            <div class="avatar" style="background: #FF6B35;">JM</div>
+                            <div class="avatar" style="background: #FF3B77;">AS</div>
+                            <div class="avatar" style="background: #FFB627;">KL</div>
+                            <div class="avatar" style="background: #2ECC71;">+5</div>
+                        </div>
+                        <button class="btn" style="background: #FF6B35; color: white; width: 100%;">Join Game</button>
+                    </div>
+                </div>
+                
+                <div class="demo-section">
+                    <h4>Streak Progress</h4>
+                    <div class="streak-indicator" style="background: linear-gradient(135deg, #FFB627, #FF6B35);">
+                        <span style="font-size: 1.5rem;">🔥</span>
+                        <span style="color: white;">5-day streak! Keep it going!</span>
+                    </div>
+                </div>
+                
+                <div class="demo-section">
+                    <h4>Forms</h4>
+                    <div class="form-demo">
+                        <div class="form-group">
+                            <label class="form-label">Event Name</label>
+                            <input class="form-input" type="text" placeholder="Enter event name..." style="--primary: #FF6B35; --primary-light: rgba(255, 107, 53, 0.1);">
+                        </div>
+                        <button class="btn" style="background: #FF6B35; color: white;">Create Event</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Theme 2: Trust & Reliability -->
+        <div class="theme-card" data-theme="trust">
+            <div class="theme-header">
+                <div class="theme-name" style="color: #3B82F6;">Trust & Reliability</div>
+                <div class="theme-description">Professional and dependable - emphasizes reliability, trust, and consistent participation. Ideal for building confidence in the platform.</div>
+            </div>
+            
+            <div class="color-palette">
+                <div class="color-swatch" style="background: #3B82F6;" data-hex="#3B82F6">Primary</div>
+                <div class="color-swatch" style="background: #6366F1;" data-hex="#6366F1">Secondary</div>
+                <div class="color-swatch" style="background: #06B6D4;" data-hex="#06B6D4">Accent</div>
+                <div class="color-swatch" style="background: #10B981;" data-hex="#10B981">Success</div>
+                <div class="color-swatch" style="background: #EF4444;" data-hex="#EF4444">Error</div>
+                <div class="color-swatch" style="background: #1F2937;" data-hex="#1F2937">Dark</div>
+            </div>
+            
+            <div class="components-demo">
+                <div class="demo-section">
+                    <h4>Buttons</h4>
+                    <div class="button-row">
+                        <button class="btn" style="background: #3B82F6; color: white;">RSVP Now</button>
+                        <button class="btn" style="background: transparent; border: 2px solid #3B82F6; color: #3B82F6;">Maybe Later</button>
+                        <button class="btn" style="background: #10B981; color: white;">✓ Checked In</button>
+                    </div>
+                </div>
+                
+                <div class="demo-section">
+                    <h4>Event Card</h4>
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="event-title">🏓 Mission Bay Pickleball</div>
+                            <div class="deposit-badge" style="background: #06B6D4; color: white;">$5 Deposit</div>
+                        </div>
+                        <div class="event-details">
+                            📍 Mission Bay Courts • Today 6:00 PM<br>
+                            👥 8/12 players • Intermediate level
+                        </div>
+                        <div class="attendees">
+                            <div class="avatar" style="background: #3B82F6;">JM</div>
+                            <div class="avatar" style="background: #6366F1;">AS</div>
+                            <div class="avatar" style="background: #06B6D4;">KL</div>
+                            <div class="avatar" style="background: #10B981;">+5</div>
+                        </div>
+                        <button class="btn" style="background: #3B82F6; color: white; width: 100%;">Join Game</button>
+                    </div>
+                </div>
+                
+                <div class="demo-section">
+                    <h4>Reliability Score</h4>
+                    <div class="streak-indicator" style="background: linear-gradient(135deg, #06B6D4, #3B82F6);">
+                        <span style="font-size: 1.5rem;">⭐</span>
+                        <span style="color: white;">95% Reliability Score</span>
+                    </div>
+                </div>
+                
+                <div class="demo-section">
+                    <h4>Forms</h4>
+                    <div class="form-demo">
+                        <div class="form-group">
+                            <label class="form-label">Event Name</label>
+                            <input class="form-input" type="text" placeholder="Enter event name..." style="--primary: #3B82F6; --primary-light: rgba(59, 130, 246, 0.1);">
+                        </div>
+                        <button class="btn" style="background: #3B82F6; color: white;">Create Event</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Theme 3: Natural Outdoor -->
+        <div class="theme-card" data-theme="natural">
+            <div class="theme-header">
+                <div class="theme-name" style="color: #059669;">Natural Outdoor</div>
+                <div class="theme-description">Fresh and energizing - connects with outdoor sports and healthy living. Great for emphasizing the physical activity and nature aspects.</div>
+            </div>
+            
+            <div class="color-palette">
+                <div class="color-swatch" style="background: #059669;" data-hex="#059669">Primary</div>
+                <div class="color-swatch" style="background: #84CC16;" data-hex="#84CC16">Secondary</div>
+                <div class="color-swatch" style="background: #F59E0B;" data-hex="#F59E0B">Accent</div>
+                <div class="color-swatch" style="background: #22C55E;" data-hex="#22C55E">Success</div>
+                <div class="color-swatch" style="background: #DC2626;" data-hex="#DC2626">Error</div>
+                <div class="color-swatch" style="background: #374151;" data-hex="#374151">Dark</div>
+            </div>
+            
+            <div class="components-demo">
+                <div class="demo-section">
+                    <h4>Buttons</h4>
+                    <div class="button-row">
+                        <button class="btn" style="background: #059669; color: white;">RSVP Now</button>
+                        <button class="btn" style="background: transparent; border: 2px solid #059669; color: #059669;">Maybe Later</button>
+                        <button class="btn" style="background: #22C55E; color: white;">✓ Checked In</button>
+                    </div>
+                </div>
+                
+                <div class="demo-section">
+                    <h4>Event Card</h4>
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="event-title">🏓 Mission Bay Pickleball</div>
+                            <div class="deposit-badge" style="background: #F59E0B; color: white;">$5 Deposit</div>
+                        </div>
+                        <div class="event-details">
+                            📍 Mission Bay Courts • Today 6:00 PM<br>
+                            👥 8/12 players • Intermediate level
+                        </div>
+                        <div class="attendees">
+                            <div class="avatar" style="background: #059669;">JM</div>
+                            <div class="avatar" style="background: #84CC16;">AS</div>
+                            <div class="avatar" style="background: #F59E0B;">KL</div>
+                            <div class="avatar" style="background: #22C55E;">+5</div>
+                        </div>
+                        <button class="btn" style="background: #059669; color: white; width: 100%;">Join Game</button>
+                    </div>
+                </div>
+                
+                <div class="demo-section">
+                    <h4>Achievement</h4>
+                    <div class="streak-indicator" style="background: linear-gradient(135deg, #84CC16, #059669);">
+                        <span style="font-size: 1.5rem;">🌱</span>
+                        <span style="color: white;">Social Butterfly Badge Earned!</span>
+                    </div>
+                </div>
+                
+                <div class="demo-section">
+                    <h4>Forms</h4>
+                    <div class="form-demo">
+                        <div class="form-group">
+                            <label class="form-label">Event Name</label>
+                            <input class="form-input" type="text" placeholder="Enter event name..." style="--primary: #059669; --primary-light: rgba(5, 150, 105, 0.1);">
+                        </div>
+                        <button class="btn" style="background: #059669; color: white;">Create Event</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Theme 4: Premium Modern -->
+        <div class="theme-card" data-theme="premium">
+            <div class="theme-header">
+                <div class="theme-name" style="color: #7C3AED;">Premium Modern</div>
+                <div class="theme-description">Sophisticated and engaging - appeals to tech-savvy professionals who value quality experiences. Perfect for premium features and exclusivity.</div>
+            </div>
+            
+            <div class="color-palette">
+                <div class="color-swatch" style="background: #7C3AED;" data-hex="#7C3AED">Primary</div>
+                <div class="color-swatch" style="background: #EC4899;" data-hex="#EC4899">Secondary</div>
+                <div class="color-swatch" style="background: #06B6D4;" data-hex="#06B6D4">Accent</div>
+                <div class="color-swatch" style="background: #10B981;" data-hex="#10B981">Success</div>
+                <div class="color-swatch" style="background: #F43F5E;" data-hex="#F43F5E">Error</div>
+                <div class="color-swatch" style="background: #0F172A;" data-hex="#0F172A">Dark</div>
+            </div>
+            
+            <div class="components-demo">
+                <div class="demo-section">
+                    <h4>Buttons</h4>
+                    <div class="button-row">
+                        <button class="btn" style="background: #7C3AED; color: white;">RSVP Now</button>
+                        <button class="btn" style="background: transparent; border: 2px solid #7C3AED; color: #7C3AED;">Maybe Later</button>
+                        <button class="btn" style="background: #10B981; color: white;">✓ Checked In</button>
+                    </div>
+                </div>
+                
+                <div class="demo-section">
+                    <h4>Event Card</h4>
+                    <div class="event-card">
+                        <div class="event-header">
+                            <div class="event-title">🏓 Mission Bay Pickleball</div>
+                            <div class="deposit-badge" style="background: #EC4899; color: white;">$5 Deposit</div>
+                        </div>
+                        <div class="event-details">
+                            📍 Mission Bay Courts • Today 6:00 PM<br>
+                            👥 8/12 players • Intermediate level
+                        </div>
+                        <div class="attendees">
+                            <div class="avatar" style="background: #7C3AED;">JM</div>
+                            <div class="avatar" style="background: #EC4899;">AS</div>
+                            <div class="avatar" style="background: #06B6D4;">KL</div>
+                            <div class="avatar" style="background: #10B981;">+5</div>
+                        </div>
+                        <button class="btn" style="background: #7C3AED; color: white; width: 100%;">Join Game</button>
+                    </div>
+                </div>
+                
+                <div class="demo-section">
+                    <h4>Level Progress</h4>
+                    <div class="streak-indicator" style="background: linear-gradient(135deg, #EC4899, #7C3AED);">
+                        <span style="font-size: 1.5rem;">⚡</span>
+                        <span style="color: white;">Level 5 Achieved! Elite Player</span>
+                    </div>
+                </div>
+                
+                <div class="demo-section">
+                    <h4>Forms</h4>
+                    <div class="form-demo">
+                        <div class="form-group">
+                            <label class="form-label">Event Name</label>
+                            <input class="form-input" type="text" placeholder="Enter event name..." style="--primary: #7C3AED; --primary-light: rgba(124, 58, 237, 0.1);">
+                        </div>
+                        <button class="btn" style="background: #7C3AED; color: white;">Create Event</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function setViewMode(mode) {
+            const grid = document.getElementById('themeGrid');
+            const buttons = document.querySelectorAll('.toggle-btn');
+            
+            buttons.forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            switch(mode) {
+                case 'grid':
+                    grid.style.gridTemplateColumns = 'repeat(auto-fit, minmax(400px, 1fr))';
+                    break;
+                case 'side-by-side':
+                    grid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+                    break;
+                case 'mobile':
+                    grid.style.gridTemplateColumns = '1fr';
+                    break;
+            }
+        }
+        
+        // Add click-to-copy functionality for color swatches
+        document.querySelectorAll('.color-swatch').forEach(swatch => {
+            swatch.addEventListener('click', function() {
+                const hex = this.dataset.hex;
+                navigator.clipboard.writeText(hex).then(() => {
+                    const originalContent = this.innerHTML;
+                    this.innerHTML = 'Copied!';
+                    setTimeout(() => {
+                        this.innerHTML = originalContent;
+                    }, 1000);
+                });
+            });
+        });
+    </script>
+</body>
+</html>

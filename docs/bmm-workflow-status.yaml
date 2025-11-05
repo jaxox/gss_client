@@ -1,0 +1,56 @@
+# Workflow Status Template
+# This tracks progress through phases 1-3 of the BMM methodology
+# Phase 4 (Implementation) is tracked separately in sprint-status.yaml
+
+# generated: 2025-11-04
+# project: gss_client
+# project_type: frontend_client
+# project_level: 2
+# field_type: greenfield
+# workflow_path: greenfield-level-2.yaml
+
+# CRITICAL ARCHITECTURAL CONTEXT:
+# ================================
+# This gss_client repo is the MOBILE/WEB CLIENT ONLY
+# Backend APIs exist in separate repo (not completed yet)
+# docs/shared/ contains REFERENCE DOCS copied from backend project
+# Architecture decisions must focus on client-side concerns:
+
+# STATUS DEFINITIONS:
+# ==================
+# Initial Status (before completion):
+#   - required: Must be completed to progress
+#   - optional: Can be completed but not required
+#   - recommended: Strongly suggested but not required
+#   - conditional: Required only if certain conditions met (e.g., if_has_ui)
+#
+# Completion Status:
+#   - {file-path}: File created/found (e.g., "docs/product-brief.md")
+#   - skipped: Optional/conditional workflow that was skipped
+
+generated: "2025-11-04"
+project: "gss_client"
+project_type: "frontend_client"
+project_level: "2"
+field_type: "greenfield"
+workflow_path: "greenfield-level-2.yaml"
+
+workflow_status:
+  # Phase 1: Analysis
+  brainstorm-project: optional
+  research: optional
+  product-brief: docs/shared/research-docs/product-brief-gamified-social-sports-2025-10-23.md
+
+  # Phase 2: Planning
+  prd: docs/shared/PRD.md
+  validate-prd: optional
+  create-design: docs/ux-design-specification.md
+  tech-spec: optional
+
+  # Phase 3: Solutioning
+  create-architecture: docs/architecture.md
+  validate-architecture: optional
+  solutioning-gate-check: required
+
+  # Phase 4: Implementation
+  sprint-planning: required
