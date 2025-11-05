@@ -1,0 +1,15 @@
+installation:
+  version: 6.0.0-alpha.4
+  installDate: '2025-11-04T02:29:13.115Z'
+  lastUpdated: '2025-11-04T02:29:13.115Z'
+modules:
+  - core
+  - bmm
+ides:
+  - claude-code
+  - codex
+  - cursor
+  - gemini
+  - github-copilot
+  - kilo
+  - qwen
