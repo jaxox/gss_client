@@ -7,5 +7,5 @@ npx lint-staged
 # Run type checking on all packages
 npm run type-check
 
-# Run tests (fail fast if tests don't pass)
-npm run test
+# Run tests in CI mode (non-interactive, exit after completion)
+npm run test:ci
