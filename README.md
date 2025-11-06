@@ -35,3 +35,5 @@
 ---
 
 **Need Help?** Start with `docs/PROJECT-CONTEXT.md` - it answers all common questions about project structure and agent handoffs.
+
+# Test commit
