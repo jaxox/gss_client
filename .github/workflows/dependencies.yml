@@ -1,0 +1,166 @@
+name: Dependencies & Security
+
+on:
+  schedule:
+    # Run every Monday at 9 AM UTC
+    - cron: '0 9 * * 1'
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # ==========================================
+  # Dependency Updates
+  # ==========================================
+  dependency-updates:
+    name: Check for Dependency Updates
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Check for outdated packages
+        run: |
+          echo "## Outdated Dependencies Report" > dependency-report.md
+          echo "Generated on: $(date)" >> dependency-report.md
+          echo "" >> dependency-report.md
+          
+          echo "### Root Dependencies" >> dependency-report.md
+          npm outdated --long || true >> dependency-report.md
+          echo "" >> dependency-report.md
+          
+          echo "### Mobile Dependencies" >> dependency-report.md
+          cd mobile && npm outdated --long || true >> ../dependency-report.md
+          cd ..
+          echo "" >> dependency-report.md
+          
+          echo "### Web Dependencies" >> dependency-report.md
+          cd web && npm outdated --long || true >> ../dependency-report.md
+          cd ..
+          echo "" >> dependency-report.md
+          
+          echo "### Shared Dependencies" >> dependency-report.md
+          cd shared && npm outdated --long || true >> ../dependency-report.md
+          
+      - name: Upload dependency report
+        uses: actions/upload-artifact@v3
+        with:
+          name: dependency-report
+          path: dependency-report.md
+          retention-days: 30
+
+  # ==========================================
+  # Security Audit
+  # ==========================================
+  security-audit:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run security audit
+        run: |
+          echo "## Security Audit Report" > security-report.md
+          echo "Generated on: $(date)" >> security-report.md
+          echo "" >> security-report.md
+          
+          echo "### Root Package Audit" >> security-report.md
+          npm audit --audit-level moderate >> security-report.md || true
+          echo "" >> security-report.md
+          
+          echo "### Mobile Package Audit" >> security-report.md
+          cd mobile && npm audit --audit-level moderate >> ../security-report.md || true
+          cd ..
+          echo "" >> security-report.md
+          
+          echo "### Web Package Audit" >> security-report.md
+          cd web && npm audit --audit-level moderate >> ../security-report.md || true
+          cd ..
+          echo "" >> security-report.md
+          
+          echo "### Shared Package Audit" >> security-report.md
+          cd shared && npm audit --audit-level moderate >> ../security-report.md || true
+          
+      - name: Upload security report
+        uses: actions/upload-artifact@v3
+        with:
+          name: security-report
+          path: security-report.md
+          retention-days: 30
+
+  # ==========================================
+  # License Compliance Check
+  # ==========================================
+  license-check:
+    name: License Compliance
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Install license checker
+        run: npm install -g license-checker
+        
+      - name: Check licenses
+        run: |
+          echo "## License Compliance Report" > license-report.md
+          echo "Generated on: $(date)" >> license-report.md
+          echo "" >> license-report.md
+          
+          echo "### Root Package Licenses" >> license-report.md
+          license-checker --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;Unlicense' --excludePrivatePackages >> license-report.md || true
+          echo "" >> license-report.md
+          
+          echo "### Mobile Package Licenses" >> license-report.md
+          cd mobile && license-checker --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;Unlicense' --excludePrivatePackages >> ../license-report.md || true
+          cd ..
+          echo "" >> license-report.md
+          
+          echo "### Web Package Licenses" >> license-report.md
+          cd web && license-checker --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;Unlicense' --excludePrivatePackages >> ../license-report.md || true
+          cd ..
+          echo "" >> license-report.md
+          
+          echo "### Shared Package Licenses" >> license-report.md
+          cd shared && license-checker --onlyAllow 'MIT;Apache-2.0;BSD-2-Clause;BSD-3-Clause;ISC;0BSD;Unlicense' --excludePrivatePackages >> ../license-report.md || true
+          
+      - name: Upload license report
+        uses: actions/upload-artifact@v3
+        with:
+          name: license-report
+          path: license-report.md
+          retention-days: 30

@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+**/node_modules/
+
+# Build outputs
+dist/
+build/
+**/dist/
+**/build/
+
+# React Native
+mobile/android/
+mobile/ios/
+mobile/Pods/
+
+# Generated files
+**/*.tsbuildinfo
+coverage/
+
+# Git
+.git/
+
+# IDEs
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

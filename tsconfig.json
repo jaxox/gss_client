@@ -1,0 +1,13 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./mobile" },
+    { "path": "./web" },
+    { "path": "./shared" }
+  ],
+  "compilerOptions": {
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true
+  }
+}

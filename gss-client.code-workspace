@@ -1,0 +1,101 @@
+{
+  "folders": [
+    {
+      "name": "Root",
+      "path": "."
+    },
+    {
+      "name": "Mobile",
+      "path": "./mobile"
+    },
+    {
+      "name": "Web",
+      "path": "./web"
+    },
+    {
+      "name": "Shared",
+      "path": "./shared"
+    }
+  ],
+  "settings": {
+    "typescript.preferences.includePackageJsonAutoImports": "auto",
+    "typescript.suggest.autoImports": true,
+    "editor.formatOnSave": true,
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+      "source.organizeImports": "explicit"
+    },
+    "eslint.workingDirectories": ["mobile", "web", "shared"],
+    "eslint.validate": [
+      "javascript",
+      "javascriptreact",
+      "typescript",
+      "typescriptreact"
+    ],
+    "prettier.requireConfig": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "[typescript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[typescriptreact]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[javascript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[javascriptreact]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "[json]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/build": true,
+      "**/.tsbuildinfo": true,
+      "**/coverage": true
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/build": true,
+      "**/coverage": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "esbenp.prettier-vscode",
+      "dbaeumer.vscode-eslint",
+      "ms-vscode.vscode-typescript-next",
+      "bradlc.vscode-tailwindcss",
+      "ms-vscode.vscode-json",
+      "redhat.vscode-yaml",
+      "ms-vscode.vscode-react-native",
+      "formulahendry.auto-rename-tag",
+      "christian-kohler.path-intellisense",
+      "ms-vscode.vscode-todo-highlight",
+      "streetsidesoftware.code-spell-checker"
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "name": "Debug Web App",
+        "type": "chrome",
+        "request": "launch",
+        "url": "http://localhost:5173",
+        "webRoot": "${workspaceFolder}/web/src",
+        "sourceMaps": true
+      },
+      {
+        "name": "Debug React Native",
+        "type": "reactnative",
+        "request": "launch",
+        "platform": "ios",
+        "cwd": "${workspaceFolder}/mobile"
+      }
+    ]
+  }
+}

@@ -1,0 +1,187 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ main ]
+    tags: [ 'v*' ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  # ==========================================
+  # Deploy Web Application
+  # ==========================================
+  deploy-web:
+    name: Deploy Web Application
+    runs-on: ubuntu-latest
+    environment: ${{ github.event.inputs.environment || (github.ref == 'refs/heads/main' && 'staging') || 'production' }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build shared library
+        run: npm run build:shared
+        
+      - name: Build web application
+        run: npm run build:web
+        env:
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.VITE_GOOGLE_CLIENT_ID }}
+          VITE_ANALYTICS_ENABLED: ${{ vars.VITE_ANALYTICS_ENABLED }}
+          VITE_ANALYTICS_TRACKING_ID: ${{ vars.VITE_ANALYTICS_TRACKING_ID }}
+          VITE_ERROR_TRACKING_ENABLED: ${{ vars.VITE_ERROR_TRACKING_ENABLED }}
+          VITE_ERROR_TRACKING_DSN: ${{ secrets.VITE_ERROR_TRACKING_DSN }}
+          
+      - name: Deploy to staging (Netlify)
+        if: github.event.inputs.environment == 'staging' || (github.ref == 'refs/heads/main' && !startsWith(github.ref, 'refs/tags/'))
+        uses: netlify/actions/cli@master
+        with:
+          args: deploy --prod --dir=web/dist
+        env:
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_STAGING_SITE_ID }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          
+      - name: Deploy to production (Netlify)
+        if: github.event.inputs.environment == 'production' || startsWith(github.ref, 'refs/tags/v')
+        uses: netlify/actions/cli@master
+        with:
+          args: deploy --prod --dir=web/dist
+        env:
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_PRODUCTION_SITE_ID }}
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+
+  # ==========================================
+  # Deploy Mobile to App Stores
+  # ==========================================
+  deploy-mobile-android:
+    name: Deploy Android to Play Store
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Setup Java JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+        
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build shared library
+        run: npm run build:shared
+        
+      - name: Prepare Android keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 -d > mobile/android/app/release.keystore
+          
+      - name: Build Android AAB
+        run: |
+          cd mobile
+          npx react-native build-android --mode=release
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          
+      - name: Deploy to Google Play Store
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT }}
+          packageName: com.gss.client
+          releaseFiles: mobile/android/app/build/outputs/bundle/release/app-release.aab
+          track: production
+          status: completed
+
+  deploy-mobile-ios:
+    name: Deploy iOS to App Store
+    runs-on: macos-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Build shared library
+        run: npm run build:shared
+        
+      - name: Install iOS dependencies
+        run: |
+          cd mobile/ios
+          pod install --repo-update
+          
+      - name: Import Code Signing Certificates
+        uses: apple-actions/import-codesign-certs@v1
+        with:
+          p12-file-base64: ${{ secrets.IOS_DISTRIBUTION_CERTIFICATE }}
+          p12-password: ${{ secrets.IOS_CERTIFICATE_PASSWORD }}
+          
+      - name: Install Provisioning Profile
+        uses: apple-actions/download-provisioning-profiles@v1
+        with:
+          bundle-id: com.gss.client
+          profile-type: 'IOS_APP_STORE'
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_PRIVATE_KEY }}
+          
+      - name: Build and Archive iOS
+        run: |
+          cd mobile
+          npx react-native build-ios --mode Release
+          
+      - name: Deploy to App Store Connect
+        uses: apple-actions/upload-testflight-build@v1
+        with:
+          app-path: mobile/ios/build/GSS_Mobile.ipa
+          issuer-id: ${{ secrets.APPSTORE_ISSUER_ID }}
+          api-key-id: ${{ secrets.APPSTORE_KEY_ID }}
+          api-private-key: ${{ secrets.APPSTORE_PRIVATE_KEY }}
