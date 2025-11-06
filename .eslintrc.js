@@ -5,9 +5,7 @@ module.exports = {
     node: true,
     jest: true,
   },
-  extends: [
-    'eslint:recommended',
-  ],
+  extends: ['eslint:recommended'],
   rules: {
     // Basic rules for all files
     'prefer-const': 'error',
@@ -38,7 +36,7 @@ module.exports = {
       },
     },
     {
-      // React Web specific rules  
+      // React Web specific rules
       files: ['web/**/*.{ts,tsx}'],
       env: {
         browser: true,
