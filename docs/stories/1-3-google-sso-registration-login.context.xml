@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story_context>
+  <story_metadata>
+    <epic_id>1</epic_id>
+    <story_id>3</story_id>
+    <story_key>1-3-google-sso-registration-login</story_key>
+    <story_title>Google SSO Registration/Login</story_title>
+    <user_story>
+      <as_a>mobile and web app user</as_a>
+      <i_want>to sign in and register using my Google account</i_want>
+      <so_that>I can quickly access the GSS platform without creating a separate password and have my profile pre-populated with my Google information</so_that>
+    </user_story>
+    <story_status>drafted</story_status>
+    <context_generated>2025-11-04</context_generated>
+  </story_metadata>
+
+  <project_overview>
+    <description>
+      GSS Client is a frontend-only React Native mobile + React web application for a gamified social sports platform. This is a greenfield implementation that will consume backend APIs from a separate repository. The platform solves chronic attendance issues (30-40% no-show rates) in recreational sports through psychology-informed gamification, deposits, reliability scoring, and social accountability.
+    </description>
+    <key_constraints>
+      <constraint>Frontend-only repository - backend APIs exist separately</constraint>
+      <constraint>Multi-platform: React Native mobile + React web</constraint>
+      <constraint>Mock-first development approach until backend APIs available</constraint>
+      <constraint>Material Design 3 via React Native Paper</constraint>
+      <constraint>Trust & Reliability blue color theme (#3B82F6 primary)</constraint>
+    </key_constraints>
+  </project_overview>
+
+  <technical_architecture>
+    <platform_structure>
+      <mobile>
+        <framework>React Native 0.73+ with TheCodingMachine boilerplate</framework>
+        <ui_library>React Native Paper (Material Design 3)</ui_library>
+        <navigation>React Navigation 6</navigation>
+        <state_management>Redux Toolkit + TanStack Query</state_management>
+        <secure_storage>React Native Keychain (iOS) / Android Keystore</secure_storage>
+        <sso_integration>@react-native-google-signin/google-signin</sso_integration>
+      </mobile>
+      <web>
+        <framework>React 18 + Vite + TypeScript</framework>
+        <ui_library>Material UI + React Hook Form</ui_library>
+        <routing>React Router 6</routing>
+        <state_management>Redux Toolkit + TanStack Query (shared store)</state_management>
+        <secure_storage>Browser secure storage APIs</secure_storage>
+        <sso_integration>@google-oauth/google-auth-library</sso_integration>
+      </web>
+      <shared>
+        <types>Complete TypeScript coverage for all API contracts</types>
+        <services>Abstract service interfaces with mock implementations</services>
+        <business_logic>Cross-platform validation, date utils, analytics</business_logic>
+        <http_client>Ky with automatic retry, timeout, error handling</http_client>
+      </shared>
+    </platform_structure>
+
+    <service_architecture>
+      <auth_service>
+        <interface>shared/services/api/auth.service.ts</interface>
+        <mock>shared/services/mock/mockAuth.service.ts</mock>
+        <methods>login, loginSSO, register, logout, refreshToken, getCurrentUser</methods>
+      </auth_service>
+      <storage_service>
+        <interface>shared/services/storage.ts</interface>
+        <secure_tokens>React Native Keychain / Browser secure storage</secure_tokens>
+        <app_preferences>MMKV / localStorage</app_preferences>
+      </storage_service>
+      <state_management>
+        <auth_store>mobile/src/store/auth/ and web/src/store/auth/</auth_store>
+        <profile_store>Shared Redux slices for user profile data</profile_store>
+        <api_cache>TanStack Query for server state management</api_cache>
+      </state_management>
+    </service_architecture>
+
+    <security_implementation>
+      <token_management>JWT access (15min) + refresh (90 days) tokens</token_management>
+      <storage_security>Platform secure storage, never localStorage for tokens</storage_security>
+      <https_enforcement>All API calls over HTTPS with certificate pinning</https_enforcement>
+      <oauth_security>PKCE flow, state parameter validation, server-side token verification</oauth_security>
+      <biometric_auth>Optional Face ID/Touch ID for returning users</biometric_auth>
+    </security_implementation>
+  </technical_architecture>
+
+  <acceptance_criteria>
+    <criteria id="AC1" title="Google OAuth Integration - Mobile Platform">
+      <description>Users can initiate Google OAuth flow on mobile devices using native Google Sign-In SDK</description>
+      <details>
+        - Google Sign-In button prominently displayed on login screen
+        - Tapping button launches native Google OAuth flow
+        - User can select Google account or add new account
+        - OAuth flow handles user cancellation gracefully
+        - ID token received from Google SDK
+        - Token sent to backend /api/auth/sso endpoint for validation
+        - JWT tokens returned and stored securely in Keychain/Keystore
+        - User redirected to dashboard on successful authentication
+        - Error handling for network failures and OAuth cancellations
+      </details>
+    </criteria>
+
+    <criteria id="AC2" title="Google OAuth Integration - Web Platform">
+      <description>Users can authenticate using Google OAuth on web browsers with popup/redirect flow</description>
+      <details>
+        - Google Sign-In button with proper branding guidelines
+        - OAuth flow opens in popup window or redirect
+        - Web-based Google account selection and consent
+        - Popup window closes automatically on completion
+        - ID token received from Google OAuth library
+        - Same backend /api/auth/sso endpoint integration as mobile
+        - JWT tokens stored in secure browser storage (not localStorage)
+        - Consistent user experience across different browsers
+        - Proper error handling for popup blockers and network issues
+      </details>
+    </criteria>
+
+    <criteria id="AC3" title="Profile Auto-Population from Google">
+      <description>User profile automatically populated with Google account information on first login</description>
+      <details>
+        - Display name extracted from Google profile
+        - Email address imported from Google account
+        - Profile avatar URL imported (placeholder shown in MVP)
+        - User can modify imported information during onboarding
+        - Home city field remains user-configurable (not from Google)
+        - Sports preferences remain user-configurable
+        - Privacy settings default to secure values
+        - All imported data stored in user profile via backend API
+        - Subsequent logins preserve user customizations
+      </details>
+    </criteria>
+
+    <criteria id="AC4" title="Cross-Platform OAuth Consistency">
+      <description>Google OAuth experience consistent between mobile and web platforms</description>
+      <details>
+        - Same Google branding and button design across platforms
+        - Identical error messages and handling patterns
+        - Consistent user profile data structure and population
+        - Platform-specific OAuth implementations but consistent API contracts
+        - Same backend integration for both mobile and web flows
+        - Unified Redux store structure for authentication state
+        - Cross-platform token management and refresh logic
+        - Consistent navigation flows post-authentication
+        - Same security standards on both platforms
+      </details>
+    </criteria>
+  </acceptance_criteria>
+
+  <task_breakdown>
+    <task_group id="1" title="Project Structure and Dependencies">
+      <tasks>
+        <task>Create multi-platform repository structure (mobile/, web/, shared/)</task>
+        <task>Initialize React Native project with TheCodingMachine boilerplate</task>
+        <task>Initialize React web project with Vite + TypeScript template</task>
+        <task>Set up shared TypeScript library with common types</task>
+        <task>Configure Google OAuth credentials for both platforms</task>
+        <task>Install and configure Google Sign-In SDKs</task>
+      </tasks>
+    </task_group>
+
+    <task_group id="2" title="Service Layer Implementation">
+      <tasks>
+        <task>Define TypeScript interfaces for authentication services</task>
+        <task>Implement abstract auth service interface</task>
+        <task>Create mock auth service with realistic Google OAuth simulation</task>
+        <task>Implement secure storage service for both platforms</task>
+        <task>Set up HTTP client with interceptors for token handling</task>
+        <task>Configure environment switching between mock and real APIs</task>
+      </tasks>
+    </task_group>
+
+    <task_group id="3" title="State Management Setup">
+      <tasks>
+        <task>Configure Redux Toolkit store for both platforms</task>
+        <task>Create authentication slice with Google OAuth actions</task>
+        <task>Set up TanStack Query for server state management</task>
+        <task>Implement automatic token refresh logic</task>
+        <task>Create user profile slice for Google-imported data</task>
+        <task>Add offline support for authentication state</task>
+      </tasks>
+    </task_group>
+
+    <task_group id="4" title="Mobile OAuth Implementation">
+      <tasks>
+        <task>Integrate @react-native-google-signin/google-signin library</task>
+        <task>Configure Google OAuth for iOS (URL schemes, plist)</task>
+        <task>Configure Google OAuth for Android (SHA keys, package name)</task>
+        <task>Create mobile Google Sign-In button component</task>
+        <task>Implement mobile OAuth flow with native SDK</task>
+        <task>Handle mobile-specific OAuth errors and edge cases</task>
+      </tasks>
+    </task_group>
+
+    <task_group id="5" title="Web OAuth Implementation">
+      <tasks>
+        <task>Integrate Google OAuth library for web</task>
+        <task>Configure web OAuth credentials and domains</task>
+        <task>Create web Google Sign-In button component</task>
+        <task>Implement popup-based OAuth flow</task>
+        <task>Add fallback redirect flow for popup blockers</task>
+        <task>Handle web-specific OAuth errors and browser compatibility</task>
+      </tasks>
+    </task_group>
+
+    <task_group id="6" title="Testing and Validation">
+      <tasks>
+        <task>Write unit tests for Google SSO components</task>
+        <task>Create integration tests for OAuth flows</task>
+        <task>Test secure token storage functionality</task>
+        <task>Validate cross-platform consistency</task>
+        <task>Test error scenarios and edge cases</task>
+        <task>Performance testing for OAuth flows</task>
+      </tasks>
+    </task_group>
+  </task_breakdown>
+
+  <key_interfaces>
+    <interface name="AuthService">
+      <location>shared/services/api/auth.service.ts</location>
+      <methods>
+        <method name="loginSSO">
+          <signature>loginSSO(request: SSOLoginRequest): Promise&lt;AuthResponse&gt;</signature>
+          <description>Authenticate user via Google OAuth ID token</description>
+        </method>
+        <method name="getCurrentUser">
+          <signature>getCurrentUser(): Promise&lt;User&gt;</signature>
+          <description>Get current authenticated user profile</description>
+        </method>
+        <method name="refreshToken">
+          <signature>refreshToken(refreshToken: string): Promise&lt;AuthTokens&gt;</signature>
+          <description>Refresh expired access token</description>
+        </method>
+      </methods>
+    </interface>
+
+    <interface name="StorageService">
+      <location>shared/services/storage.ts</location>
+      <methods>
+        <method name="storeTokens">
+          <signature>storeTokens(tokens: AuthTokens): Promise&lt;void&gt;</signature>
+          <description>Securely store JWT tokens</description>
+        </method>
+        <method name="getTokens">
+          <signature>getTokens(): Promise&lt;AuthTokens | null&gt;</signature>
+          <description>Retrieve stored JWT tokens</description>
+        </method>
+        <method name="clearTokens">
+          <signature>clearTokens(): Promise&lt;void&gt;</signature>
+          <description>Clear all stored authentication data</description>
+        </method>
+      </methods>
+    </interface>
+
+    <interface name="User Profile">
+      <location>shared/types/user.types.ts</location>
+      <fields>
+        <field>id: string</field>
+        <field>email: string</field>
+        <field>displayName: string</field>
+        <field>avatar?: string</field>
+        <field>homeCity: string</field>
+        <field>reliabilityScore: number</field>
+        <field>level: number</field>
+        <field>xp: number</field>
+        <field>createdAt: string</field>
+        <field>updatedAt: string</field>
+      </fields>
+    </interface>
+  </key_interfaces>
+
+  <ui_ux_requirements>
+    <design_system>
+      <name>React Native Paper (Material Design 3)</name>
+      <color_theme>Trust & Reliability (Blue-focused)</color_theme>
+      <primary_color>#3B82F6</primary_color>
+      <typography>Inter font family</typography>
+      <spacing>8px base unit system</spacing>
+    </design_system>
+
+    <oauth_button_design>
+      <mobile>
+        <component>GoogleSigninButton from react-native-google-signin</component>
+        <style>Standard Google branding with platform styling</style>
+        <placement>Prominent on login screen, below email/password option</placement>
+        <size>Full width with proper touch target (44px height)</size>
+      </mobile>
+      <web>
+        <component>Custom button with Google branding guidelines</component>
+        <style>Material Design 3 styling consistent with mobile</style>
+        <placement>Same position as mobile for consistency</placement>
+        <hover_states>Proper web hover and focus states</hover_states>
+      </web>
+    </oauth_button_design>
+
+    <user_flows>
+      <login_flow>
+        <step>User arrives at login screen</step>
+        <step>User sees email/password form and Google Sign-In button</step>
+        <step>User taps Google Sign-In button</step>
+        <step>OAuth flow launches (native on mobile, popup on web)</step>
+        <step>User completes Google authentication</step>
+        <step>Success: redirect to dashboard with profile populated</step>
+        <step>Error: return to login screen with clear error message</step>
+      </login_flow>
+      <registration_flow>
+        <step>New user arrives at registration screen</step>
+        <step>User chooses Google Sign-In for faster registration</step>
+        <step>OAuth flow completes successfully</step>
+        <step>Profile pre-populated with Google data</step>
+        <step>User completes additional required fields (home city)</step>
+        <step>Account created and user redirected to onboarding/dashboard</step>
+      </registration_flow>
+    </user_flows>
+
+    <error_handling_ux>
+      <network_errors>Show "Connection error - please try again" with retry button</network_errors>
+      <oauth_cancelled>Return to login screen silently (no error message)</oauth_cancelled>
+      <invalid_token>Show "Authentication failed - please try again"</invalid_token>
+      <popup_blocked>Fallback to redirect flow with user guidance</popup_blocked>
+      <general_errors>Clear, actionable error messages with support contact</general_errors>
+    </error_handling_ux>
+  </ui_ux_requirements>
+
+  <integration_requirements>
+    <backend_apis>
+      <base_url>Environment configurable (dev/staging/prod)</base_url>
+      <endpoints>
+        <endpoint>
+          <method>POST</method>
+          <path>/api/auth/sso</path>
+          <description>Exchange Google ID token for JWT tokens</description>
+        </endpoint>
+        <endpoint>
+          <method>GET</method>
+          <path>/api/users/profile</path>
+          <description>Get authenticated user profile</description>
+        </endpoint>
+        <endpoint>
+          <method>POST</method>
+          <path>/api/auth/refresh</path>
+          <description>Refresh expired JWT access token</description>
+        </endpoint>
+      </endpoints>
+    </backend_apis>
+
+    <google_oauth_config>
+      <mobile>
+        <ios_url_scheme>Configure in Info.plist for OAuth callback</ios_url_scheme>
+        <android_package>Configure SHA keys and package name in Google Console</android_package>
+        <client_id>Platform-specific Google OAuth client IDs</client_id>
+      </mobile>
+      <web>
+        <authorized_domains>Configure authorized JavaScript origins</authorized_domains>
+        <client_id>Web-specific Google OAuth client ID</client_id>
+        <popup_config>Configure popup dimensions and behavior</popup_config>
+      </web>
+    </google_oauth_config>
+
+    <mock_service_behavior>
+      <successful_oauth>Return realistic user data with Google-style profile</successful_oauth>
+      <network_delays>Simulate realistic network latency (500-1500ms)</network_delays>
+      <error_scenarios>Simulate OAuth failures, network errors, token refresh failures</error_scenarios>
+      <state_persistence>Mock tokens persist across app restarts</state_persistence>
+    </mock_service_behavior>
+  </integration_requirements>
+
+  <testing_requirements>
+    <unit_tests>
+      <auth_service>Test all authentication service methods with mocks</auth_service>
+      <oauth_components>Test Google Sign-In button rendering and interactions</oauth_components>
+      <token_management>Test secure storage and token refresh logic</token_management>
+      <state_management>Test Redux actions and reducers for authentication</state_management>
+    </unit_tests>
+
+    <integration_tests>
+      <oauth_flows>End-to-end OAuth flow testing with mock Google responses</oauth_flows>
+      <cross_platform>Ensure consistent behavior between mobile and web</cross_platform>
+      <error_scenarios>Test all error conditions and recovery flows</error_scenarios>
+      <state_persistence>Test authentication state across app lifecycle</state_persistence>
+    </integration_tests>
+
+    <performance_tests>
+      <oauth_timing>OAuth flow completion under 3 seconds</oauth_timing>
+      <token_refresh>Background token refresh under 500ms</token_refresh>
+      <memory_usage>Monitor memory usage during authentication flows</memory_usage>
+      <bundle_size>Track JavaScript bundle size impact of OAuth libraries</bundle_size>
+    </performance_tests>
+  </testing_requirements>
+
+  <success_metrics>
+    <functional_metrics>
+      <oauth_success_rate>95%+ successful Google OAuth completions</oauth_success_rate>
+      <cross_platform_consistency>Identical user experience on mobile and web</cross_platform_consistency>
+      <error_recovery>100% of errors provide clear recovery path</error_recovery>
+      <security_compliance>All tokens stored securely, no security vulnerabilities</security_compliance>
+    </functional_metrics>
+
+    <performance_metrics>
+      <oauth_completion_time>Mean time under 3 seconds from button tap to dashboard</oauth_completion_time>
+      <token_refresh_speed>Background refresh completes in under 500ms</token_refresh_speed>
+      <app_startup_time>Authentication state loads in under 1 second</app_startup_time>
+    </performance_metrics>
+
+    <user_experience_metrics>
+      <oauth_adoption_rate>Track % of users choosing Google vs email/password</oauth_adoption_rate>
+      <login_completion_rate>Measure % of initiated logins that complete successfully</login_completion_rate>
+      <error_abandonment_rate>Track % of users who abandon after OAuth errors</error_abandonment_rate>
+    </user_experience_metrics>
+  </success_metrics>
+
+  <constraints_and_assumptions>
+    <technical_constraints>
+      <platform_support>iOS 13+, Android 10+, modern web browsers</platform_support>
+      <network_requirements>HTTPS required for all OAuth flows</network_requirements>
+      <google_dependencies>Requires Google OAuth API access and valid credentials</google_dependencies>
+      <backend_dependency>Backend /api/auth/sso endpoint must be implemented</backend_dependency>
+    </technical_constraints>
+
+    <business_constraints>
+      <google_terms>Must comply with Google OAuth branding and usage guidelines</google_terms>
+      <user_privacy>User consent required for profile data access</user_privacy>
+      <data_handling>Secure handling of OAuth tokens and user information</data_handling>
+    </business_constraints>
+
+    <assumptions>
+      <backend_readiness>Backend OAuth endpoints available and functional</backend_readiness>
+      <google_approval>Google OAuth app approved for production use</google_approval>
+      <user_adoption>Users familiar with Google OAuth from other apps</user_adoption>
+      <network_connectivity>Users have reliable internet during authentication</network_connectivity>
+    </assumptions>
+  </constraints_and_assumptions>
+
+  <file_references>
+    <story_file>docs/stories/1-3-google-sso-registration-login.md</story_file>
+    <architecture>docs/architecture.md</architecture>
+    <tech_spec>docs/tech-spec-epic-1.md</tech_spec>
+    <prd>docs/shared/PRD.md</prd>
+    <ux_design>docs/ux-design-specification.md</ux_design>
+    <sprint_status>docs/sprint-status.yaml</sprint_status>
+  </file_references>
+</story_context>

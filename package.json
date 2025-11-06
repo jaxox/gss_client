@@ -1,0 +1,67 @@
+{
+  "name": "gss-client",
+  "version": "1.0.0",
+  "description": "GSS Client - Multi-platform frontend for Gamified Social Sports Platform",
+  "private": true,
+  "workspaces": [
+    "mobile",
+    "web",
+    "shared"
+  ],
+  "scripts": {
+    "bootstrap": "npm install && npm run build:shared",
+    "build": "npm run build:shared && npm run build:web",
+    "build:shared": "npm run build --workspace=shared",
+    "build:web": "npm run build --workspace=web",
+    "build:mobile": "npm run build --workspace=mobile",
+    "dev": "concurrently \"npm run dev --workspace=web\" \"npm run dev --workspace=shared\"",
+    "dev:web": "npm run dev --workspace=web",
+    "dev:mobile": "npm run start --workspace=mobile",
+    "test": "npm run test --workspaces",
+    "test:mobile": "npm run test --workspace=mobile",
+    "test:web": "npm run test --workspace=web",
+    "test:shared": "npm run test --workspace=shared",
+    "lint": "npm run lint --workspaces",
+    "lint:fix": "npm run lint:fix --workspaces",
+    "type-check": "npm run type-check --workspaces",
+    "clean": "npm run clean --workspaces && rm -rf node_modules",
+    "prepare": "husky install"
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "concurrently": "^8.2.0",
+    "eslint": "^8.45.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-prettier": "^5.0.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^13.2.3",
+    "prettier": "^3.0.0",
+    "typescript": "^5.1.6"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yml,yaml}": [
+      "prettier --write"
+    ]
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "author": "GSS Team",
+  "license": "MIT",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com-jaxox:jaxox/gss_client.git"
+  },
+  "keywords": [],
+  "type": "commonjs"
+}

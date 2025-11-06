@@ -1,0 +1,27 @@
+{
+  "name": "@gss-client/shared",
+  "version": "1.0.0",
+  "description": "Shared TypeScript library for GSS Client",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "clean": "rm -rf dist",
+    "type-check": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx",
+    "lint:fix": "eslint src --ext .ts,.tsx --fix",
+    "test": "jest"
+  },
+  "dependencies": {
+    "ky": "^1.0.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.1.6"
+  },
+  "files": [
+    "dist"
+  ]
+}
