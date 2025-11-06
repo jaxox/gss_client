@@ -1,0 +1,13 @@
+# Config files
+**/.eslintrc.js
+**/metro.config.js
+**/babel.config.js
+**/jest.config.js
+
+# Build outputs
+**/build
+**/dist
+**/coverage
+
+# Dependencies
+**/node_modules

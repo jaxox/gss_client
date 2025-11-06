@@ -11,8 +11,13 @@ const path = require('path');
 const projectRoot = __dirname;
 const monorepoRoot = path.resolve(projectRoot, '..');
 
+const defaultConfig = getDefaultConfig(monorepoRoot);
+
 const config = {
+  projectRoot,
   watchFolders: [
+    // Include the monorepo root
+    monorepoRoot,
     // Include the shared library for hot reloading
     path.resolve(monorepoRoot, 'shared'),
   ],
@@ -48,7 +53,7 @@ const config = {
   },
   server: {
     // Enhance dev server with better caching
-    enhanceMiddleware: (middleware) => {
+    enhanceMiddleware: middleware => {
       return (req, res, next) => {
         // Add cache headers for static assets
         if (req.url.match(/\.(js|css|png|jpg|jpeg|gif|svg)$/)) {
@@ -60,4 +65,4 @@ const config = {
   },
 };
 
-module.exports = mergeConfig(getDefaultConfig(__dirname), config);
+module.exports = mergeConfig(defaultConfig, config);
