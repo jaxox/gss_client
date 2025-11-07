@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context id="1-4-profile-crud-avatar-upload" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>1-4</storyId>
+    <title>Profile CRUD &amp; Avatar Upload</title>
+    <status>ready-for-dev</status>
+    <generatedAt>November 6, 2025</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/1-4-profile-crud-avatar-upload.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>registered user</asA>
+    <iWant>to view and edit my profile information including display name and home city</iWant>
+    <soThat>I can keep my account information accurate and personalized (Note: Avatar upload disabled in MVP for cost control)</soThat>
+    <tasks>
+      <task id="1" ac="AC1,AC4">
+        <title>Build Profile View UI</title>
+        <subtasks>
+          <item>Create ProfileScreen component for mobile (mobile/src/screens/profile/ProfileScreen.tsx)</item>
+          <item>Create ProfilePage component for web (web/src/pages/profile/ProfilePage.tsx)</item>
+          <item>Implement avatar placeholder component with default icon/initials display</item>
+          <item>Display user fields: displayName, email (read-only), homeCity, reliabilityScore (with "Private" badge)</item>
+          <item>Display gamification data: level, XP (read-only for this story)</item>
+          <item>Add "Edit Profile" button navigating to edit mode</item>
+          <item>Implement skeleton loading UI for data fetch state</item>
+          <item>Add offline indicator when network unavailable</item>
+          <item>Create "Avatar Upload Coming Soon" badge/tooltip component</item>
+          <item>Implement responsive layout following Material Design 3</item>
+        </subtasks>
+      </task>
+      <task id="2" ac="AC2,AC4">
+        <title>Build Profile Edit UI</title>
+        <subtasks>
+          <item>Create edit mode toggle in ProfileScreen/ProfilePage</item>
+          <item>Convert display fields to editable TextInput/TextField components in edit mode</item>
+          <item>Pre-populate form fields with current user data from profile state</item>
+          <item>Add real-time validation for displayName and homeCity fields</item>
+          <item>Create validation utility functions (validateDisplayName, validateCity) in shared/src/utils/validation.ts</item>
+          <item>Implement "Save" and "Cancel" buttons in edit mode</item>
+          <item>Display disabled "Upload Photo" button with "Coming Soon" badge</item>
+          <item>Show validation error messages below form fields</item>
+          <item>Implement form dirty state tracking (detect unsaved changes)</item>
+        </subtasks>
+      </task>
+      <task id="3" ac="AC1,AC3">
+        <title>Implement Profile Data Loading</title>
+        <subtasks>
+          <item>Create getProfile method in UserService (shared/src/services/api/user.service.ts)</item>
+          <item>Implement API call to GET /api/users/profile/{userId} using ky HTTP client</item>
+          <item>Extract userId from auth state (Redux store)</item>
+          <item>Handle successful response: update profile state with fetched user data</item>
+          <item>Implement error handling for 404 user not found, 401 unauthorized, network errors</item>
+          <item>Create Redux slice for profile state (profileSlice.ts in mobile/src/store/, web/src/store/)</item>
+          <item>Implement TanStack Query for profile data caching and automatic refetching</item>
+          <item>Add offline data persistence using secure storage</item>
+          <item>Write unit tests for getProfile service method</item>
+          <item>Write integration tests for profile load flow with various error scenarios</item>
+        </subtasks>
+      </task>
+      <task id="4" ac="AC3">
+        <title>Implement Profile Update Logic</title>
+        <subtasks>
+          <item>Create updateProfile method in UserService (shared/src/services/api/user.service.ts)</item>
+          <item>Implement request payload with modified fields only (displayName, homeCity)</item>
+          <item>Add API call to PUT /api/users/profile using ky HTTP client</item>
+          <item>Include userId in request path and updated fields in request body</item>
+          <item>Handle successful response: update local profile state, exit edit mode, show success message</item>
+          <item>Implement error handling with specific error codes (400 validation, 409 conflict, 500 server error)</item>
+          <item>Create Redux action creators for profile update (updateProfileStart, updateProfileSuccess, updateProfileFailure)</item>
+          <item>Implement optimistic updates (update UI before API response, rollback on error)</item>
+          <item>Add form dirty state reset after successful save</item>
+          <item>Write unit tests for updateProfile service method</item>
+          <item>Write integration tests for profile update flow including error scenarios</item>
+        </subtasks>
+      </task>
+      <task id="5" ac="AC4">
+        <title>Implement Avatar Placeholder System</title>
+        <subtasks>
+          <item>Create AvatarPlaceholder component (shared/src/components/AvatarPlaceholder.tsx)</item>
+          <item>Implement default avatar icon (Material Design person icon)</item>
+          <item>Add initials generation from displayName (extract first letter, uppercase)</item>
+          <item>Create circular avatar component with initials text overlay</item>
+          <item>Implement color generation based on user ID (consistent color per user)</item>
+          <item>Add "Upload Photo" button with disabled state</item>
+          <item>Create tooltip component explaining "Coming Soon in next release"</item>
+          <item>Style avatar placeholder consistently on mobile and web</item>
+          <item>Write unit tests for initials generation and color logic</item>
+          <item>Write snapshot tests for avatar placeholder component variants</item>
+        </subtasks>
+      </task>
+      <task id="6" ac="AC1,AC2,AC3,AC4">
+        <title>Cross-Platform Integration &amp; Testing</title>
+        <subtasks>
+          <item>Test profile view loading on mobile (iOS simulator + Android emulator)</item>
+          <item>Test profile view loading on web (Chrome, Safari, Firefox)</item>
+          <item>Test edit mode transition and form validation on all platforms</item>
+          <item>Test profile update flow end-to-end with valid data</item>
+          <item>Test error handling for invalid data (empty displayName, too-long city name)</item>
+          <item>Verify offline mode displays cached profile with indicator</item>
+          <item>Verify profile data persists across app restarts</item>
+          <item>Test "Cancel" button reverts unsaved changes</item>
+          <item>Verify avatar placeholder displays correctly with various display names</item>
+          <item>Test loading performance: profile load &lt;800ms per NFR requirement</item>
+          <item>Write E2E tests for critical user journeys (view → edit → save → view)</item>
+          <item>Verify accessibility (screen reader announces edit mode, keyboard navigation)</item>
+        </subtasks>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <title>Profile View Screen</title>
+      <requirements>
+        <item>Profile screen displays user's current information: display name, email, home city, reliability score (marked as "Private"), level, XP</item>
+        <item>Avatar section shows default placeholder with "Avatar Upload Coming Soon" message for MVP</item>
+        <item>Profile data loads within 800ms after navigation (per NFR requirement)</item>
+        <item>Offline mode displays cached profile data with clear "Offline" indicator</item>
+        <item>Loading state displays skeleton UI while fetching profile data</item>
+        <item>Profile screen accessible on both mobile and web platforms with consistent layout</item>
+      </requirements>
+    </criterion>
+    <criterion id="AC2">
+      <title>Profile Edit Mode</title>
+      <requirements>
+        <item>"Edit Profile" button enables edit mode, replacing display with editable form fields</item>
+        <item>Edit mode allows modification of: display name, home city (avatar upload disabled)</item>
+        <item>Form fields pre-populated with current user data</item>
+        <item>Real-time validation for display name (2-50 characters, alphanumeric + spaces) and home city (2-100 characters)</item>
+        <item>"Save" and "Cancel" buttons appear in edit mode</item>
+        <item>"Cancel" button reverts changes and returns to view mode without API call</item>
+        <item>Form fields disabled and "Coming Soon" badge shown for avatar upload section</item>
+      </requirements>
+    </criterion>
+    <criterion id="AC3">
+      <title>Profile Update Flow</title>
+      <requirements>
+        <item>"Save" button validates all fields client-side before submission</item>
+        <item>Successful validation calls PUT /api/users/profile with updated fields (displayName, homeCity)</item>
+        <item>API call includes current user ID from auth state</item>
+        <item>Loading state disables form and shows progress indicator during update</item>
+        <item>Successful update refreshes profile state and returns to view mode</item>
+        <item>Success feedback displays confirmation message ("Profile updated successfully")</item>
+        <item>Failed update displays specific error messages (validation errors, network errors, server errors)</item>
+      </requirements>
+    </criterion>
+    <criterion id="AC4">
+      <title>Avatar Placeholder Implementation (MVP Cost Control)</title>
+      <requirements>
+        <item>Avatar section displays default avatar icon/image (gender-neutral silhouette)</item>
+        <item>"Upload Photo" button shown with disabled state</item>
+        <item>Tooltip/helper text: "Avatar upload available in next release"</item>
+        <item>No image picker integration or upload functionality in this story</item>
+        <item>Avatar placeholder consistent across mobile and web platforms</item>
+        <item>Default avatar displays user's initials as fallback (first letter of display name)</item>
+      </requirements>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc path="docs/tech-spec-epic-1.md" title="Epic 1 Technical Specification" section="AC6: Profile Management System">
+        Comprehensive specification for profile CRUD functionality including profile view screen requirements (display name, email, avatar, home city, reliability score private), edit mode with validation, update flow with PUT /api/users/profile endpoint, avatar placeholder system for MVP cost control, and performance target (profile load &lt;800ms).
+      </doc>
+      <doc path="docs/tech-spec-epic-1.md" title="Epic 1 Technical Specification" section="QUESTION-001: Avatar Upload Strategy - RESOLVED">
+        Critical MVP decision: Avatar upload functionality DISABLED to reduce infrastructure costs. Client-side image processing deferred to post-MVP. Profile UI implements disabled upload button with "Coming Soon" message. Default avatar placeholder shows user initials with consistent color generation.
+      </doc>
+      <doc path="docs/tech-spec-epic-1.md" title="Epic 1 Technical Specification" section="UserService Interface">
+        Defines IUserService interface with getProfile(userId), updateProfile(userId, updates), uploadAvatar(userId, file) methods. Data models for User (with profile fields) and ProfileUpdateRequest (displayName, homeCity). API contracts for GET /api/users/profile/{userId} and PUT /api/users/profile endpoints.
+      </doc>
+      <doc path="docs/architecture.md" title="Client Architecture Document" section="ADR-004: State Management">
+        Redux Toolkit + TanStack Query architecture for profile state management. TanStack Query handles data caching, automatic refetching, and optimistic updates. Redux slices manage local state. Patterns for async thunks and error handling.
+      </doc>
+      <doc path="docs/architecture.md" title="Client Architecture Document" section="ADR-002: Mock-First Development">
+        Service abstraction pattern for profile operations. Create IUserService interface with MockUserService and UserServiceImpl implementations. Environment flag switches between mock and real service for development without backend.
+      </doc>
+      <doc path="docs/shared/PRD.md" title="Product Requirements Document" section="FR002: User Profile">
+        Functional requirement specifying user profile fields (displayName, avatar, homeCity, reliabilityScore, level, XP). Profile editing capabilities for display name and home city. Privacy settings for reliability score (private by default per FR037).
+      </doc>
+      <doc path="docs/stories/1-1-repository-structure-setup.md" title="Story 1-1: Repository Structure" section="Learnings">
+        Monorepo structure with mobile/, web/, shared/ directories. Shared TypeScript library with reusable types and service interfaces. Path aliases (@shared/) configured. Testing infrastructure established (Jest/Vitest with 100% coverage).
+      </doc>
+      <doc path="docs/stories/1-2-email-password-authentication.md" title="Story 1-2: Email/Password Auth" section="Dev Notes">
+        Authentication patterns to follow: Redux slice structure (authSlice), service abstraction (IAuthService), error handling utilities, validation patterns (real-time feedback), secure storage abstraction. HTTP client configuration with ky and auth interceptors.
+      </doc>
+    </docs>
+    <code>
+      <artifact path="shared/src/types/auth.types.ts" kind="interface" symbol="User">
+        <reason>REUSE existing User interface containing all profile fields: id, email, displayName, avatar, homeCity, reliabilityScore, level, xp, createdAt, updatedAt. This is the authoritative user data model from Story 1-1.</reason>
+      </artifact>
+      <artifact path="shared/src/types/api.types.ts" kind="interface" symbol="ApiResponse&lt;T&gt;, ApiError">
+        <reason>REUSE existing API response wrappers for consistent error handling and response typing in profile endpoints. Contains ApiResponse with data/success/message, ApiError with code/message/details.</reason>
+      </artifact>
+      <artifact path="shared/src/types/auth.types.ts" kind="interface" symbol="ProfileUpdateRequest">
+        <reason>REUSE existing ProfileUpdateRequest interface with displayName?, homeCity?, avatar? fields. Defined in Story 1-1 but used for first time in this story for profile updates.</reason>
+      </artifact>
+      <artifact path="shared/src/services/http/client.ts" kind="service" symbol="ky client">
+        <reason>REUSE ky HTTP client configuration from Story 1-2. Already configured with auth token interceptors, base URL, timeout settings, and 401 error handling for token refresh.</reason>
+      </artifact>
+      <artifact path="shared/src/utils/validation.ts" kind="utility" symbol="EXTEND">
+        <reason>EXTEND validation utilities file from Story 1-2. Add validateDisplayName (2-50 chars, alphanumeric + spaces), validateCity (2-100 chars) functions following existing validation pattern.</reason>
+      </artifact>
+      <artifact path="shared/src/services/api/user.service.ts" kind="interface" symbol="NEW">
+        <reason>CREATE new IUserService interface with getProfile(userId), updateProfile(userId, updates) methods. Follow IAuthService pattern from Story 1-2. Abstract base class enforces implementation contract.</reason>
+      </artifact>
+      <artifact path="shared/src/services/api/userServiceImpl.ts" kind="service" symbol="NEW">
+        <reason>CREATE real UserService implementation for API calls. Uses ky client for GET /api/users/profile/{userId} and PUT /api/users/profile. Handles success/error responses, maps to ApiResponse types.</reason>
+      </artifact>
+      <artifact path="shared/src/services/mock/mockUser.service.ts" kind="service" symbol="NEW">
+        <reason>CREATE mock UserService for development without backend. Returns simulated profile data with 500ms delay. Provides test users with various profile states for UI development.</reason>
+      </artifact>
+      <artifact path="shared/src/components/AvatarPlaceholder.tsx" kind="component" symbol="NEW">
+        <reason>CREATE cross-platform avatar placeholder component. Generates user initials from displayName (first letter uppercase), creates consistent color from user ID hash, displays Material Design person icon as default. Props: user (User), size (number), disabled upload button.</reason>
+      </artifact>
+      <artifact path="mobile/src/screens/profile/ProfileScreen.tsx" kind="screen" symbol="NEW">
+        <reason>CREATE mobile profile screen with view and edit modes. Uses React Native Paper components (TextInput, Button, Avatar, Chip, Card). Integrates with profileSlice and TanStack Query. Skeleton loading UI, offline indicator, form validation.</reason>
+      </artifact>
+      <artifact path="web/src/pages/profile/ProfilePage.tsx" kind="page" symbol="NEW">
+        <reason>CREATE web profile page with view and edit modes. Uses Material UI components (TextField, Button, Avatar, Chip, Card). Shares business logic with mobile via shared services. Responsive layout for desktop/tablet.</reason>
+      </artifact>
+      <artifact path="mobile/src/store/profile/profileSlice.ts" kind="redux" symbol="NEW">
+        <reason>CREATE Redux Toolkit slice for mobile profile state. Reducers: setProfile, setEditMode, updateField, resetChanges. Async thunks: fetchProfile, saveProfile. Integrates with TanStack Query for caching. Follows authSlice pattern from Story 1-2.</reason>
+      </artifact>
+      <artifact path="web/src/store/profile/profileSlice.ts" kind="redux" symbol="NEW">
+        <reason>CREATE Redux Toolkit slice for web profile state. Mirrors mobile profileSlice structure. Shares validation and service logic through shared library. Browser-specific storage integration.</reason>
+      </artifact>
+      <artifact path="shared/src/services/storage/secureStorage.ts" kind="service" symbol="EXTEND">
+        <reason>EXTEND secure storage from Story 1-2 to add profile caching methods: storeProfile(profile), getProfile(), clearProfile(). Offline-first profile persistence excluding sensitive fields (email, reliabilityScore).</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package name="@tanstack/react-query" version="^5.0.0" scope="mobile,web">Server state management, profile data caching, automatic refetching, optimistic updates</package>
+        <package name="@reduxjs/toolkit" version="^2.0.1" scope="mobile,web">Profile state management, form dirty state tracking</package>
+        <package name="react-redux" version="^9.0.0" scope="mobile,web">React Redux bindings for profile components</package>
+        <package name="ky" version="^1.7.2" scope="shared">HTTP client for profile API calls (GET/PUT endpoints)</package>
+        <package name="zod" version="^3.23.8" scope="shared">Profile validation schemas (displayName, homeCity)</package>
+      </node>
+      <mobile>
+        <package name="react-native-paper" version="^5.12.3" scope="mobile">Material Design 3 components for profile UI (TextInput, Button, Avatar, Card, Chip)</package>
+        <package name="react-native-vector-icons" version="^10.0.3" scope="mobile">Icons for edit button, placeholder avatar, badges</package>
+      </mobile>
+      <web>
+        <package name="@mui/material" version="^6.1.1" scope="web">Material Design components for web profile page (TextField, Button, Avatar, Card, Chip)</package>
+        <package name="@mui/icons-material" version="^6.1.1" scope="web">Material icons for edit, avatar placeholder, badges</package>
+      </web>
+      <testing>
+        <package name="jest" version="^29.7.0" scope="mobile,shared">Unit testing for UserService methods, validation utilities, Redux reducers</package>
+        <package name="@testing-library/react-native" version="^13.3.3" scope="mobile">Component testing for ProfileScreen (view/edit modes, form interactions)</package>
+        <package name="@testing-library/react" version="^16.1.0" scope="web">Component testing for ProfilePage</package>
+        <package name="@tanstack/react-query-devtools" version="^5.0.0" scope="mobile,web">Development tools for debugging query cache and profile data flow</package>
+      </testing>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <security>
+      <rule>Only authenticated users can access profile endpoints - JWT token required in Authorization header for GET/PUT requests</rule>
+      <rule>User can only view/edit their own profile - userId extracted from JWT token and validated on backend, client cannot modify other users' profiles</rule>
+      <rule>Input validation prevents XSS attacks - sanitize displayName and homeCity on both client and server, escape HTML entities, validate character sets</rule>
+      <rule>Reliability score displayed with "Private" badge - value shown to user but marked as private per FR037, visibility controlled via privacy settings in future story</rule>
+      <rule>Offline profile cache excludes sensitive data - do NOT cache email or reliabilityScore in local storage, only cache displayName, homeCity, level, XP for offline viewing</rule>
+      <rule>Form validation must prevent injection attacks - use Zod schemas to validate input types, lengths, and character sets before submission</rule>
+    </security>
+    <architecture>
+      <rule>Follow monorepo structure from Story 1-1 - mobile/, web/, shared/ separation with proper module boundaries</rule>
+      <rule>REUSE existing User interface - DO NOT create duplicate profile type definitions, extend auth.types.ts if additional fields needed</rule>
+      <rule>Implement service abstraction pattern - Create IUserService interface with MockUserService and UserServiceImpl, use environment flag for switching</rule>
+      <rule>Redux state management - Create profileSlice following authSlice pattern from Story 1-2 (createAsyncThunk for API calls, reducers for state updates)</rule>
+      <rule>TanStack Query integration - Use useQuery for profile fetching with caching, useMutation for updates with optimistic UI, configure staleTime and cacheTime appropriately</rule>
+      <rule>Path aliases - Use @shared/ for shared library imports, @mobile/ and @web/ for platform-specific imports (configured in tsconfig)</rule>
+      <rule>TypeScript strict mode - No 'any' types, properly type all API responses, Redux actions, component props, and validation results</rule>
+      <rule>Form dirty state tracking - Implement unsaved changes detection, prompt user before navigation if form has uncommitted edits</rule>
+      <rule>Optimistic updates pattern - Update UI immediately on save, rollback on error, show loading indicator during network request</rule>
+    </architecture>
+    <performance>
+      <rule>Profile load timing target: &lt;800ms from navigation to data display per NFR requirement in tech-spec-epic-1.md</rule>
+      <rule>Implement skeleton loading UI - Show placeholder content immediately while fetching, no blank screens or spinners blocking entire view</rule>
+      <rule>Offline-first profile viewing - Cache profile data locally, display cached data instantly when offline with clear indicator</rule>
+      <rule>Debounce validation - Real-time validation with 300ms debounce to prevent excessive validation calls while user typing</rule>
+      <rule>Optimize re-renders - Use React.memo for avatar placeholder component, useMemo for derived data (initials, color generation)</rule>
+      <rule>Bundle size monitoring - Avatar placeholder component &lt;5KB, validation utilities &lt;10KB to maintain mobile app size targets</rule>
+    </performance>
+    <mvp-cost-control>
+      <rule>Avatar upload DISABLED in this story - No image picker integration, no upload functionality, no CDN/storage costs</rule>
+      <rule>Upload button shown with disabled state - Clear visual indicator (grayed out) with tooltip explaining "Coming Soon in next release"</rule>
+      <rule>Default avatar placeholder sufficient for MVP - Initials display provides acceptable UX until feature financially viable post-revenue</rule>
+      <rule>Feature flag system for future enablement - Implement avatar upload toggle (currently false) for easy activation when ready</rule>
+      <rule>Focus on text field CRUD only - Profile updates limited to displayName and homeCity, no image processing or storage infrastructure needed</rule>
+    </mvp-cost-control>
+    <testing>
+      <rule>Unit test coverage: ≥90% for UserService methods (getProfile, updateProfile), validation utilities (validateDisplayName, validateCity), Redux reducers</rule>
+      <rule>Component test coverage: ≥80% for ProfileScreen/ProfilePage including view mode, edit mode, form validation, error states</rule>
+      <rule>Integration test coverage: Profile load flow with mock API (success, 404, 401, network error), update flow (success, validation errors, server errors)</rule>
+      <rule>E2E test coverage: Complete user journey (view profile → edit mode → modify fields → save → verify changes → cancel unsaved edits)</rule>
+      <rule>Performance testing: Validate profile load timing &lt;800ms in E2E tests across mobile and web platforms</rule>
+      <rule>Accessibility testing: Screen reader announces edit mode toggle, keyboard navigation works for all form fields, focus management on mode transitions</rule>
+      <rule>Avatar placeholder testing: Unit tests for initials extraction (empty name, single char, multi-word), color generation consistency, snapshot tests for visual regression</rule>
+    </testing>
+  </constraints>
+
+  <interfaces>
+    <interface name="IUserService.getProfile()" kind="service-method">
+      <signature>getProfile(userId: string): Promise&lt;User&gt;</signature>
+      <path>shared/src/services/api/user.service.ts</path>
+      <description>User service method for fetching profile data. Accepts userId string extracted from auth state. Makes GET request to /api/users/profile/{userId}. Returns User object with all profile fields (displayName, email, homeCity, reliabilityScore, level, xp). Throws ApiError on 404 user not found, 401 unauthorized, or network errors.</description>
+    </interface>
+    <interface name="IUserService.updateProfile()" kind="service-method">
+      <signature>updateProfile(userId: string, updates: ProfileUpdateRequest): Promise&lt;User&gt;</signature>
+      <path>shared/src/services/api/user.service.ts</path>
+      <description>User service method for updating profile. Accepts userId and ProfileUpdateRequest with modified fields (displayName?, homeCity?). Makes PUT request to /api/users/profile with updates in request body. Returns updated User object. Throws ApiError on 400 validation errors, 409 conflict, 500 server error.</description>
+    </interface>
+    <interface name="GET /api/users/profile/{userId}" kind="rest-endpoint">
+      <signature>GET /api/users/profile/{userId}</signature>
+      <path>Backend API (separate repository)</path>
+      <description>Backend profile fetch endpoint. Path parameter: userId. Requires JWT authentication. Returns 200 OK with User object on success. Returns 404 if user not found, 401 if token invalid/expired, 500 for server errors. Response includes all profile fields and gamification data.</description>
+    </interface>
+    <interface name="PUT /api/users/profile" kind="rest-endpoint">
+      <signature>PUT /api/users/profile { displayName?, homeCity? }</signature>
+      <path>Backend API (separate repository)</path>
+      <description>Backend profile update endpoint. Request body contains ProfileUpdateRequest with fields to modify. UserId extracted from JWT token (user can only update own profile). Returns 200 OK with updated User object. Returns 400 for validation errors (displayName too short/long, invalid characters), 409 for conflicts, 500 for server errors.</description>
+    </interface>
+    <interface name="validateDisplayName / validateCity" kind="validation-utility">
+      <signature>validateDisplayName(name: string): { valid: boolean, error?: string }, validateCity(city: string): { valid: boolean, error?: string }</signature>
+      <path>shared/src/utils/validation.ts</path>
+      <description>Client-side validation utilities for profile form fields. validateDisplayName checks 2-50 character length, alphanumeric + spaces allowed. validateCity checks 2-100 character length. Returns validation result with error message for user feedback. Used for real-time form validation.</description>
+    </interface>
+    <interface name="AvatarPlaceholder" kind="react-component">
+      <signature>&lt;AvatarPlaceholder user={User} size={number} showUploadButton={boolean} /&gt;</signature>
+      <path>shared/src/components/AvatarPlaceholder.tsx</path>
+      <description>Cross-platform avatar placeholder component. Props: user (User object for name/ID), size (diameter in pixels, default 64), showUploadButton (boolean, default true). Generates initials from displayName (first letter uppercase), creates consistent background color from user.id hash, displays Material Design person icon as fallback. Upload button shown disabled with "Coming Soon" tooltip.</description>
+    </interface>
+    <interface name="profileSlice" kind="redux-slice">
+      <signature>profileSlice: { profile, isEditMode, isDirty, isLoading, error, fetchProfile(), saveProfile(), setEditMode(), updateField(), resetChanges() }</signature>
+      <path>mobile/src/store/profile/profileSlice.ts, web/src/store/profile/profileSlice.ts</path>
+      <description>Redux Toolkit slice for profile state management. State: profile (User | null), isEditMode (boolean), isDirty (boolean for unsaved changes), isLoading, error. Async thunks: fetchProfile (loads from API), saveProfile (updates API). Reducers: setEditMode (toggle view/edit), updateField (modify single field), resetChanges (revert to original). Integrates with TanStack Query for caching.</description>
+    </interface>
+    <interface name="useProfile" kind="tanstack-query-hook">
+      <signature>const { data, isLoading, error, refetch } = useProfile(userId)</signature>
+      <path>Custom hook wrapping TanStack Query</path>
+      <description>TanStack Query hook for profile data fetching and caching. Accepts userId, returns query result with profile data. Automatically caches, refetches on stale, provides loading/error states. Configure staleTime: 5 minutes, cacheTime: 30 minutes. Integrates with UserService.getProfile().</description>
+    </interface>
+    <interface name="useUpdateProfile" kind="tanstack-query-mutation">
+      <signature>const { mutate, isLoading } = useUpdateProfile({ onSuccess, onError })</signature>
+      <path>Custom hook wrapping TanStack Query mutation</path>
+      <description>TanStack Query mutation hook for profile updates with optimistic UI. Accepts callbacks for success/error handling. mutate() accepts ProfileUpdateRequest. Optimistically updates cache before API response, rolls back on error. Integrates with UserService.updateProfile().</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Unit testing with Jest + React Testing Library for service layer, validation utilities, Redux reducers, and components. Integration testing with mock API responses for profile load and update flows. E2E testing using Detox (mobile) and Playwright (web) for complete user journeys. Test pyramid: 70% unit, 20% integration, 10% E2E. Coverage targets: ≥90% services/utils, ≥80% components. TanStack Query integration testing for cache behavior, optimistic updates, and error rollback. Performance validation in E2E tests (profile load &lt;800ms). Accessibility testing for screen readers and keyboard navigation.
+    </standards>
+    <locations>
+      <pattern>shared/src/__tests__/userService.test.ts</pattern>
+      <pattern>shared/src/__tests__/validation.test.ts</pattern>
+      <pattern>shared/src/__tests__/AvatarPlaceholder.test.tsx</pattern>
+      <pattern>mobile/src/__tests__/screens/ProfileScreen.test.tsx</pattern>
+      <pattern>web/src/__tests__/pages/ProfilePage.test.tsx</pattern>
+      <pattern>mobile/src/__tests__/store/profileSlice.test.ts</pattern>
+      <pattern>mobile/e2e/profile.e2e.ts</pattern>
+      <pattern>web/e2e/profile.spec.ts</pattern>
+    </locations>
+    <ideas>
+      <idea ac="AC1">Unit test: AvatarPlaceholder generates correct initials from displayName (single word "Alice" → "A", multi-word "Bob Smith" → "B", empty "" → "?"). Unit test: Color generation produces consistent hash from user ID. Integration test: Profile fetch with mock API returning 200 success, verify profile state updated. Integration test: Profile fetch with 404 error, verify error message displayed. E2E test: Navigate to profile screen, verify data displays within 800ms, check offline indicator when network disabled.</idea>
+      <idea ac="AC2">Unit test: validateDisplayName accepts valid inputs (2-50 chars, alphanumeric + spaces), rejects invalid (1 char, 51 chars, special symbols). Unit test: Edit mode toggle updates isEditMode state. Integration test: Enter edit mode, modify displayName, verify isDirty flag set. Component test: Cancel button reverts changes without API call, verify resetChanges action dispatched. E2E test: Edit mode → modify fields → cancel → verify original values restored.</idea>
+      <idea ac="AC3">Unit test: updateProfile service method sends PUT request with modified fields only. Integration test: Save profile with valid data, mock API returns 200, verify success message and exit edit mode. Integration test: Save with validation error (displayName too short), mock API returns 400, verify error message displayed. Integration test: Optimistic update - UI updates immediately, rollback on API error. E2E test: Edit displayName → save → verify new name persists after refresh.</idea>
+      <idea ac="AC4">Component test: Avatar placeholder shows disabled upload button with "Coming Soon" tooltip. Unit test: Initials generation edge cases (null displayName, numeric-only name, Unicode characters). Snapshot test: Avatar placeholder renders correctly at different sizes (32px, 64px, 128px). Integration test: Profile view shows avatar placeholder with user initials, consistent color across sessions. E2E test: Avatar section displays consistently on mobile and web, upload button non-functional.</idea>
+      <idea ac="ALL">Performance test: Measure profile load timing from navigation to data display (target &lt;800ms). TanStack Query test: Verify cache invalidation after successful update, stale data refetch behavior. Security test: Attempt to fetch another user's profile, verify 401/403 error. Accessibility test: Screen reader announces "Edit mode enabled" when toggling, keyboard tab navigation through form fields works. Offline test: Load profile while offline, verify cached data displays with "Offline" indicator, save fails gracefully with retry option.</idea>
+    </ideas>
+  </tests>
+</story-context>

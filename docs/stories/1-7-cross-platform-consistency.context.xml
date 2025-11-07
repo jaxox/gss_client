@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context id="1-7-cross-platform-consistency" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>1-7</storyId>
+    <title>Cross-Platform Consistency</title>
+    <status>ready-for-dev</status>
+    <generatedAt>November 6, 2025</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/1-7-cross-platform-consistency.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>mobile and web app user</asA>
+    <iWant>consistent authentication experience across mobile and web platforms</iWant>
+    <soThat>I can seamlessly switch between devices and have the same reliable experience</soThat>
+    <tasks>
+      <task id="1" ac="AC1">
+        <title>UI/UX Alignment</title>
+        <subtasks>
+          <item>Create shared design system components for authentication (Button, Input, Card styling)</item>
+          <item>Implement consistent Material Design 3 styling across mobile (React Native Paper) and web (Material UI)</item>
+          <item>Align error messaging text and validation feedback patterns (same error messages for same validation failures)</item>
+          <item>Standardize loading states (spinner style, placement, timing) and visual indicators</item>
+          <item>Ensure consistent navigation patterns (back button behavior, screen transitions, routing)</item>
+          <item>Validate WCAG 2.1 Level AA accessibility compliance on both platforms (keyboard navigation, screen readers, color contrast)</item>
+          <item>Create visual regression test suite (Percy, Chromatic) for UI consistency validation</item>
+          <item>Document design system patterns and component usage guidelines</item>
+        </subtasks>
+      </task>
+      <task id="2" ac="AC2">
+        <title>Functional Validation</title>
+        <subtasks>
+          <item>Test Google SSO flow consistency: same redirect behavior, same token handling, same error scenarios mobile vs web</item>
+          <item>Validate email/password authentication: same form validation rules, same API calls, same success/error handling</item>
+          <item>Verify token management operates identically: same refresh logic, same storage mechanisms (Keychain vs encrypted storage), same expiration handling</item>
+          <item>Test session management consistency: same timeout duration (30min), same logout behavior, same "Continue Session" flow</item>
+          <item>Validate profile management feature parity: same edit capabilities, same validation rules, same optimistic updates</item>
+          <item>Ensure error handling patterns match: same error messages for network failures, same retry logic, same fallback behaviors</item>
+          <item>Write cross-platform integration tests with identical test scenarios (same inputs, expected same outputs)</item>
+          <item>Document any platform-specific differences and rationale</item>
+        </subtasks>
+      </task>
+      <task id="3" ac="AC3">
+        <title>Performance Validation</title>
+        <subtasks>
+          <item>Benchmark authentication performance: login &lt;2s, registration &lt;2s, token refresh &lt;500ms on both platforms</item>
+          <item>Measure and optimize token refresh timing: verify &lt;500ms transparent refresh on mobile and web</item>
+          <item>Test network error handling consistency: same timeout values (30s), same retry attempts (3x), same exponential backoff</item>
+          <item>Validate cold launch performance: app-to-authenticated state &lt;3s on both platforms</item>
+          <item>Monitor and optimize memory usage: &lt;100MB baseline on mobile, &lt;50MB on web for auth flows</item>
+          <item>Verify bundle size optimization: mobile &lt;50MB total, web &lt;2MB initial bundle</item>
+          <item>Create performance monitoring dashboards for both platforms (Firebase Performance, Web Vitals)</item>
+          <item>Run performance regression tests to maintain targets over time</item>
+        </subtasks>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <title>UI/UX Consistency</title>
+      <requirements>
+        <item>Authentication flows function identically on mobile and web platforms</item>
+        <item>UI components follow Material Design principles consistently across platforms</item>
+        <item>Error messages and validation feedback are uniform between mobile and web</item>
+        <item>Loading states and visual feedback work consistently across platforms</item>
+        <item>Navigation patterns align between mobile and web experiences</item>
+        <item>Accessibility standards met on both platforms (WCAG compliance)</item>
+      </requirements>
+    </criterion>
+    <criterion id="AC2">
+      <title>Functional Consistency</title>
+      <requirements>
+        <item>Google SSO integration works identically on mobile and web</item>
+        <item>Email/password authentication behavior matches across platforms</item>
+        <item>Token management and refresh logic operates consistently</item>
+        <item>Session timeout and logout behavior identical on both platforms</item>
+        <item>Profile management features work the same way across platforms</item>
+        <item>Error handling and recovery patterns consistent between platforms</item>
+      </requirements>
+    </criterion>
+    <criterion id="AC3">
+      <title>Performance Consistency</title>
+      <requirements>
+        <item>Authentication flows meet performance targets on both platforms</item>
+        <item>Token refresh operations perform similarly across mobile and web</item>
+        <item>Network error handling has consistent timing and behavior</item>
+        <item>Cold launch authentication state loads consistently</item>
+        <item>Memory usage patterns optimized for both mobile and web</item>
+        <item>Bundle size optimization achieved for both platforms</item>
+      </requirements>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc path="docs/tech-spec-epic-1.md" title="Epic 1 Technical Specification" section="AC8: Cross-Platform Consistency">
+        Authentication flows function identically on mobile and web. UI components follow Material Design principles on both platforms. State management works consistently across platforms. Error messages and validation uniform. Performance meets targets on both mobile and web. Offline capability available for cached profile data.
+      </doc>
+      <doc path="docs/tech-spec-epic-1.md" title="Epic 1 Technical Specification" section="Traceability Mapping - AC8">
+        All UI components use React Native Paper (mobile) and Material UI (web). Visual regression tests ensure UI consistency. Cross-platform E2E tests validate functional parity. Performance benchmarks track targets for both platforms.
+      </doc>
+      <doc path="docs/tech-spec-epic-1.md" title="Epic 1 Technical Specification" section="Performance NFRs">
+        Login &lt;2s, registration &lt;2s, token refresh &lt;500ms, profile load &lt;1s on both platforms. Bundle size: mobile &lt;50MB, web &lt;2MB initial. Memory usage: mobile &lt;100MB baseline, web &lt;50MB for auth flows. Cold launch to authenticated &lt;3s.
+      </doc>
+      <doc path="docs/architecture.md" title="Client Architecture Document" section="Cross-Platform Strategy">
+        Monorepo structure with shared business logic. Platform-specific UI (React Native Paper, Material UI) with shared service layer. Redux Toolkit state management consistent across platforms. Platform detection for Keychain vs browser storage.
+      </doc>
+      <doc path="docs/stories/1-2-email-password-authentication.md" title="Story 1-2: Email/Password Auth">
+        Registration and login flows implemented for mobile and web. Form validation, error handling, API integration. This story validates consistency of these implementations.
+      </doc>
+      <doc path="docs/stories/1-3-google-sso-registration-login.md" title="Story 1-3: Google SSO">
+        Google SSO implemented for mobile and web. OAuth flow, token exchange, user creation. This story validates SSO consistency across platforms.
+      </doc>
+      <doc path="docs/stories/1-4-profile-crud-avatar-upload.md" title="Story 1-4: Profile CRUD">
+        Profile view/edit implemented with TanStack Query and optimistic updates. This story validates profile management consistency.
+      </doc>
+      <doc path="docs/stories/1-5-jwt-token-management.md" title="Story 1-5: JWT Token Management">
+        Token refresh, secure storage, session timeout implemented. This story validates token management consistency across platforms.
+      </doc>
+      <doc path="docs/stories/1-6-security-implementation.md" title="Story 1-6: Security Implementation">
+        HTTPS enforcement, input sanitization, biometric auth, privacy settings implemented. This story validates security feature consistency.
+      </doc>
+    </docs>
+    <code>
+      <artifact path="shared/src/components/Button.tsx" kind="component" symbol="NEW">
+        <reason>CREATE shared Button component abstraction. Props interface compatible with both React Native Paper Button and Material UI Button. Platform-specific rendering: mobile uses Paper Button, web uses MUI Button. Consistent styling (primary, secondary, text variants), consistent disabled states, consistent loading indicators. Ensures button UX identical across platforms.</reason>
+      </artifact>
+      <artifact path="shared/src/components/Input.tsx" kind="component" symbol="NEW">
+        <reason>CREATE shared Input/TextField component abstraction. Props interface compatible with both Paper TextInput and MUI TextField. Platform-specific rendering with consistent validation display, error messaging, helper text, placeholder behavior. Ensures form input UX identical across platforms.</reason>
+      </artifact>
+      <artifact path="shared/src/components/LoadingSpinner.tsx" kind="component" symbol="NEW">
+        <reason>CREATE shared LoadingSpinner component. Platform-specific rendering: mobile uses ActivityIndicator, web uses CircularProgress. Consistent sizing (small, medium, large), consistent colors (primary theme color), consistent placement (center of container). Used in all loading states for consistency.</reason>
+      </artifact>
+      <artifact path="shared/src/constants/errorMessages.ts" kind="constants" symbol="NEW">
+        <reason>CREATE centralized error message constants. All error messages defined once, used by both mobile and web. Categories: AUTH_ERRORS, VALIDATION_ERRORS, NETWORK_ERRORS, PROFILE_ERRORS. Ensures identical error text across platforms for same error conditions.</reason>
+      </artifact>
+      <artifact path="shared/src/constants/validationRules.ts" kind="constants" symbol="NEW">
+        <reason>CREATE centralized validation rule constants. Email regex, password complexity rules, display name length constraints. Both mobile and web import same validation rules. Ensures identical validation behavior across platforms.</reason>
+      </artifact>
+      <artifact path="shared/src/theme/theme.ts" kind="theme" symbol="NEW">
+        <reason>CREATE shared theme configuration. Color palette, typography, spacing, border radius defined once. Platform-specific theme adapters convert to React Native Paper theme (mobile) and Material UI theme (web). Ensures visual consistency across platforms.</reason>
+      </artifact>
+      <artifact path="mobile/src/navigation/AuthNavigator.tsx" kind="navigation" symbol="REVIEW">
+        <reason>REVIEW mobile navigation patterns. Compare with web routing (react-router). Ensure screen transitions, back button behavior, deep linking patterns match between platforms. Document platform-specific navigation differences.</reason>
+      </artifact>
+      <artifact path="web/src/routes/authRoutes.tsx" kind="routing" symbol="REVIEW">
+        <reason>REVIEW web routing patterns. Compare with mobile navigation (React Navigation). Ensure URL structure, route transitions, browser back button behavior align with mobile navigation UX. Document URL routing strategy.</reason>
+      </artifact>
+      <artifact path="mobile/e2e/crossPlatform.e2e.ts" kind="test" symbol="NEW">
+        <reason>CREATE cross-platform E2E test suite for mobile. Test scenarios: registration flow, login flow, Google SSO flow, profile edit flow, token refresh flow, logout flow. Same test cases will be mirrored in web E2E tests to validate functional parity.</reason>
+      </artifact>
+      <artifact path="web/e2e/crossPlatform.spec.ts" kind="test" symbol="NEW">
+        <reason>CREATE cross-platform E2E test suite for web. Mirror mobile E2E test scenarios. Same inputs, same expected outputs. Test frameworks differ (Detox vs Playwright) but test logic identical. Validates functional consistency across platforms.</reason>
+      </artifact>
+      <artifact path="shared/src/__tests__/crossPlatform.integration.test.ts" kind="test" symbol="NEW">
+        <reason>CREATE cross-platform integration tests. Test shared business logic (AuthService, UserService, TokenManager) behaves identically regardless of platform. Mock platform-specific APIs (Keychain, WebAuthn) to isolate business logic testing.</reason>
+      </artifact>
+      <artifact path=".github/workflows/visual-regression.yml" kind="ci-workflow" symbol="NEW">
+        <reason>CREATE visual regression testing workflow. Use Percy or Chromatic for screenshot comparison. Capture authentication screens (login, register, profile) on both mobile (iOS/Android simulators) and web (Chrome/Safari). Alert on visual differences.</reason>
+      </artifact>
+      <artifact path="docs/design-system.md" kind="documentation" symbol="NEW">
+        <reason>CREATE design system documentation. Component usage guidelines, styling patterns, accessibility requirements, platform-specific considerations. Documents how to maintain cross-platform consistency when building new features.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <testing>
+        <package name="@percy/cli" version="^1.27.4" scope="dev">Visual regression testing for cross-platform UI consistency</package>
+        <package name="detox" version="^20.14.8" scope="mobile">Mobile E2E testing framework for cross-platform validation</package>
+        <package name="@playwright/test" version="^1.40.1" scope="web">Web E2E testing framework for cross-platform validation</package>
+      </testing>
+      <mobile>
+        <package name="react-native-paper" version="^5.11.3" scope="mobile">Material Design 3 components for mobile (already installed)</package>
+      </mobile>
+      <web>
+        <package name="@mui/material" version="^5.15.0" scope="web">Material UI components for web (already installed)</package>
+      </web>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <consistency>
+      <rule>ALL error messages MUST come from shared/src/constants/errorMessages.ts - NEVER hardcode error text in mobile or web components</rule>
+      <rule>ALL validation rules MUST come from shared/src/constants/validationRules.ts - NEVER define validation logic separately in mobile and web</rule>
+      <rule>ALL theme values MUST come from shared/src/theme/theme.ts - NEVER hardcode colors, spacing, typography in platform-specific code</rule>
+      <rule>Authentication flow UX MUST be identical: same screen sequence (Welcome → Login/Register → Profile → Home), same navigation gestures, same back button behavior</rule>
+      <rule>Form validation timing MUST match: validate on blur, show errors immediately, clear errors on valid input - same behavior mobile and web</rule>
+      <rule>Loading states MUST be consistent: same spinner style, same placement, same timing thresholds (show after 200ms delay to prevent flicker)</rule>
+      <rule>Error recovery patterns MUST match: same retry button placement, same "Try Again" text, same automatic retry logic (3x with exponential backoff)</rule>
+      <rule>Success feedback MUST be consistent: same success message text, same toast/snackbar duration (3s), same icon usage</rule>
+    </consistency>
+    <accessibility>
+      <rule>WCAG 2.1 Level AA compliance REQUIRED on both platforms - color contrast ≥4.5:1, keyboard navigation, screen reader support</rule>
+      <rule>Keyboard navigation MUST work identically: Tab key moves between fields, Enter submits forms, Escape cancels actions - same on mobile (external keyboard) and web</rule>
+      <rule>Screen reader announcements MUST match: same ARIA labels, same role attributes, same focus management on both platforms</rule>
+      <rule>Touch targets MUST meet minimum size: ≥44x44pt on mobile (iOS HIG), ≥48x48dp on Android (Material Design), ≥44x44px on web (WCAG) - all buttons meet largest requirement</rule>
+      <rule>Focus indicators MUST be visible: clear outline on focused elements, same outline style on mobile (when using keyboard) and web</rule>
+    </accessibility>
+    <performance>
+      <rule>Performance targets MUST be met on BOTH platforms: login &lt;2s, registration &lt;2s, token refresh &lt;500ms, profile load &lt;1s - measure and alert if either platform regresses</rule>
+      <rule>Bundle size targets enforced: mobile &lt;50MB total app size, web &lt;2MB initial bundle - CI fails if exceeded on either platform</rule>
+      <rule>Memory usage monitored: mobile &lt;100MB baseline for auth flows, web &lt;50MB for auth flows - performance tests validate both</rule>
+      <rule>Network error handling timing IDENTICAL: 30s timeout for API calls, 3 retry attempts, exponential backoff (1s, 2s, 4s) - same values in mobile and web API client config</rule>
+      <rule>Cold launch performance: mobile app &lt;3s to authenticated state, web page load &lt;3s to authenticated state - same user experience</rule>
+    </performance>
+    <testing>
+      <rule>E2E test coverage MUST mirror between platforms: same test scenarios in mobile/e2e/ and web/e2e/, validate same behaviors</rule>
+      <rule>Visual regression tests REQUIRED: Percy/Chromatic screenshots for all auth screens on mobile (iOS, Android) and web (Chrome, Safari) - approve visual changes explicitly</rule>
+      <rule>Integration tests platform-agnostic: test shared business logic (services, utilities) without platform-specific dependencies, mock platform APIs</rule>
+      <rule>Accessibility audits automated: run axe-core (web), AccessibilitySnapshot (mobile) in CI, fail on violations</rule>
+      <rule>Performance regression tests: benchmark auth flows on every PR, alert if mobile OR web regresses beyond threshold (10% slower)</rule>
+    </testing>
+  </constraints>
+
+  <interfaces>
+    <interface name="Shared Button component" kind="react-component">
+      <signature>
+        &lt;Button 
+          variant="primary" | "secondary" | "text"
+          onPress={() =&gt; void}
+          loading={boolean}
+          disabled={boolean}
+          children={string}
+        /&gt;
+      </signature>
+      <path>shared/src/components/Button.tsx</path>
+      <description>Platform-agnostic Button component. Props work for both React Native Paper Button and Material UI Button. variant prop maps to corresponding platform button variants. onPress used instead of onClick for mobile compatibility (onClick alias provided for web). loading shows platform-specific spinner. Renders Paper Button on mobile, MUI Button on web with identical visual appearance.</description>
+    </interface>
+    <interface name="Shared Input component" kind="react-component">
+      <signature>
+        &lt;Input
+          label={string}
+          value={string}
+          onChangeText={(text) =&gt; void}
+          error={boolean}
+          helperText={string}
+          secureTextEntry={boolean}
+          autoComplete="email" | "password" | "name"
+        /&gt;
+      </signature>
+      <path>shared/src/components/Input.tsx</path>
+      <description>Platform-agnostic Input/TextField component. Props compatible with both Paper TextInput and MUI TextField. onChangeText used for consistency (onChange alias for web). error and helperText display validation feedback identically. secureTextEntry for password inputs works on both platforms. Renders TextInput on mobile, TextField on web with matched styling.</description>
+    </interface>
+    <interface name="Error messages constants" kind="constants">
+      <signature>
+        AUTH_ERRORS = {
+          INVALID_CREDENTIALS: "Invalid email or password",
+          NETWORK_ERROR: "Network connection failed. Please try again.",
+          ...
+        }
+      </signature>
+      <path>shared/src/constants/errorMessages.ts</path>
+      <description>Centralized error message constants used by both mobile and web. All error messages defined once. Categories: AUTH_ERRORS (login, register, SSO), VALIDATION_ERRORS (email format, password strength), NETWORK_ERRORS (timeout, offline), PROFILE_ERRORS (update failures). Both platforms import and display same error text for same error conditions.</description>
+    </interface>
+    <interface name="Validation rules constants" kind="constants">
+      <signature>
+        VALIDATION_RULES = {
+          EMAIL_REGEX: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+          PASSWORD_MIN_LENGTH: 8,
+          DISPLAY_NAME_MAX_LENGTH: 50,
+          ...
+        }
+      </signature>
+      <path>shared/src/constants/validationRules.ts</path>
+      <description>Centralized validation rule constants. Email regex pattern, password complexity requirements (min 8 chars, 1 uppercase, 1 lowercase, 1 number, 1 special), display name length constraints. Both mobile and web validation logic imports these rules. Ensures identical validation behavior across platforms.</description>
+    </interface>
+    <interface name="Theme configuration" kind="theme-config">
+      <signature>
+        theme = {
+          colors: { primary: '#1976d2', error: '#d32f2f', ... },
+          typography: { fontFamily: 'Roboto', ... },
+          spacing: (factor: number) =&gt; number,
+          borderRadius: { small: 4, medium: 8, large: 12 }
+        }
+      </signature>
+      <path>shared/src/theme/theme.ts</path>
+      <description>Shared theme configuration defining colors, typography, spacing, border radius. Platform-specific adapters convert to React Native Paper theme (mobile) and Material UI theme (web). Ensures visual consistency: same primary color, same font family, same spacing units, same border radius values across platforms.</description>
+    </interface>
+    <interface name="Cross-platform E2E test scenarios" kind="test-scenarios">
+      <signature>
+        describe('Registration Flow', () =&gt; {
+          it('should register with email/password', async () =&gt; { ... })
+          it('should show validation errors', async () =&gt; { ... })
+          it('should handle network errors', async () =&gt; { ... })
+        })
+      </signature>
+      <path>mobile/e2e/crossPlatform.e2e.ts, web/e2e/crossPlatform.spec.ts</path>
+      <description>Mirrored E2E test scenarios for mobile (Detox) and web (Playwright). Same test structure, same test cases, same inputs, same expected outputs. Scenarios: registration flow, login flow, Google SSO flow, profile edit flow, token refresh flow, session timeout flow, logout flow. Validates functional parity between platforms.</description>
+    </interface>
+    <interface name="Visual regression workflow" kind="ci-workflow">
+      <signature>Percy/Chromatic screenshot capture of auth screens on PR, compare to baseline, alert on visual differences</signature>
+      <path>.github/workflows/visual-regression.yml</path>
+      <description>Automated visual regression testing in CI. Captures screenshots of authentication screens (LoginScreen, RegisterScreen, ProfileScreen) on mobile (iOS simulator, Android emulator) and web (Chrome, Safari). Compares to baseline screenshots. Creates review for visual changes. Ensures UI consistency maintained across platform updates.</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Cross-platform E2E testing with Detox (mobile) and Playwright (web) using mirrored test scenarios. Visual regression testing with Percy or Chromatic for UI consistency validation. Integration testing for shared business logic (platform-agnostic). Accessibility auditing with axe-core (web) and AccessibilitySnapshot (mobile). Performance benchmarking for auth flows on both platforms. Test pyramid: 70% unit (shared services), 20% integration (cross-platform scenarios), 10% E2E (mirrored flows). Coverage targets: ≥90% shared services, ≥80% platform-specific UI, 100% critical auth flows on both platforms.
+    </standards>
+    <locations>
+      <pattern>mobile/e2e/crossPlatform.e2e.ts</pattern>
+      <pattern>web/e2e/crossPlatform.spec.ts</pattern>
+      <pattern>shared/src/__tests__/crossPlatform.integration.test.ts</pattern>
+      <pattern>mobile/src/__tests__/accessibility.test.tsx</pattern>
+      <pattern>web/src/__tests__/accessibility.test.tsx</pattern>
+      <pattern>.github/workflows/visual-regression.yml</pattern>
+      <pattern>.github/workflows/performance-tests.yml</pattern>
+    </locations>
+    <ideas>
+      <idea ac="AC1">Visual regression test: Capture LoginScreen on mobile (iOS, Android) and web (Chrome, Safari), verify identical layout and styling. Visual regression test: Capture error states (validation error, network error) on both platforms, verify same error display. Accessibility test: Run axe-core on web login page, run AccessibilitySnapshot on mobile LoginScreen, verify no violations. E2E test: Navigate login flow on mobile, measure screen transition timing, repeat on web, verify timing difference &lt;100ms.</idea>
+      <idea ac="AC2">E2E test: Register new user with same credentials on mobile and web, verify identical API calls (same payload structure). Integration test: Trigger token refresh on mobile and web with same expired token, verify same refresh logic executes, same new tokens returned. E2E test: Test session timeout on mobile (idle 30min), repeat on web, verify same SessionTimeoutModal appears, same "Continue Session" flow. Integration test: Call AuthService.login() with invalid credentials on mobile and web, verify identical error returned from both platforms.</idea>
+      <idea ac="AC3">Performance test: Benchmark login flow on mobile (measure from tap to authenticated state), repeat on web (measure from click to authenticated state), verify both &lt;2s. Performance test: Measure token refresh timing on mobile and web during concurrent API calls, verify both &lt;500ms transparent refresh. Memory profiling: Monitor auth flow memory usage on mobile (instruments), repeat on web (Chrome DevTools), verify mobile &lt;100MB baseline, web &lt;50MB. Bundle size test: Build mobile release APK/IPA, verify &lt;50MB, build web production bundle, verify &lt;2MB initial.</idea>
+      <idea ac="ALL">Cross-platform integration test: Run same AuthService test suite on mock mobile environment (React Native) and mock web environment (jsdom), verify identical behavior. Error message consistency test: Trigger all known error scenarios (network timeout, validation failures, auth failures) on both platforms, verify same error message text displayed. Navigation consistency test: Test deep linking on mobile (custom URL scheme), test direct URL access on web, verify same screen reached with same state. Theme consistency test: Extract all color values from rendered mobile components, extract from rendered web components, verify color palette matches.</idea>
+    </ideas>
+  </tests>
+
+  <platform-differences>
+    <difference>
+      <area>Navigation</area>
+      <mobile>React Navigation with stack navigator, native screen transitions, hardware back button support</mobile>
+      <web>React Router with browser history, URL-based routing, browser back button support</web>
+      <consistency-strategy>Map screen names to URL paths, ensure back button behavior matches across platforms, implement deep linking on mobile to match web URL structure</consistency-strategy>
+    </difference>
+    <difference>
+      <area>Token Storage</area>
+      <mobile>React Native Keychain (iOS Keychain Services, Android Keystore) - encrypted, OS-managed secure storage</mobile>
+      <web>Encrypted sessionStorage with CryptoJS - browser storage with application-layer encryption</web>
+      <consistency-strategy>Abstract storage behind SecureStorageService interface, same API (storeTokens, getTokens, clearTokens), platform detection selects implementation</consistency-strategy>
+    </difference>
+    <difference>
+      <area>Biometric Authentication</area>
+      <mobile>react-native-biometrics (Face ID, Touch ID, fingerprint) - native biometric APIs</mobile>
+      <web>@simplewebauthn/browser (WebAuthn) - browser-based platform authenticators</web>
+      <consistency-strategy>Abstract biometric auth behind IBiometricAuthService interface, same enrollment flow UX, same fallback to password, platform detection selects implementation</consistency-strategy>
+    </difference>
+    <difference>
+      <area>UI Components</area>
+      <mobile>React Native Paper (Material Design 3 for React Native) - native mobile components</mobile>
+      <web>Material UI (Material Design for React web) - web components</web>
+      <consistency-strategy>Shared component abstractions (Button, Input, LoadingSpinner) with platform-specific rendering, shared theme configuration ensures visual consistency</consistency-strategy>
+    </difference>
+    <difference>
+      <area>Form Handling</area>
+      <mobile>onChangeText prop for text inputs, onPress for buttons, keyboard type selection (email-address, numeric)</mobile>
+      <web>onChange for inputs, onClick for buttons, input type selection (email, password, text)</web>
+      <consistency-strategy>Shared Input component uses onChangeText (mobile native, web adapter), shared Button uses onPress (mobile native, web onClick alias), same validation logic regardless of platform</consistency-strategy>
+    </difference>
+  </platform-differences>
+</story-context>

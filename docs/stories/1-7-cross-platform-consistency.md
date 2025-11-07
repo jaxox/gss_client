@@ -1,6 +1,6 @@
 # Story 1.7: Cross-Platform Consistency
 
-Status: backlog
+Status: ready-for-dev
 
 ## Story
 
@@ -73,12 +73,14 @@ so that **I can seamlessly switch between devices and have the same reliable exp
 **Architecture Alignment:** Validates the cross-platform consistency goals defined in tech spec AC8, ensuring seamless user experience across mobile and web platforms.
 
 **Key Dependencies:**
+
 - All other Epic 1 stories must be implemented first (1-1 through 1-6)
 - Requires functional authentication flows on both platforms
 - Needs completed design system and component libraries
 - Depends on performance monitoring and testing infrastructure
 
 **Testing Strategy:**
+
 - Cross-platform E2E testing with identical test scenarios
 - Visual regression testing to ensure UI consistency
 - Performance benchmarking across platforms
@@ -88,6 +90,8 @@ so that **I can seamlessly switch between devices and have the same reliable exp
 ## Dev Agent Record
 
 ### Context Reference
+
+**Story Context:** `docs/stories/1-7-cross-platform-consistency.context.xml`
 
 ### Agent Model Used
 

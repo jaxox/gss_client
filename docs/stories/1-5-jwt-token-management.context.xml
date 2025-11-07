@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context id="1-5-jwt-token-management" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>1-5</storyId>
+    <title>JWT Token Management</title>
+    <status>ready-for-dev</status>
+    <generatedAt>November 6, 2025</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/1-5-jwt-token-management.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>system</asA>
+    <iWant>automatic JWT token refresh and session management</iWant>
+    <soThat>users remain authenticated without manual intervention and sessions expire securely when appropriate</soThat>
+    <tasks>
+      <task id="1" ac="AC2">
+        <title>Implement Token Storage Service</title>
+        <subtasks>
+          <item>Create SecureStorageService in shared/src/services/storage/secureStorage.ts</item>
+          <item>Implement storeTokens method (stores access token, refresh token, expiration times)</item>
+          <item>Implement getTokens method (retrieves all token data)</item>
+          <item>Implement clearTokens method (removes all token data on logout)</item>
+          <item>Add platform-specific implementations: React Native Keychain (iOS/Android), encrypted sessionStorage (web)</item>
+          <item>Create token expiration utilities (isAccessTokenExpired, isRefreshTokenExpired)</item>
+          <item>Implement token metadata storage (issued at, expires at timestamps)</item>
+          <item>Add error handling for storage failures</item>
+          <item>Write unit tests for all storage methods</item>
+          <item>Write integration tests for cross-platform storage consistency</item>
+        </subtasks>
+      </task>
+      <task id="2" ac="AC1,AC4">
+        <title>Build Token Refresh Interceptor</title>
+        <subtasks>
+          <item>Create API interceptor in shared/src/services/api/interceptors.ts</item>
+          <item>Implement response interceptor catching 401 status codes</item>
+          <item>Add refresh token logic: call /api/auth/refresh with refresh token</item>
+          <item>Implement request queue to hold pending requests during refresh</item>
+          <item>Update stored tokens after successful refresh</item>
+          <item>Retry original failed request with new access token</item>
+          <item>Implement mutex/lock to prevent concurrent refresh requests</item>
+          <item>Handle refresh failure: clear tokens, dispatch logout action, redirect to login</item>
+          <item>Add exponential backoff for failed refresh attempts (max 3 retries)</item>
+          <item>Write unit tests for interceptor logic with mock API responses</item>
+          <item>Write integration tests for concurrent request scenarios</item>
+        </subtasks>
+      </task>
+      <task id="3" ac="AC2">
+        <title>Implement Proactive Token Refresh</title>
+        <subtasks>
+          <item>Create token expiration checker service (shared/src/services/auth/tokenManager.ts)</item>
+          <item>Add checkTokenExpiration method (returns time until expiration)</item>
+          <item>Implement proactive refresh 5 minutes before access token expiration</item>
+          <item>Create background timer to check token expiration every minute</item>
+          <item>Trigger refresh automatically when access token nearing expiration</item>
+          <item>Handle app startup: check token validity, refresh if needed</item>
+          <item>Add token refresh on app resume from background (mobile)</item>
+          <item>Implement silent refresh (no UI indication for background refresh)</item>
+          <item>Write unit tests for expiration calculation logic</item>
+          <item>Write integration tests for proactive refresh timing</item>
+        </subtasks>
+      </task>
+      <task id="4" ac="AC3">
+        <title>Build Session Timeout System</title>
+        <subtasks>
+          <item>Create activity tracker service (shared/src/services/auth/activityTracker.ts)</item>
+          <item>Implement user activity detection (touch events, navigation, API calls)</item>
+          <item>Add inactivity timer (resets on activity, triggers after 30 minutes idle)</item>
+          <item>Create session timeout modal component (mobile and web)</item>
+          <item>Implement "Continue Session" button triggering token refresh</item>
+          <item>Handle refresh success: dismiss modal, reset inactivity timer</item>
+          <item>Handle refresh failure: redirect to login screen</item>
+          <item>Add configuration for inactivity timeout duration (environment variable)</item>
+          <item>Write unit tests for activity tracking and timeout logic</item>
+          <item>Write E2E tests for inactivity timeout flow</item>
+        </subtasks>
+      </task>
+      <task id="5" ac="AC1,AC2,AC3">
+        <title>Integrate with Auth State Management</title>
+        <subtasks>
+          <item>Update authSlice to handle token refresh actions (refreshStart, refreshSuccess, refreshFailure)</item>
+          <item>Add session expiration state to Redux store</item>
+          <item>Dispatch logout action on refresh failure</item>
+          <item>Update auth state on successful token refresh (update user data if included in response)</item>
+          <item>Implement token storage synchronization with Redux state</item>
+          <item>Add session timeout state and actions</item>
+          <item>Create selectors for token expiration status (isTokenValid, isSessionActive)</item>
+          <item>Write unit tests for auth slice with token refresh scenarios</item>
+          <item>Write integration tests for auth state transitions during refresh</item>
+        </subtasks>
+      </task>
+      <task id="6" ac="AC1,AC2,AC3,AC4">
+        <title>Cross-Platform Testing &amp; Edge Cases</title>
+        <subtasks>
+          <item>Test token refresh on mobile (iOS simulator + Android emulator)</item>
+          <item>Test token refresh on web (Chrome, Safari, Firefox)</item>
+          <item>Test concurrent API calls triggering single refresh</item>
+          <item>Test token refresh on app startup with expired access token</item>
+          <item>Test session timeout after 30 minutes of inactivity</item>
+          <item>Test "Continue Session" flow with valid and expired refresh tokens</item>
+          <item>Test logout clears all tokens from secure storage</item>
+          <item>Test token persistence across app restarts</item>
+          <item>Test token refresh during network instability (retry logic)</item>
+          <item>Verify no tokens leaked to logs or console</item>
+          <item>Write E2E tests for complete token lifecycle (login → use → refresh → logout)</item>
+          <item>Verify performance: Token refresh &lt;500ms transparent to user</item>
+        </subtasks>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <title>Automatic Token Refresh</title>
+      <requirements>
+        <item>API interceptor detects 401 Unauthorized responses from backend</item>
+        <item>Interceptor automatically calls /api/auth/refresh with stored refresh token</item>
+        <item>Successful refresh updates stored access and refresh tokens silently</item>
+        <item>Original failed API request retries automatically with new access token</item>
+        <item>Token refresh happens transparently without user awareness</item>
+        <item>Failed refresh (expired/invalid refresh token) redirects user to login screen</item>
+      </requirements>
+    </criterion>
+    <criterion id="AC2">
+      <title>Token Storage and Lifecycle</title>
+      <requirements>
+        <item>Access tokens stored securely in platform-specific storage (Keychain/Keystore/Secure browser storage)</item>
+        <item>Refresh tokens stored separately with longer expiration (7 days default, 90 days with "Remember me")</item>
+        <item>Token expiration times stored alongside tokens for proactive refresh</item>
+        <item>App checks token expiration on startup and refreshes if needed</item>
+        <item>Logout clears all stored tokens (access, refresh, expiration data)</item>
+        <item>Token storage encrypted and inaccessible to other apps</item>
+      </requirements>
+    </criterion>
+    <criterion id="AC3">
+      <title>Session Timeout and Inactivity</title>
+      <requirements>
+        <item>App tracks user activity (screen interactions, navigation)</item>
+        <item>After configured inactivity period (default 30 minutes), session expires</item>
+        <item>Session expiration shows modal: "Session expired due to inactivity. Please log in again."</item>
+        <item>"Continue Session" button attempts token refresh if refresh token still valid</item>
+        <item>If refresh token expired, user must re-authenticate</item>
+        <item>Active users never experience inactivity timeout</item>
+      </requirements>
+    </criterion>
+    <criterion id="AC4">
+      <title>Concurrent Request Handling</title>
+      <requirements>
+        <item>Multiple simultaneous 401 responses trigger only one refresh request</item>
+        <item>Subsequent API calls wait for refresh completion before proceeding</item>
+        <item>All waiting requests use new access token after successful refresh</item>
+        <item>If refresh fails, all waiting requests fail gracefully</item>
+        <item>Request queue cleared on successful refresh</item>
+        <item>No duplicate refresh API calls during concurrent request handling</item>
+      </requirements>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc path="docs/tech-spec-epic-1.md" title="Epic 1 Technical Specification" section="AC5: JWT Token Management">
+        Comprehensive specification for automatic token refresh, secure storage, session timeout, and concurrent request handling. Defines token lifecycle (access tokens 15min, refresh tokens 7-90 days), proactive refresh strategy (5min before expiration), and secure storage requirements (Keychain/Keystore/encrypted browser storage).
+      </doc>
+      <doc path="docs/tech-spec-epic-1.md" title="Epic 1 Technical Specification" section="Token Refresh Flow">
+        Workflow sequence for token refresh: API call → 401 Response → Token Refresh → Retry Original → Success/Logout. Includes mutex pattern for concurrent requests, request queue management, and graceful degradation on refresh failure.
+      </doc>
+      <doc path="docs/tech-spec-epic-1.md" title="Epic 1 Technical Specification" section="StorageService Interface">
+        Defines IStorageService interface with storeTokens(), getTokens(), clearTokens() methods. Platform-specific implementations for React Native Keychain (iOS/Android) and encrypted browser storage (web). Token metadata storage for expiration tracking.
+      </doc>
+      <doc path="docs/architecture.md" title="Client Architecture Document" section="Authentication">
+        JWT authentication flow with refresh tokens. Access tokens expire in 15 minutes, refresh tokens in 90 days (with "Remember me"). Automatic token refresh using HTTP client interceptors. Session cleanup on logout.
+      </doc>
+      <doc path="docs/architecture.md" title="Client Architecture Document" section="Secure Storage">
+        Platform-specific secure storage strategy. React Native Keychain for iOS (Keychain Services), Android Keystore for Android, encrypted browser storage for web. Tokens never stored in AsyncStorage or localStorage.
+      </doc>
+      <doc path="docs/architecture.md" title="Client Architecture Document" section="ADR-002: Service Abstraction">
+        Service abstraction pattern for testability. Create ITokenManager and IActivityTracker interfaces with mock and real implementations. Environment flag switches between mock and production services.
+      </doc>
+      <doc path="docs/shared/PRD.md" title="Product Requirements Document" section="FR038: Security &amp; Auth">
+        Security requirements for OAuth2/JWT authentication, refresh token management (15min access, 90day refresh), automatic token refresh, session timeout, and HTTPS enforcement.
+      </doc>
+      <doc path="docs/stories/1-2-email-password-authentication.md" title="Story 1-2: Email/Password Auth" section="Dev Notes">
+        Initial token acquisition on login. AuthService.login() returns AuthResponse with User and AuthTokens. Tokens stored using SecureStorageService pattern established in this story (1-5).
+      </doc>
+    </docs>
+    <code>
+      <artifact path="shared/src/types/auth.types.ts" kind="interface" symbol="AuthTokens">
+        <reason>REUSE existing AuthTokens interface with accessToken, refreshToken, expiresAt fields. This is the authoritative token data model from Story 1-1.</reason>
+      </artifact>
+      <artifact path="shared/src/services/api/client.ts" kind="service" symbol="ky client">
+        <reason>EXTEND ky HTTP client from Story 1-2. Add response interceptor for 401 handling, request interceptor for auth token attachment, and configure retry logic with exponential backoff.</reason>
+      </artifact>
+      <artifact path="shared/src/types/api.types.ts" kind="interface" symbol="ApiResponse&lt;T&gt;, ApiError">
+        <reason>REUSE existing API response wrappers for consistent error handling in token refresh endpoint responses.</reason>
+      </artifact>
+      <artifact path="shared/src/services/storage/secureStorage.ts" kind="service" symbol="NEW">
+        <reason>CREATE SecureStorageService for cross-platform token persistence. Implements storeTokens(tokens), getTokens(), clearTokens() methods. Platform-specific: React Native Keychain (iOS/Android), encrypted sessionStorage with CryptoJS (web).</reason>
+      </artifact>
+      <artifact path="shared/src/services/api/interceptors.ts" kind="service" symbol="NEW">
+        <reason>CREATE API interceptors for token refresh automation. Response interceptor catches 401, triggers refresh, manages request queue. Request interceptor attaches access token to headers. Implements mutex to prevent concurrent refresh requests.</reason>
+      </artifact>
+      <artifact path="shared/src/services/auth/tokenManager.ts" kind="service" symbol="NEW">
+        <reason>CREATE TokenManager service for proactive token refresh. Methods: checkTokenExpiration(), refreshTokenProactively(), scheduleBackgroundRefresh(). Checks expiration every minute, refreshes 5min before expiry, handles app startup/resume scenarios.</reason>
+      </artifact>
+      <artifact path="shared/src/services/auth/activityTracker.ts" kind="service" symbol="NEW">
+        <reason>CREATE ActivityTracker service for session timeout. Tracks user interactions (touch, navigation, API calls), manages inactivity timer (30min default), triggers session expiration modal, resets timer on activity detection.</reason>
+      </artifact>
+      <artifact path="mobile/src/components/SessionTimeoutModal.tsx" kind="component" symbol="NEW">
+        <reason>CREATE mobile session timeout modal. Displays "Session expired due to inactivity" message, "Continue Session" button (triggers refresh), "Log In Again" button (redirects to login). Uses React Native Paper Modal.</reason>
+      </artifact>
+      <artifact path="web/src/components/SessionTimeoutModal.tsx" kind="component" symbol="NEW">
+        <reason>CREATE web session timeout modal. Same functionality as mobile but using Material UI Dialog component. Responsive design for desktop/mobile web.</reason>
+      </artifact>
+      <artifact path="mobile/src/store/auth/authSlice.ts" kind="redux" symbol="EXTEND">
+        <reason>EXTEND authSlice from Story 1-2. Add actions: refreshTokenStart, refreshTokenSuccess, refreshTokenFailure, sessionExpired. Add state: isRefreshing, sessionActive, lastActivity. Add async thunk: refreshTokenAsync().</reason>
+      </artifact>
+      <artifact path="web/src/store/auth/authSlice.ts" kind="redux" symbol="EXTEND">
+        <reason>EXTEND web authSlice with same token refresh actions and state as mobile. Share business logic through SecureStorageService and TokenManager from shared library.</reason>
+      </artifact>
+      <artifact path="shared/src/types/auth.types.ts" kind="interface" symbol="EXTEND">
+        <reason>EXTEND auth types with TokenMetadata interface (issuedAt, expiresAt, refreshExpiresAt timestamps). Add SessionState interface (isActive, lastActivity, timeoutDuration).</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package name="ky" version="^1.7.2" scope="shared">HTTP client with interceptor support for token refresh automation</package>
+        <package name="crypto-js" version="^4.2.0" scope="shared">Encryption utilities for web browser token storage</package>
+      </node>
+      <mobile>
+        <package name="react-native-keychain" version="^8.2.0" scope="mobile">Secure token storage for iOS Keychain and Android Keystore</package>
+        <package name="react-native-background-timer" version="^2.4.1" scope="mobile">Background task scheduling for proactive token refresh on mobile</package>
+      </mobile>
+      <testing>
+        <package name="jest" version="^29.7.0" scope="mobile,shared">Unit testing for token storage, interceptors, activity tracker</package>
+        <package name="@testing-library/react-native" version="^13.3.3" scope="mobile">Component testing for SessionTimeoutModal</package>
+        <package name="@testing-library/react" version="^16.1.0" scope="web">Component testing for web SessionTimeoutModal</package>
+        <package name="nock" version="^13.5.4" scope="shared">HTTP mocking for interceptor integration tests</package>
+      </testing>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <security>
+      <rule>Tokens MUST NEVER be logged, console.logged, or included in error messages - use sanitized placeholders like "***TOKEN***" for debugging</rule>
+      <rule>Access tokens stored in platform-specific secure storage ONLY - React Native Keychain (iOS/Android), encrypted sessionStorage (web). NEVER use AsyncStorage or localStorage</rule>
+      <rule>Refresh tokens stored separately from access tokens with independent expiration tracking</rule>
+      <rule>Token refresh rotation: Backend SHOULD issue new refresh token on each refresh to prevent token reuse attacks (implement client-side handling)</rule>
+      <rule>Expired tokens MUST be immediately cleared from storage to prevent unauthorized access attempts</rule>
+      <rule>Network failures during token refresh MUST NOT expose tokens in error payloads or retry logic</rule>
+      <rule>Session timeout enforced both client-side (inactivity tracking) and server-side (token expiration) for defense in depth</rule>
+      <rule>All token operations (store, retrieve, clear) MUST be atomic to prevent race conditions in concurrent scenarios</rule>
+    </security>
+    <architecture>
+      <rule>Follow service abstraction pattern from ADR-002 - create ITokenManager and IActivityTracker interfaces with mock implementations for testing</rule>
+      <rule>EXTEND existing ky HTTP client from Story 1-2 - add interceptors to client.ts, do NOT create separate HTTP client instance</rule>
+      <rule>EXTEND existing authSlice from Story 1-2 - add token refresh actions/reducers, maintain backward compatibility with login/logout flows</rule>
+      <rule>Request queue implementation - use Promise-based queue to hold concurrent requests during refresh, process all after successful refresh</rule>
+      <rule>Mutex pattern for refresh prevention - single in-flight refresh request at a time, subsequent 401s wait for completion</rule>
+      <rule>Background timer implementation - React Native: react-native-background-timer, Web: setInterval with visibility API for battery efficiency</rule>
+      <rule>Activity tracking - use event listeners for touch/navigation, debounce activity updates (1s) to prevent excessive timer resets</rule>
+      <rule>Platform-specific storage - abstract platform differences behind SecureStorageService interface, use factory pattern for platform detection</rule>
+    </architecture>
+    <performance>
+      <rule>Token refresh MUST complete &lt;500ms per NFR requirement - measure end-to-end from 401 detection to retry completion</rule>
+      <rule>Proactive refresh MUST be transparent - no UI indication, no blocking, happens in background 5min before expiration</rule>
+      <rule>Request queue processing - batch retry all queued requests simultaneously after successful refresh (parallel not sequential)</rule>
+      <rule>Storage operations optimized - batch token updates (access + refresh + metadata) in single storage write operation</rule>
+      <rule>Background timer efficiency - check token expiration every 60 seconds (not more frequently), pause timer when app backgrounded</rule>
+      <rule>Activity tracking lightweight - debounce activity detection to max 1 update per second, avoid excessive timer resets</rule>
+      <rule>Memory management - clear request queue immediately after processing, prevent memory leaks from pending promises</rule>
+    </performance>
+    <testing>
+      <rule>Unit test coverage ≥90% for SecureStorageService (all storage methods, expiration utilities, error handling)</rule>
+      <rule>Unit test coverage ≥90% for interceptors (401 detection, refresh logic, request queue, mutex, retry)</rule>
+      <rule>Unit test coverage ≥90% for TokenManager (expiration calculation, proactive refresh timing, background scheduling)</rule>
+      <rule>Unit test coverage ≥90% for ActivityTracker (activity detection, inactivity timeout, timer reset logic)</rule>
+      <rule>Integration test coverage - concurrent requests triggering single refresh, request queue processing, token rotation</rule>
+      <rule>E2E test coverage - complete token lifecycle (login → use → auto-refresh → session timeout → logout)</rule>
+      <rule>Security tests - verify no tokens in logs, verify storage encryption, verify token clearing on logout</rule>
+      <rule>Performance tests - measure token refresh timing (&lt;500ms), measure background refresh overhead</rule>
+      <rule>Edge case tests - network failures during refresh, expired refresh token, app startup with expired tokens, concurrent refresh attempts</rule>
+    </testing>
+  </constraints>
+
+  <interfaces>
+    <interface name="ISecureStorageService" kind="service-interface">
+      <signature>
+        storeTokens(tokens: AuthTokens): Promise&lt;void&gt;
+        getTokens(): Promise&lt;AuthTokens | null&gt;
+        clearTokens(): Promise&lt;void&gt;
+        isAccessTokenExpired(): Promise&lt;boolean&gt;
+        isRefreshTokenExpired(): Promise&lt;boolean&gt;
+      </signature>
+      <path>shared/src/services/storage/secureStorage.ts</path>
+      <description>Secure storage service interface for cross-platform token persistence. storeTokens saves access token, refresh token, and expiration metadata. getTokens retrieves stored token data. clearTokens removes all token data on logout. Expiration check methods return boolean based on current time vs stored expiration timestamps. Platform implementations: React Native Keychain (iOS/Android), encrypted sessionStorage with CryptoJS (web).</description>
+    </interface>
+    <interface name="POST /api/auth/refresh" kind="rest-endpoint">
+      <signature>POST /api/auth/refresh { refreshToken: string }</signature>
+      <path>Backend API (separate repository)</path>
+      <description>Backend token refresh endpoint. Request body contains refresh token string. Returns 200 OK with new AuthTokens (accessToken, refreshToken, expiresAt) on success. Backend SHOULD implement refresh token rotation (new refresh token issued). Returns 401 if refresh token expired/invalid, 500 for server errors. Client clears tokens and redirects to login on 401.</description>
+    </interface>
+    <interface name="TokenRefreshInterceptor" kind="ky-interceptor">
+      <signature>
+        Response Interceptor: (response) =&gt; if (status === 401) triggerRefreshAndRetry(request)
+        Request Interceptor: (request) =&gt; request.headers.set('Authorization', 'Bearer ' + accessToken)
+      </signature>
+      <path>shared/src/services/api/interceptors.ts</path>
+      <description>Ky HTTP client interceptors for automatic token management. Response interceptor catches 401 Unauthorized, triggers token refresh, queues original request for retry. Request interceptor attaches current access token to all API requests. Implements mutex to prevent concurrent refresh requests. Request queue holds pending calls during refresh, processes all after completion.</description>
+    </interface>
+    <interface name="ITokenManager" kind="service-interface">
+      <signature>
+        checkTokenExpiration(): Promise&lt;number&gt;
+        refreshTokenProactively(): Promise&lt;void&gt;
+        scheduleBackgroundRefresh(): void
+        handleAppStartup(): Promise&lt;void&gt;
+        handleAppResume(): Promise&lt;void&gt;
+      </signature>
+      <path>shared/src/services/auth/tokenManager.ts</path>
+      <description>Token manager service for proactive refresh. checkTokenExpiration returns milliseconds until access token expires. refreshTokenProactively calls refresh endpoint if token within 5min of expiration. scheduleBackgroundRefresh sets up 60s interval to check expiration. handleAppStartup checks token validity on app launch, refreshes if needed. handleAppResume checks tokens when app returns from background (mobile).</description>
+    </interface>
+    <interface name="IActivityTracker" kind="service-interface">
+      <signature>
+        trackActivity(): void
+        resetInactivityTimer(): void
+        startTracking(): void
+        stopTracking(): void
+        onSessionExpired(callback: () =&gt; void): void
+      </signature>
+      <path>shared/src/services/auth/activityTracker.ts</path>
+      <description>Activity tracker service for session timeout management. trackActivity records user interaction (touch, navigation, API call). resetInactivityTimer restarts 30min countdown. startTracking begins monitoring user activity. stopTracking pauses monitoring (on logout). onSessionExpired registers callback triggered when inactivity timeout reached. Debounces activity updates to 1s intervals.</description>
+    </interface>
+    <interface name="SessionTimeoutModal" kind="react-component">
+      <signature>&lt;SessionTimeoutModal visible={boolean} onContinue={() =&gt; void} onLogout={() =&gt; void} /&gt;</signature>
+      <path>mobile/src/components/SessionTimeoutModal.tsx, web/src/components/SessionTimeoutModal.tsx</path>
+      <description>Session timeout modal component (mobile and web versions). Props: visible (boolean shows/hides modal), onContinue (callback for "Continue Session" button triggering token refresh), onLogout (callback for "Log In Again" button redirecting to login). Displays message: "Session expired due to inactivity. Please log in again." Mobile uses React Native Paper Modal, web uses Material UI Dialog.</description>
+    </interface>
+    <interface name="authSlice token refresh actions" kind="redux-actions">
+      <signature>
+        refreshTokenStart(), refreshTokenSuccess(tokens: AuthTokens), refreshTokenFailure(error: string)
+        sessionExpired(), sessionResumed()
+        Async Thunk: refreshTokenAsync() =&gt; Promise&lt;AuthTokens&gt;
+      </signature>
+      <path>mobile/src/store/auth/authSlice.ts, web/src/store/auth/authSlice.ts</path>
+      <description>Redux Toolkit auth slice actions for token refresh flows. refreshTokenStart sets isRefreshing=true. refreshTokenSuccess updates tokens in state and storage. refreshTokenFailure clears tokens and triggers logout. sessionExpired shows timeout modal. sessionResumed hides modal and resets activity timer. Async thunk refreshTokenAsync calls TokenManager, updates storage, handles errors.</description>
+    </interface>
+    <interface name="Token expiration utilities" kind="utility-functions">
+      <signature>
+        isAccessTokenExpired(expiresAt: number): boolean
+        isRefreshTokenExpired(refreshExpiresAt: number): boolean
+        getTimeUntilExpiration(expiresAt: number): number
+        shouldRefreshProactively(expiresAt: number, threshold: number = 300000): boolean
+      </signature>
+      <path>shared/src/services/storage/secureStorage.ts or shared/src/utils/tokenUtils.ts</path>
+      <description>Token expiration utility functions. isAccessTokenExpired checks if current time &gt; expiresAt. isRefreshTokenExpired checks refresh token expiration. getTimeUntilExpiration returns milliseconds until expiration. shouldRefreshProactively returns true if token expires within threshold (default 5min = 300000ms). All functions use Date.now() for current timestamp comparison.</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Unit testing with Jest for service layer (SecureStorageService, TokenManager, ActivityTracker, interceptors). Component testing with React Testing Library for SessionTimeoutModal. Integration testing with nock for HTTP interceptor scenarios. E2E testing with Detox (mobile) and Playwright (web) for complete token lifecycle flows. Test pyramid: 70% unit, 20% integration, 10% E2E. Coverage targets: ≥90% services/utils, ≥80% components. Security testing for token encryption and leak prevention. Performance testing for token refresh timing (&lt;500ms). Concurrency testing for mutex and request queue behavior.
+    </standards>
+    <locations>
+      <pattern>shared/src/__tests__/secureStorage.test.ts</pattern>
+      <pattern>shared/src/__tests__/interceptors.test.ts</pattern>
+      <pattern>shared/src/__tests__/tokenManager.test.ts</pattern>
+      <pattern>shared/src/__tests__/activityTracker.test.ts</pattern>
+      <pattern>mobile/src/__tests__/components/SessionTimeoutModal.test.tsx</pattern>
+      <pattern>web/src/__tests__/components/SessionTimeoutModal.test.tsx</pattern>
+      <pattern>mobile/src/__tests__/store/authSlice.tokenRefresh.test.ts</pattern>
+      <pattern>mobile/e2e/tokenLifecycle.e2e.ts</pattern>
+      <pattern>web/e2e/tokenLifecycle.spec.ts</pattern>
+    </locations>
+    <ideas>
+      <idea ac="AC1">Unit test: Interceptor catches 401, calls /api/auth/refresh, updates storage, retries original request. Integration test: Mock API returns 401, verify single refresh triggered, verify original request retried with new token. Integration test: Refresh fails with 401, verify tokens cleared, verify logout action dispatched. E2E test: Login → make API call → simulate token expiration → verify auto-refresh → verify request succeeds.</idea>
+      <idea ac="AC2">Unit test: storeTokens saves access, refresh, expiresAt to secure storage. Unit test: getTokens retrieves all token data. Unit test: clearTokens removes all data. Unit test: isAccessTokenExpired returns true when current time &gt; expiresAt. Integration test: Store tokens on mobile (Keychain), verify persistence across app restarts. Integration test: Store tokens on web (encrypted sessionStorage), verify encryption applied. E2E test: Login stores tokens → restart app → verify tokens loaded → verify user still authenticated.</idea>
+      <idea ac="AC3">Unit test: Activity tracker records touch event, resets inactivity timer. Unit test: After 30min idle, session expiration callback triggered. Component test: SessionTimeoutModal displays message, "Continue Session" calls onContinue, "Log In Again" calls onLogout. Integration test: Inactivity timeout → modal shows → "Continue Session" → refresh succeeds → modal hides. E2E test: Login → idle for 30min → modal appears → click "Continue Session" → verify session resumed.</idea>
+      <idea ac="AC4">Unit test: Mutex prevents concurrent refresh requests, subsequent 401s wait for in-flight refresh. Unit test: Request queue holds pending requests during refresh, processes all after completion. Integration test: Simulate 5 concurrent API calls all returning 401, verify single refresh triggered, verify all 5 requests retry with new token. Performance test: Measure request queue processing time, verify &lt;100ms overhead. E2E test: Trigger multiple API calls simultaneously → verify all succeed after single refresh.</idea>
+      <idea ac="ALL">Performance test: Measure token refresh end-to-end timing from 401 detection to retry completion (target &lt;500ms). Security test: Verify no tokens in console.log, error messages, or network request logs. Security test: Attempt to read tokens from storage on different app, verify inaccessible (Keychain/Keystore isolation). Security test: Logout clears all tokens, verify getTokens returns null after logout. Proactive refresh test: Set token to expire in 4min, verify background refresh triggered within 1min. App lifecycle test: Background app for 10min, resume, verify token refreshed if expired.</idea>
+    </ideas>
+  </tests>
+</story-context>

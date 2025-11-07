@@ -9,7 +9,13 @@ export * from './types/api.types';
 
 // Services
 export * from './services/api/auth.service';
+export * from './services/api/authServiceImpl';
 export * from './services/mock/mockAuth.service';
+export * from './services/http/client';
+export * from './services/storage/secureStorage';
+
+// Utilities
+export * from './utils/validation';
 
 // Constants
 export const API_ENDPOINTS = {

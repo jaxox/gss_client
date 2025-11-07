@@ -1,6 +1,6 @@
 # Story 1.6: Security Implementation
 
-Status: backlog
+Status: ready-for-dev
 
 ## Story
 
@@ -13,7 +13,7 @@ so that **I can trust the app with my information and feel confident about my pr
 **AC1: Data Protection and Privacy**
 
 1. All API communications use HTTPS with certificate pinning in production
-2. Sensitive data (tokens, passwords) never logged or exposed in error messages  
+2. Sensitive data (tokens, passwords) never logged or exposed in error messages
 3. Input sanitization prevents XSS and injection attacks across all forms
 4. Privacy settings allow user control over data visibility (reliability score private by default)
 5. Biometric authentication option available for returning users
@@ -37,7 +37,13 @@ so that **I can trust the app with my information and feel confident about my pr
 ## Dev Agent Record
 
 ### Context Reference
-### Agent Model Used  
+
+**Story Context:** `docs/stories/1-6-security-implementation.context.xml`
+
+### Agent Model Used
+
 ### Debug Log References
+
 ### Completion Notes List
+
 ### File List

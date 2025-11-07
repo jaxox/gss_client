@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<story-context id="1-6-security-implementation" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>1-6</storyId>
+    <title>Security Implementation</title>
+    <status>ready-for-dev</status>
+    <generatedAt>November 6, 2025</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/1-6-security-implementation.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>mobile and web app user</asA>
+    <iWant>my personal data and authentication to be protected by comprehensive security measures</iWant>
+    <soThat>I can trust the app with my information and feel confident about my privacy</soThat>
+    <tasks>
+      <task id="1" ac="AC1">
+        <title>Data Protection Implementation</title>
+        <subtasks>
+          <item>Implement HTTPS enforcement with certificate pinning for production</item>
+          <item>Configure SSL certificate validation in ky HTTP client</item>
+          <item>Add certificate pinning configuration for mobile (iOS/Android)</item>
+          <item>Create secure logging utility that sanitizes sensitive data (tokens, passwords, PII)</item>
+          <item>Implement input sanitization middleware for all user inputs (XSS prevention)</item>
+          <item>Add HTML entity encoding for user-generated content display</item>
+          <item>Create privacy settings UI component (mobile and web)</item>
+          <item>Implement privacy settings state management (Redux)</item>
+          <item>Add biometric authentication integration (Face ID, Touch ID, fingerprint)</item>
+          <item>Create biometric enrollment flow for returning users</item>
+          <item>Implement data encryption utilities for locally cached sensitive information</item>
+          <item>Add encryption for cached profile data at rest</item>
+          <item>Write unit tests for input sanitization and encryption utilities</item>
+          <item>Write integration tests for HTTPS enforcement and certificate validation</item>
+          <item>Write E2E tests for biometric authentication flow</item>
+          <item>Perform security testing and penetration tests</item>
+        </subtasks>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <title>Data Protection and Privacy</title>
+      <requirements>
+        <item>All API communications use HTTPS with certificate pinning in production</item>
+        <item>Sensitive data (tokens, passwords) never logged or exposed in error messages</item>
+        <item>Input sanitization prevents XSS and injection attacks across all forms</item>
+        <item>Privacy settings allow user control over data visibility (reliability score private by default)</item>
+        <item>Biometric authentication option available for returning users</item>
+        <item>Data encryption for locally cached sensitive information</item>
+      </requirements>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc path="docs/tech-spec-epic-1.md" title="Epic 1 Technical Specification" section="AC7: Security Implementation">
+        Comprehensive security requirements: HTTPS with certificate validation, sensitive data protection (tokens never logged), biometric authentication for returning users, session timeout after inactivity, input sanitization for XSS prevention, privacy settings for user data visibility control. Defines security NFRs for token storage (Keychain/Keystore), HTTPS enforcement, certificate pinning.
+      </doc>
+      <doc path="docs/tech-spec-epic-1.md" title="Epic 1 Technical Specification" section="Security NFRs">
+        Token storage in React Native Keychain (iOS) / Android Keystore (Android) / Secure browser storage (Web). HTTPS enforcement for all API communications, certificate pinning for production. Token expiration (access 15min, refresh 90 days). Input validation for all forms (email, password complexity, file size/type). SSO security with PKCE. Biometric auth (Face ID, Touch ID, fingerprint). Session management with automatic logout after 7 days inactivity. Data privacy: reliability score private by default per FR037.
+      </doc>
+      <doc path="docs/tech-spec-epic-1.md" title="Epic 1 Technical Specification" section="Observability - Security Events">
+        Log suspicious activities (multiple failed logins, token anomalies). Structured error logging for authentication failures, network issues, validation errors. Crash reporting with user consent, privacy-safe stack traces. All logging must exclude sensitive data (tokens, passwords, PII).
+      </doc>
+      <doc path="docs/architecture.md" title="Client Architecture Document" section="Security">
+        Security architecture for authentication, data protection, and privacy. HTTPS enforcement, certificate pinning, secure token storage, biometric authentication, input sanitization, privacy controls. Defense in depth strategy with client-side and server-side validation.
+      </doc>
+      <doc path="docs/shared/PRD.md" title="Product Requirements Document" section="FR037: Privacy Defaults">
+        Reliability score private by default, badges public, level visibility toggle. User controls over data visibility for profile information.
+      </doc>
+      <doc path="docs/shared/PRD.md" title="Product Requirements Document" section="FR038: Security &amp; Auth">
+        OAuth2/JWT authentication, refresh token management, password reset, HTTPS enforcement, secure token storage, session timeout, input validation.
+      </doc>
+      <doc path="docs/stories/1-5-jwt-token-management.md" title="Story 1-5: JWT Token Management" section="Security Considerations">
+        Tokens never logged or exposed in error messages. Refresh tokens stored separately. Token storage encrypted using platform-specific secure storage. Expired tokens immediately cleared. Network failures during refresh don't expose tokens.
+      </doc>
+    </docs>
+    <code>
+      <artifact path="shared/src/services/api/client.ts" kind="service" symbol="EXTEND">
+        <reason>EXTEND ky HTTP client from Story 1-2 and 1-5. Add HTTPS enforcement configuration, SSL certificate validation, certificate pinning for production environment. Configure secure headers (Strict-Transport-Security, X-Content-Type-Options, X-Frame-Options).</reason>
+      </artifact>
+      <artifact path="shared/src/utils/logger.ts" kind="utility" symbol="NEW">
+        <reason>CREATE secure logging utility. Implements sanitizeLog(data) to redact sensitive information (tokens, passwords, email, PII) before logging. Provides log levels (debug, info, warn, error). Integrates with error tracking service (Sentry/Crashlytics). Prevents accidental exposure of sensitive data in logs.</reason>
+      </artifact>
+      <artifact path="shared/src/utils/inputSanitization.ts" kind="utility" symbol="NEW">
+        <reason>CREATE input sanitization utilities. Methods: sanitizeHtml(input), sanitizeEmail(input), sanitizeText(input), encodeHtmlEntities(text). Prevents XSS attacks by escaping HTML special characters. Validates and sanitizes user inputs across all forms (registration, login, profile edit, event creation).</reason>
+      </artifact>
+      <artifact path="shared/src/utils/encryption.ts" kind="utility" symbol="NEW">
+        <reason>CREATE encryption utilities for cached data at rest. Methods: encryptData(data, key), decryptData(encryptedData, key), generateEncryptionKey(). Uses AES-256 encryption for sensitive cached data (profile information, event details). Platform-specific key storage (Keychain/Keystore/SecureStorage).</reason>
+      </artifact>
+      <artifact path="shared/src/services/biometric/biometricAuth.ts" kind="service" symbol="NEW">
+        <reason>CREATE biometric authentication service. Interface IBiometricAuthService with methods: isBiometricAvailable(), enrollBiometric(), authenticateWithBiometric(), disableBiometric(). Platform-specific implementations: iOS Face ID/Touch ID, Android fingerprint/face unlock, web WebAuthn. Fallback to password authentication if biometric fails.</reason>
+      </artifact>
+      <artifact path="mobile/src/components/PrivacySettings.tsx" kind="component" symbol="NEW">
+        <reason>CREATE mobile privacy settings component. UI for controlling data visibility: reliability score visibility toggle (private by default), badges visibility toggle (public by default), level visibility toggle (configurable). Uses React Native Paper Switch components. Integrates with privacy settings Redux state.</reason>
+      </artifact>
+      <artifact path="web/src/components/PrivacySettings.tsx" kind="component" symbol="NEW">
+        <reason>CREATE web privacy settings component. Same functionality as mobile but using Material UI Switch components. Responsive design for desktop/mobile web. Real-time privacy setting updates with optimistic UI.</reason>
+      </artifact>
+      <artifact path="shared/src/types/user.types.ts" kind="interface" symbol="EXTEND">
+        <reason>EXTEND User interface with privacySettings field. PrivacySettings interface: { reliabilityScoreVisible: boolean, badgesVisible: boolean, levelVisible: boolean }. Defaults: reliabilityScore=false (private), badges=true (public), level=true (public).</reason>
+      </artifact>
+      <artifact path="mobile/src/store/user/userSlice.ts" kind="redux" symbol="EXTEND">
+        <reason>EXTEND userSlice with privacy settings actions. Add updatePrivacySettings action, privacySettings state, async thunk for saving privacy preferences to backend. Optimistic updates for immediate UI feedback.</reason>
+      </artifact>
+      <artifact path="web/src/store/user/userSlice.ts" kind="redux" symbol="EXTEND">
+        <reason>EXTEND web userSlice with same privacy settings actions as mobile. Share business logic through UserService from shared library.</reason>
+      </artifact>
+      <artifact path="shared/src/services/api/user.service.ts" kind="service" symbol="EXTEND">
+        <reason>EXTEND IUserService interface from Story 1-4. Add updatePrivacySettings(userId, settings) method. API endpoint: PUT /api/users/privacy. Returns updated User object with new privacy settings.</reason>
+      </artifact>
+      <artifact path="mobile/src/components/BiometricSetup.tsx" kind="component" symbol="NEW">
+        <reason>CREATE mobile biometric enrollment component. Displays biometric capability detection (Face ID/Touch ID/fingerprint available), enrollment prompt, "Enable Biometric Login" button, secure storage of biometric preference. Shown after successful login for returning users.</reason>
+      </artifact>
+      <artifact path="web/src/components/BiometricSetup.tsx" kind="component" symbol="NEW">
+        <reason>CREATE web biometric enrollment component (WebAuthn). Detects browser support for WebAuthn, enrollment flow for platform authenticators (Windows Hello, Touch ID on Mac). Fallback message for unsupported browsers.</reason>
+      </artifact>
+      <artifact path="shared/src/types/auth.types.ts" kind="interface" symbol="EXTEND">
+        <reason>EXTEND auth types with BiometricSettings interface (enabled: boolean, type: 'faceId' | 'touchId' | 'fingerprint' | 'webauthn', enrolledAt: Date). Add biometric authentication methods to IAuthService.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <mobile>
+        <package name="react-native-biometrics" version="^3.0.1" scope="mobile">Biometric authentication for iOS (Face ID, Touch ID) and Android (fingerprint, face unlock)</package>
+        <package name="react-native-ssl-pinning" version="^1.5.1" scope="mobile">SSL certificate pinning for production HTTPS security</package>
+      </mobile>
+      <web>
+        <package name="@simplewebauthn/browser" version="^9.0.0" scope="web">WebAuthn client library for biometric authentication on web</package>
+      </web>
+      <node>
+        <package name="dompurify" version="^3.0.6" scope="shared,web">HTML sanitization library for XSS prevention in user-generated content</package>
+        <package name="validator" version="^13.11.0" scope="shared">Input validation library for email, URL, sanitization utilities</package>
+        <package name="crypto-js" version="^4.2.0" scope="shared">Encryption utilities for cached data at rest (AES-256)</package>
+      </node>
+      <testing>
+        <package name="jest" version="^29.7.0" scope="mobile,shared">Unit testing for sanitization, encryption, biometric utilities</package>
+        <package name="@testing-library/react-native" version="^13.3.3" scope="mobile">Component testing for PrivacySettings, BiometricSetup</package>
+        <package name="@testing-library/react" version="^16.1.0" scope="web">Component testing for web privacy and biometric components</package>
+      </testing>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <security>
+      <rule>ALL API communications MUST use HTTPS - reject HTTP connections in production, enforce via ky client configuration</rule>
+      <rule>Certificate pinning MUST be enabled in production builds - pin backend SSL certificates to prevent MITM attacks (mobile: react-native-ssl-pinning, web: fetch with certificate validation)</rule>
+      <rule>Sensitive data (tokens, passwords, email, PII) MUST NEVER appear in logs, error messages, console.log, analytics, or crash reports - use logger.sanitizeLog() for all logging</rule>
+      <rule>Input sanitization MUST be applied to ALL user inputs before processing or display - use inputSanitization.sanitizeHtml() for XSS prevention, validator library for email/URL validation</rule>
+      <rule>Privacy settings MUST default to most restrictive: reliability score PRIVATE by default per FR037, user must explicitly opt-in to visibility</rule>
+      <rule>Biometric authentication MUST have password fallback - never lock user out if biometric fails, always allow password login option</rule>
+      <rule>Cached sensitive data MUST be encrypted at rest using AES-256 - use encryption.encryptData() for profile data, event details, encryption keys stored in Keychain/Keystore</rule>
+      <rule>Biometric enrollment MUST be optional and reversible - user can enable/disable biometric auth at any time, clear biometric credentials on disable</rule>
+      <rule>Certificate pinning MUST NOT apply to development/staging environments - use environment variable to control pinning (production only)</rule>
+      <rule>Security logging (failed logins, token anomalies) MUST exclude sensitive data - log event type, timestamp, user ID only (no tokens, passwords)</rule>
+    </security>
+    <architecture>
+      <rule>Follow service abstraction pattern from ADR-002 - create IBiometricAuthService interface with mock and real implementations for testing</rule>
+      <rule>EXTEND existing ky HTTP client - add HTTPS enforcement, certificate pinning, secure headers to client.ts from Story 1-2</rule>
+      <rule>EXTEND existing User interface - add privacySettings field to user.types.ts from Story 1-1</rule>
+      <rule>Privacy settings state management - extend userSlice with privacy actions, use optimistic updates for immediate UI feedback</rule>
+      <rule>Input sanitization middleware - apply sanitization at service layer before API calls AND at component layer before rendering user content</rule>
+      <rule>Encryption key management - generate encryption keys on first app install, store in Keychain/Keystore, never hardcode keys in source</rule>
+      <rule>Biometric platform detection - use factory pattern to select platform-specific biometric implementation (iOS/Android/Web)</rule>
+      <rule>Secure logging utility - centralize all logging through logger.ts, never use console.log directly in production code</rule>
+    </architecture>
+    <performance>
+      <rule>Certificate pinning MUST NOT significantly impact API request latency - target &lt;50ms overhead for certificate validation</rule>
+      <rule>Input sanitization MUST be performant for real-time validation - sanitize on input change with debouncing (300ms) to prevent UI lag</rule>
+      <rule>Biometric authentication MUST complete &lt;3 seconds - timeout and fallback to password if biometric takes longer</rule>
+      <rule>Encryption operations MUST be asynchronous - use Web Workers (web) or background threads (mobile) for large data encryption to prevent UI blocking</rule>
+      <rule>Privacy settings updates MUST use optimistic UI - update local state immediately, sync to backend asynchronously</rule>
+      <rule>Secure logging MUST NOT impact app performance - log asynchronously, batch log uploads, limit log size per session</rule>
+    </performance>
+    <testing>
+      <rule>Unit test coverage ≥90% for input sanitization (XSS prevention, HTML encoding, validation)</rule>
+      <rule>Unit test coverage ≥90% for encryption utilities (encrypt/decrypt, key generation, error handling)</rule>
+      <rule>Unit test coverage ≥90% for secure logging (sensitive data redaction, log levels)</rule>
+      <rule>Integration test coverage - HTTPS enforcement, certificate validation, biometric authentication flows</rule>
+      <rule>E2E test coverage - complete privacy settings flow, biometric enrollment and login, XSS attack prevention</rule>
+      <rule>Security tests - penetration testing for XSS vulnerabilities, MITM attack prevention (certificate pinning), sensitive data leakage in logs</rule>
+      <rule>Accessibility tests - privacy settings UI keyboard navigable, screen reader compatible</rule>
+      <rule>Cross-platform tests - biometric authentication on iOS/Android/Web, privacy settings consistency</rule>
+    </testing>
+  </constraints>
+
+  <interfaces>
+    <interface name="IBiometricAuthService" kind="service-interface">
+      <signature>
+        isBiometricAvailable(): Promise&lt;{ available: boolean, type: BiometricType }&gt;
+        enrollBiometric(): Promise&lt;void&gt;
+        authenticateWithBiometric(): Promise&lt;{ success: boolean, token?: string }&gt;
+        disableBiometric(): Promise&lt;void&gt;
+        getBiometricSettings(): Promise&lt;BiometricSettings&gt;
+      </signature>
+      <path>shared/src/services/biometric/biometricAuth.ts</path>
+      <description>Biometric authentication service interface. isBiometricAvailable checks device capability and returns biometric type (faceId, touchId, fingerprint, webauthn). enrollBiometric initiates enrollment flow, stores biometric credentials securely. authenticateWithBiometric prompts user for biometric auth, returns success + auth token on success. disableBiometric clears stored biometric credentials. getBiometricSettings returns current biometric configuration. Platform implementations: react-native-biometrics (iOS/Android), @simplewebauthn/browser (web).</description>
+    </interface>
+    <interface name="Logger utility" kind="logging-utility">
+      <signature>
+        sanitizeLog(data: any): any
+        debug(message: string, context?: any): void
+        info(message: string, context?: any): void
+        warn(message: string, context?: any): void
+        error(message: string, error?: Error, context?: any): void
+      </signature>
+      <path>shared/src/utils/logger.ts</path>
+      <description>Secure logging utility. sanitizeLog redacts sensitive data (tokens matched by pattern /token|password|secret|key/i, email addresses, PII). Log level methods (debug, info, warn, error) automatically sanitize all input before logging. Integrates with error tracking (Sentry) and analytics (privacy-safe events only). Prevents accidental exposure of sensitive data in logs, console, or crash reports.</description>
+    </interface>
+    <interface name="Input sanitization utilities" kind="sanitization-utility">
+      <signature>
+        sanitizeHtml(input: string): string
+        sanitizeEmail(input: string): string
+        sanitizeText(input: string): string
+        encodeHtmlEntities(text: string): string
+        validateInput(input: string, rules: ValidationRules): { valid: boolean, errors: string[] }
+      </signature>
+      <path>shared/src/utils/inputSanitization.ts</path>
+      <description>Input sanitization and validation utilities. sanitizeHtml uses DOMPurify to remove malicious HTML/script tags for XSS prevention. sanitizeEmail validates and normalizes email addresses. sanitizeText escapes special characters for safe display. encodeHtmlEntities converts &lt; &gt; &amp; " ' to HTML entities. validateInput applies validation rules (email format, password complexity, length constraints). All user inputs pass through sanitization before processing or rendering.</description>
+    </interface>
+    <interface name="Encryption utilities" kind="encryption-utility">
+      <signature>
+        encryptData(data: string, key: string): Promise&lt;string&gt;
+        decryptData(encryptedData: string, key: string): Promise&lt;string&gt;
+        generateEncryptionKey(): Promise&lt;string&gt;
+        storeEncryptionKey(key: string): Promise&lt;void&gt;
+        getEncryptionKey(): Promise&lt;string | null&gt;
+      </signature>
+      <path>shared/src/utils/encryption.ts</path>
+      <description>Data encryption utilities for cached data at rest. encryptData uses AES-256-GCM to encrypt sensitive data (profile, events). decryptData reverses encryption. generateEncryptionKey creates cryptographically secure random key. storeEncryptionKey saves key to Keychain/Keystore. getEncryptionKey retrieves stored key. Encryption keys never stored in app code or AsyncStorage, always in secure platform storage.</description>
+    </interface>
+    <interface name="PrivacySettings component" kind="react-component">
+      <signature>&lt;PrivacySettings settings={PrivacySettings} onUpdate={(newSettings) =&gt; void} /&gt;</signature>
+      <path>mobile/src/components/PrivacySettings.tsx, web/src/components/PrivacySettings.tsx</path>
+      <description>Privacy settings UI component (mobile and web versions). Props: settings (current PrivacySettings object), onUpdate (callback for settings changes). Displays toggles: Reliability Score Visibility (private by default), Badges Visibility (public by default), Level Visibility (configurable). Mobile uses React Native Paper Switch, web uses Material UI Switch. Real-time updates with optimistic UI, syncs to backend via UserService.updatePrivacySettings().</description>
+    </interface>
+    <interface name="BiometricSetup component" kind="react-component">
+      <signature>&lt;BiometricSetup onEnroll={() =&gt; void} onSkip={() =&gt; void} /&gt;</signature>
+      <path>mobile/src/components/BiometricSetup.tsx, web/src/components/BiometricSetup.tsx</path>
+      <description>Biometric enrollment component (mobile and web). Props: onEnroll (callback when user enables biometric), onSkip (callback when user skips). Detects biometric availability, displays capability message (Face ID/Touch ID/fingerprint detected), "Enable Biometric Login" button, "Skip" button, privacy notice about biometric storage. Shown after first successful login for returning users. Mobile uses react-native-biometrics, web uses @simplewebauthn/browser.</description>
+    </interface>
+    <interface name="PUT /api/users/privacy" kind="rest-endpoint">
+      <signature>PUT /api/users/privacy { userId: string, privacySettings: PrivacySettings }</signature>
+      <path>Backend API (separate repository)</path>
+      <description>Update user privacy settings endpoint. Request body: userId (current user ID), privacySettings object (reliabilityScoreVisible, badgesVisible, levelVisible booleans). Returns 200 OK with updated User object including new privacy settings. Returns 401 if unauthorized, 400 if invalid settings format. Privacy settings applied immediately to user profile visibility.</description>
+    </interface>
+    <interface name="HTTPS configuration" kind="http-client-config">
+      <signature>
+        ky.create({ https: { rejectUnauthorized: true, certificatePins: [...] }, headers: { 'Strict-Transport-Security': 'max-age=31536000' } })
+      </signature>
+      <path>shared/src/services/api/client.ts</path>
+      <description>HTTPS enforcement and certificate pinning configuration for ky HTTP client. rejectUnauthorized: true enforces SSL certificate validation. certificatePins array contains pinned certificates for production backend (SHA-256 hashes). Secure headers: Strict-Transport-Security (force HTTPS), X-Content-Type-Options: nosniff, X-Frame-Options: DENY. Environment-specific: pinning enabled only in production, disabled in dev/staging for easier testing.</description>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+      Unit testing with Jest for utilities (sanitization, encryption, logging). Component testing with React Testing Library for PrivacySettings, BiometricSetup. Integration testing for HTTPS enforcement, certificate validation, biometric flows. E2E testing with Detox (mobile) and Playwright (web) for complete security flows. Security testing for XSS prevention, MITM attack prevention, sensitive data leakage. Penetration testing for input validation, encryption strength. Test pyramid: 70% unit, 20% integration, 10% E2E. Coverage targets: ≥90% utilities, ≥80% components. Accessibility testing for privacy settings UI (keyboard navigation, screen readers).
+    </standards>
+    <locations>
+      <pattern>shared/src/__tests__/inputSanitization.test.ts</pattern>
+      <pattern>shared/src/__tests__/encryption.test.ts</pattern>
+      <pattern>shared/src/__tests__/logger.test.ts</pattern>
+      <pattern>shared/src/__tests__/biometricAuth.test.ts</pattern>
+      <pattern>mobile/src/__tests__/components/PrivacySettings.test.tsx</pattern>
+      <pattern>web/src/__tests__/components/PrivacySettings.test.tsx</pattern>
+      <pattern>mobile/src/__tests__/components/BiometricSetup.test.tsx</pattern>
+      <pattern>mobile/e2e/security.e2e.ts</pattern>
+      <pattern>web/e2e/security.spec.ts</pattern>
+    </locations>
+    <ideas>
+      <idea ac="AC1">Unit test: sanitizeHtml removes &lt;script&gt; tags, prevents XSS injection. Unit test: sanitizeEmail validates format, rejects invalid emails. Integration test: Submit form with XSS payload, verify sanitized before API call. E2E test: Enter malicious script in profile name, verify displayed safely without execution.</idea>
+      <idea ac="AC1">Unit test: encryptData encrypts string with AES-256, decryptData reverses. Unit test: generateEncryptionKey creates unique keys. Integration test: Encrypt profile data, cache locally, decrypt on retrieval, verify data integrity. Security test: Attempt to read cached data without decryption key, verify inaccessible.</idea>
+      <idea ac="AC1">Unit test: HTTPS client rejects HTTP URLs in production. Integration test: Mock HTTP request, verify rejected with error. Integration test: Certificate pinning fails on invalid cert, verify connection rejected. E2E test: All API calls use HTTPS protocol, verify in network logs.</idea>
+      <idea ac="AC1">Unit test: logger.sanitizeLog redacts tokens matching /token|password/i pattern. Unit test: logger.error excludes email addresses from context. Integration test: Log authentication error with token, verify token redacted in output. Security test: Check production logs, verify no sensitive data present.</idea>
+      <idea ac="AC1">Component test: PrivacySettings defaults to reliabilityScoreVisible=false. Component test: Toggle reliability score visibility, onUpdate callback fired with new settings. Integration test: Update privacy settings, verify API call to PUT /api/users/privacy. E2E test: Change privacy settings, verify persisted across app restart.</idea>
+      <idea ac="AC1">Component test: BiometricSetup detects Face ID availability, displays appropriate message. Component test: Click "Enable Biometric Login", enrollBiometric service called. Integration test: Biometric enrollment success, verify credentials stored in Keychain. E2E test: Enable biometric → logout → login with biometric → verify success.</idea>
+      <idea ac="ALL">Penetration test: Attempt XSS attacks on all input fields (registration, login, profile edit, event creation), verify all sanitized. Security test: Attempt MITM attack with invalid certificate, verify connection rejected by certificate pinning. Accessibility test: Navigate privacy settings with keyboard only, verify all controls accessible. Performance test: Measure encryption overhead for 1MB cached data, verify &lt;100ms.</idea>
+    </ideas>
+  </tests>
+</story-context>

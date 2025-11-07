@@ -45,12 +45,12 @@ development_status:
   # Epic 1: Platform Foundation & Core Identity (Tech Spec Available)
   epic-1: contexted
   1-1-repository-structure-setup: done
-  1-2-email-password-authentication: backlog
+  1-2-email-password-authentication: in-progress
   1-3-google-sso-registration-login: ready-for-dev
-  1-4-profile-crud-avatar-upload: backlog
-  1-5-jwt-token-management: backlog
-  1-6-security-implementation: backlog
-  1-7-cross-platform-consistency: backlog
+  1-4-profile-crud-avatar-upload: ready-for-dev
+  1-5-jwt-token-management: ready-for-dev
+  1-6-security-implementation: ready-for-dev
+  1-7-cross-platform-consistency: ready-for-dev
   epic-1-retrospective: optional
 
   # Epic 2: Event Lifecycle & Attendance Commitment (Backend Complete, Frontend Needed)
@@ -62,42 +62,83 @@ development_status:
   2-5-event-reminders-cancellation-flow: backlog
   epic-2-retrospective: optional
 
-  # Epic 3: Gamification Core (XP, Levels, Badges, Streaks)
+  # Epic 3: Gamification Core (XP, Levels, Badges, Streaks) - Est. 14-18 stories
   epic-3: backlog
   3-1-xp-computation-service: backlog
+  3-2-level-thresholds-progression-ui: backlog
+  3-3-badge-definitions-unlock-engine: backlog
+  3-4-streak-tracking-logic: backlog
+  3-5-streak-at-risk-notifications: backlog
+  3-6-weekly-digest-email: backlog
+  # Additional stories TBD (8-12 more stories estimated)
   epic-3-retrospective: optional
 
-  # Epic 4: Social Interaction & Quests
+  # Epic 4: Social Interaction & Quests - Est. 16-20 stories
   epic-4: backlog
   4-1-kudos-send-receive-flow: backlog
+  4-2-event-recap-photo-upload: backlog
+  4-3-event-recap-highlight-text: backlog
+  4-4-partner-history-logging: backlog
+  4-5-partner-diversity-metric: backlog
+  4-6-quest-engine-foundation: backlog
+  4-7-quest-progress-bars: backlog
+  4-8-quest-completion-notifications: backlog
+  4-9-social-butterfly-quest-path: backlog
+  # Additional stories TBD (7-11 more stories estimated)
   epic-4-retrospective: optional
 
-  # Epic 5: Notification & Preference Center
+  # Epic 5: Notification & Preference Center - Est. 10-14 stories
   epic-5: backlog
   5-1-preference-center-ui: backlog
+  5-2-notification-dispatcher-push: backlog
+  5-3-notification-templating: backlog
+  5-4-late-checkin-eta-quick-reply: backlog
+  5-5-host-dashboard-eta-display: backlog
+  5-6-audit-logging-notifications: backlog
+  # Additional stories TBD (4-8 more stories estimated)
   epic-5-retrospective: optional
 
-  # Epic 6: Growth Gating & Invite Waves
+  # Epic 6: Growth Gating & Invite Waves - Est. 12-16 stories
   epic-6: backlog
   6-1-waitlist-intake-scoring-rubric: backlog
+  6-2-wave-activation-engine: backlog
+  6-3-promotion-criteria-evaluation: backlog
+  6-4-invite-allocation-ui: backlog
+  6-5-invite-allocation-logic: backlog
+  6-6-metrics-dashboard-basic: backlog
+  # Additional stories TBD (6-10 more stories estimated)
   epic-6-retrospective: optional
 
-  # Epic 7: Advanced Partner Suggestions (Rule-Based Engine)
+  # Epic 7: Advanced Partner Suggestions (Rule-Based Engine) - Est. 10-13 stories
   epic-7: backlog
   7-1-rule-based-suggestion-service: backlog
+  7-2-ml-ready-data-schema: backlog
+  7-3-suggestion-surfacing-quest-flow: backlog
+  7-4-suggestion-surfacing-event-browse: backlog
+  7-5-suggestion-instrumentation: backlog
+  # Additional stories TBD (5-8 more stories estimated)
   epic-7-retrospective: optional
 
-  # Epic 8: Observability & Admin Moderation
+  # Epic 8: Observability & Admin Moderation - Est. 9-12 stories
   epic-8: backlog
   8-1-flag-report-flow-photos-users: backlog
+  8-2-admin-review-queue: backlog
+  8-3-conceal-threshold-logic: backlog
+  8-4-structured-logging-metrics: backlog
+  8-5-alert-rules-configuration: backlog
+  # Additional stories TBD (4-7 more stories estimated)
   epic-8-retrospective: optional
 
-  # Epic 9: Private Events & Privacy Controls Enhancement
+  # Epic 9: Private Events & Privacy Controls Enhancement - Est. 6-9 stories
   epic-9: backlog
   9-1-private-event-invite-link-generation: backlog
+  9-2-private-event-access-gate: backlog
+  9-3-profile-privacy-settings-ui: backlog
+  9-4-level-visibility-toggle: backlog
+  # Additional stories TBD (2-5 more stories estimated)
   epic-9-retrospective: optional
 
-  # Epic 10: Developer Experience & API Infrastructure (Parallel Track)
+  # Epic 10: Developer Experience & API Infrastructure (Parallel Track) - 4 stories
   epic-10: backlog
   10-1-client-configuration-endpoint: backlog
   10-2-swagger-annotations-epic-1-3: backlog
