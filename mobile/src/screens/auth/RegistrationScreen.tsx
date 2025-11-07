@@ -13,10 +13,12 @@ import {
   HelperText,
   ActivityIndicator,
   ProgressBar,
+  Divider,
 } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { register, clearError } from '../../store/auth/authSlice';
+import GoogleSignInButton from '../../components/GoogleSignInButton';
 
 export default function RegistrationScreen() {
   const dispatch = useAppDispatch();
@@ -240,6 +242,21 @@ export default function RegistrationScreen() {
               {loading ? <ActivityIndicator color="white" /> : 'Create Account'}
             </Button>
 
+            {/* Divider with "Or" text */}
+            <View style={styles.dividerContainer}>
+              <Divider style={styles.divider} />
+              <Text variant="bodySmall" style={styles.dividerText}>
+                Or sign up with
+              </Text>
+              <Divider style={styles.divider} />
+            </View>
+
+            {/* Google Sign-In Button */}
+            <GoogleSignInButton
+              onSuccess={() => console.log('Google sign-up successful')}
+              onError={error => console.error('Google sign-up failed:', error)}
+            />
+
             <View style={styles.loginRow}>
               <Text variant="bodyMedium">Already have an account? </Text>
               <Button
@@ -309,5 +326,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginTop: 16,
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 24,
+  },
+  divider: {
+    flex: 1,
+  },
+  dividerText: {
+    marginHorizontal: 16,
+    color: '#666',
   },
 });

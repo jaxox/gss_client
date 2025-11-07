@@ -9,6 +9,7 @@ import type {
   AuthResponse,
   LoginRequest,
   RegisterRequest,
+  SSOLoginRequest,
   User,
   AuthTokens,
 } from '@gss/shared';
@@ -53,6 +54,20 @@ export const login = createAsyncThunk(
       }
 
       const response: AuthResponse = await authService.login(credentials);
+      await secureStorage.storeTokens(response.tokens);
+      return response;
+    } catch (error) {
+      const apiError = getApiError(error);
+      return rejectWithValue(apiError.message);
+    }
+  }
+);
+
+export const loginSSO = createAsyncThunk(
+  'auth/loginSSO',
+  async (ssoRequest: SSOLoginRequest, { rejectWithValue }) => {
+    try {
+      const response: AuthResponse = await authService.loginSSO(ssoRequest);
       await secureStorage.storeTokens(response.tokens);
       return response;
     } catch (error) {
@@ -143,6 +158,22 @@ const authSlice = createSlice({
         state.loginMethod = 'email';
       })
       .addCase(login.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      // Login SSO (Google)
+      .addCase(loginSSO.pending, state => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(loginSSO.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.isAuthenticated = true;
+        state.user = action.payload.user;
+        state.tokens = action.payload.tokens;
+        state.loginMethod = 'google';
+      })
+      .addCase(loginSSO.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
       })
