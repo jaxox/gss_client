@@ -105,9 +105,6 @@ function GoogleSignInButtonInner({
   );
 }
 
-  );
-}
-
 export default function GoogleSignInButton(props: GoogleSignInButtonInnerProps) {
   return (
     <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>

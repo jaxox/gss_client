@@ -5,16 +5,19 @@ import App from '../App';
 describe('App', () => {
   it('renders without crashing', () => {
     render(<App />);
-    expect(screen.getByText('Vite + React')).toBeInTheDocument();
+    // App renders with LoginPage by default (redirects / to /login)
+    expect(screen.getByText('Welcome Back')).toBeInTheDocument();
   });
 
-  it('displays the count button', () => {
+  it('displays login form elements', () => {
     render(<App />);
-    expect(screen.getByRole('button')).toHaveTextContent('count is 0');
+    expect(screen.getByLabelText('Email')).toBeInTheDocument();
+    expect(screen.getByLabelText('Password')).toBeInTheDocument();
   });
 
-  it('shows the edit instruction', () => {
+  it('shows sign in button', () => {
     render(<App />);
-    expect(screen.getByText(/edit/i)).toBeInTheDocument();
+    const signInButtons = screen.getAllByRole('button', { name: /sign in/i });
+    expect(signInButtons.length).toBeGreaterThan(0);
   });
 });

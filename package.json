@@ -65,5 +65,8 @@
     "url": "git@github.com-jaxox:jaxox/gss_client.git"
   },
   "keywords": [],
-  "type": "commonjs"
+  "type": "commonjs",
+  "dependencies": {
+    "react": "^19.2.0"
+  }
 }
