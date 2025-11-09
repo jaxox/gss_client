@@ -8,7 +8,7 @@
  * - Web: Encrypted browser storage (sessionStorage/localStorage with encryption)
  */
 
-import type { AuthTokens } from '../../types/auth.types';
+import type { AuthTokens, TokenMetadata } from '../../types/auth.types';
 
 // Define browser Storage interface for cross-platform compatibility
 interface BrowserStorage {
@@ -25,7 +25,16 @@ export interface ISecureStorage {
   clearTokens(): Promise<void>;
   setRememberMe(remember: boolean): Promise<void>;
   getRememberMe(): Promise<boolean>;
+  isAccessTokenExpired(): Promise<boolean>;
+  isRefreshTokenExpired(): Promise<boolean>;
+  getTokenMetadata(): Promise<TokenMetadata | null>;
 }
+
+/**
+ * Token expiration utilities
+ */
+const DEFAULT_REFRESH_TOKEN_DURATION = 7 * 24 * 60 * 60 * 1000; // 7 days
+const REMEMBER_ME_REFRESH_DURATION = 90 * 24 * 60 * 60 * 1000; // 90 days
 
 /**
  * Base implementation with in-memory fallback
@@ -34,9 +43,20 @@ export interface ISecureStorage {
 export class SecureStorage implements ISecureStorage {
   protected tokens: AuthTokens | null = null;
   protected rememberMe: boolean = false;
+  protected metadata: TokenMetadata | null = null;
 
   async storeTokens(tokens: AuthTokens): Promise<void> {
     this.tokens = tokens;
+
+    // Calculate and store metadata
+    const now = Date.now();
+    const rememberMe = await this.getRememberMe();
+    this.metadata = {
+      issuedAt: now,
+      expiresAt: tokens.expiresAt,
+      refreshExpiresAt:
+        now + (rememberMe ? REMEMBER_ME_REFRESH_DURATION : DEFAULT_REFRESH_TOKEN_DURATION),
+    };
   }
 
   async getTokens(): Promise<AuthTokens | null> {
@@ -60,6 +80,7 @@ export class SecureStorage implements ISecureStorage {
 
   async clearTokens(): Promise<void> {
     this.tokens = null;
+    this.metadata = null;
   }
 
   async setRememberMe(remember: boolean): Promise<void> {
@@ -69,6 +90,21 @@ export class SecureStorage implements ISecureStorage {
   async getRememberMe(): Promise<boolean> {
     return this.rememberMe;
   }
+
+  async isAccessTokenExpired(): Promise<boolean> {
+    const tokens = await this.getTokens();
+    if (!tokens) return true;
+    return tokens.expiresAt < Date.now();
+  }
+
+  async isRefreshTokenExpired(): Promise<boolean> {
+    if (!this.metadata) return true;
+    return this.metadata.refreshExpiresAt < Date.now();
+  }
+
+  async getTokenMetadata(): Promise<TokenMetadata | null> {
+    return this.metadata;
+  }
 }
 
 /**
@@ -77,6 +113,7 @@ export class SecureStorage implements ISecureStorage {
  */
 export class WebSecureStorage extends SecureStorage {
   private readonly TOKENS_KEY = 'gss_auth_tokens';
+  private readonly METADATA_KEY = 'gss_token_metadata';
   private readonly REMEMBER_KEY = 'gss_remember_me';
 
   // Helper to get browser storage safely
@@ -94,7 +131,12 @@ export class WebSecureStorage extends SecureStorage {
       if (storage) {
         storage.setItem(this.TOKENS_KEY, JSON.stringify(tokens));
       }
-      await super.storeTokens(tokens); // Keep in memory too
+      await super.storeTokens(tokens); // Keep in memory and calculate metadata
+
+      // Store metadata
+      if (storage && this.metadata) {
+        storage.setItem(this.METADATA_KEY, JSON.stringify(this.metadata));
+      }
     } catch (error) {
       console.error('Failed to store tokens in browser storage:', error);
       await super.storeTokens(tokens); // Fallback to memory
@@ -109,8 +151,11 @@ export class WebSecureStorage extends SecureStorage {
       };
       // Try both storages (user might have had remember me before)
       let tokensStr = global.sessionStorage?.getItem(this.TOKENS_KEY) || null;
+      let metadataStr = global.sessionStorage?.getItem(this.METADATA_KEY) || null;
+
       if (!tokensStr && global.localStorage) {
         tokensStr = global.localStorage.getItem(this.TOKENS_KEY);
+        metadataStr = global.localStorage.getItem(this.METADATA_KEY);
       }
 
       if (tokensStr) {
@@ -123,6 +168,12 @@ export class WebSecureStorage extends SecureStorage {
         }
 
         await super.storeTokens(tokens); // Sync to memory
+
+        // Restore metadata
+        if (metadataStr) {
+          this.metadata = JSON.parse(metadataStr);
+        }
+
         return tokens;
       }
     } catch (error) {
@@ -140,7 +191,9 @@ export class WebSecureStorage extends SecureStorage {
         localStorage?: BrowserStorage;
       };
       global.sessionStorage?.removeItem(this.TOKENS_KEY);
+      global.sessionStorage?.removeItem(this.METADATA_KEY);
       global.localStorage?.removeItem(this.TOKENS_KEY);
+      global.localStorage?.removeItem(this.METADATA_KEY);
     } catch (error) {
       console.error('Failed to clear tokens from browser storage:', error);
     }
@@ -172,8 +225,167 @@ export class WebSecureStorage extends SecureStorage {
 }
 
 /**
+ * Mobile implementation using React Native Keychain
+ * Provides secure storage via iOS Keychain and Android Keystore
+ */
+export class MobileSecureStorage extends SecureStorage {
+  private readonly TOKENS_KEY = 'gss_auth_tokens';
+  private readonly METADATA_KEY = 'gss_token_metadata';
+  private readonly REMEMBER_KEY = 'gss_remember_me';
+  private keychain: unknown = null;
+
+  constructor() {
+    super();
+    // Dynamically import keychain to avoid errors in web environment
+    this.initializeKeychain();
+  }
+
+  private async initializeKeychain(): Promise<void> {
+    try {
+      // Use dynamic import with proper error handling
+      const keychainModule = await import('react-native-keychain');
+      this.keychain = keychainModule;
+    } catch (error) {
+      console.warn('React Native Keychain not available, using memory storage');
+    }
+  }
+
+  private async getFromKeychain(key: string): Promise<string | null> {
+    if (!this.keychain) {
+      await this.initializeKeychain();
+    }
+
+    if (
+      this.keychain &&
+      typeof (this.keychain as { getGenericPassword?: unknown }).getGenericPassword === 'function'
+    ) {
+      try {
+        const result = await (
+          this.keychain as {
+            getGenericPassword: (options: {
+              service: string;
+            }) => Promise<{ password: string } | false>;
+          }
+        ).getGenericPassword({
+          service: key,
+        });
+        return result ? result.password : null;
+      } catch (error) {
+        console.error(`Failed to get ${key} from keychain:`, error);
+        return null;
+      }
+    }
+    return null;
+  }
+
+  private async setToKeychain(key: string, value: string): Promise<void> {
+    if (!this.keychain) {
+      await this.initializeKeychain();
+    }
+
+    if (
+      this.keychain &&
+      typeof (this.keychain as { setGenericPassword?: unknown }).setGenericPassword === 'function'
+    ) {
+      try {
+        await (
+          this.keychain as {
+            setGenericPassword: (
+              username: string,
+              password: string,
+              options: { service: string }
+            ) => Promise<void>;
+          }
+        ).setGenericPassword('user', value, {
+          service: key,
+        });
+      } catch (error) {
+        console.error(`Failed to set ${key} to keychain:`, error);
+      }
+    }
+  }
+
+  private async removeFromKeychain(key: string): Promise<void> {
+    if (!this.keychain) {
+      await this.initializeKeychain();
+    }
+
+    if (
+      this.keychain &&
+      typeof (this.keychain as { resetGenericPassword?: unknown }).resetGenericPassword ===
+        'function'
+    ) {
+      try {
+        await (
+          this.keychain as { resetGenericPassword: (options: { service: string }) => Promise<void> }
+        ).resetGenericPassword({
+          service: key,
+        });
+      } catch (error) {
+        console.error(`Failed to remove ${key} from keychain:`, error);
+      }
+    }
+  }
+
+  async storeTokens(tokens: AuthTokens): Promise<void> {
+    await this.setToKeychain(this.TOKENS_KEY, JSON.stringify(tokens));
+    await super.storeTokens(tokens); // Keep in memory and calculate metadata
+
+    // Store metadata
+    if (this.metadata) {
+      await this.setToKeychain(this.METADATA_KEY, JSON.stringify(this.metadata));
+    }
+  }
+
+  async getTokens(): Promise<AuthTokens | null> {
+    const tokensStr = await this.getFromKeychain(this.TOKENS_KEY);
+    const metadataStr = await this.getFromKeychain(this.METADATA_KEY);
+
+    if (tokensStr) {
+      const tokens: AuthTokens = JSON.parse(tokensStr);
+
+      // Check if expired
+      if (tokens.expiresAt < Date.now()) {
+        await this.clearTokens();
+        return null;
+      }
+
+      await super.storeTokens(tokens); // Sync to memory
+
+      // Restore metadata
+      if (metadataStr) {
+        this.metadata = JSON.parse(metadataStr);
+      }
+
+      return tokens;
+    }
+
+    // Fallback to memory
+    return super.getTokens();
+  }
+
+  async clearTokens(): Promise<void> {
+    await this.removeFromKeychain(this.TOKENS_KEY);
+    await this.removeFromKeychain(this.METADATA_KEY);
+    await super.clearTokens();
+  }
+
+  async setRememberMe(remember: boolean): Promise<void> {
+    await this.setToKeychain(this.REMEMBER_KEY, JSON.stringify(remember));
+    await super.setRememberMe(remember);
+  }
+
+  async getRememberMe(): Promise<boolean> {
+    const rememberStr = await this.getFromKeychain(this.REMEMBER_KEY);
+    if (rememberStr) {
+      return JSON.parse(rememberStr);
+    }
+    return super.getRememberMe();
+  }
+}
+
+/**
  * Factory function to create platform-specific secure storage
- * For mobile, we'll implement MobileSecureStorage using React Native Keychain
  */
 export function createSecureStorage(): ISecureStorage {
   // Detect platform - use globalThis to avoid TypeScript errors
@@ -186,9 +398,30 @@ export function createSecureStorage(): ISecureStorage {
     return new WebSecureStorage();
   }
 
-  // Default to base implementation (will be mobile-specific in mobile app)
-  return new SecureStorage();
+  // Mobile platform (React Native)
+  return new MobileSecureStorage();
 }
 
 // Export singleton instance
 export const secureStorage = createSecureStorage();
+
+/**
+ * Token expiration utility functions
+ */
+
+export function isAccessTokenExpired(expiresAt: number): boolean {
+  return expiresAt < Date.now();
+}
+
+export function isRefreshTokenExpired(refreshExpiresAt: number): boolean {
+  return refreshExpiresAt < Date.now();
+}
+
+export function getTimeUntilExpiration(expiresAt: number): number {
+  return Math.max(0, expiresAt - Date.now());
+}
+
+export function shouldRefreshProactively(expiresAt: number, thresholdMs: number = 300000): boolean {
+  // Default threshold: 5 minutes (300000ms)
+  return getTimeUntilExpiration(expiresAt) <= thresholdMs;
+}

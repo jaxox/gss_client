@@ -25,6 +25,12 @@ const initialState: AuthState = {
   tokens: null,
   isLoading: false,
   error: null,
+  isRefreshing: false,
+  session: {
+    isActive: true,
+    lastActivity: Date.now(),
+    timeoutDuration: 30 * 60 * 1000, // 30 minutes
+  },
 };
 
 // Async thunks
@@ -113,6 +119,26 @@ export const resetPassword = createAsyncThunk(
   }
 );
 
+export const refreshToken = createAsyncThunk(
+  'auth/refreshToken',
+  async (_, { rejectWithValue }) => {
+    try {
+      const tokens = await secureStorage.getTokens();
+      if (!tokens) {
+        throw new Error('No refresh token available');
+      }
+
+      const newTokens: AuthTokens = await authService.refreshToken(tokens.refreshToken);
+      await secureStorage.storeTokens(newTokens);
+      return newTokens;
+    } catch (error) {
+      const apiError = getApiError(error);
+      await secureStorage.clearTokens();
+      return rejectWithValue(apiError.message);
+    }
+  }
+);
+
 // Slice
 const authSlice = createSlice({
   name: 'auth',
@@ -125,6 +151,19 @@ const authSlice = createSlice({
       state.isAuthenticated = true;
       state.user = action.payload.user;
       state.tokens = action.payload.tokens;
+    },
+    sessionExpired: state => {
+      state.session.isActive = false;
+    },
+    sessionResumed: state => {
+      state.session.isActive = true;
+      state.session.lastActivity = Date.now();
+    },
+    updateLastActivity: state => {
+      state.session.lastActivity = Date.now();
+    },
+    setSessionTimeout: (state, action: PayloadAction<number>) => {
+      state.session.timeoutDuration = action.payload;
     },
   },
   extraReducers: builder => {
@@ -207,9 +246,36 @@ const authSlice = createSlice({
       .addCase(resetPassword.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
+      })
+      // Refresh Token
+      .addCase(refreshToken.pending, state => {
+        state.isRefreshing = true;
+        state.error = null;
+      })
+      .addCase(refreshToken.fulfilled, (state, action) => {
+        state.isRefreshing = false;
+        state.tokens = action.payload;
+        state.session.isActive = true;
+        state.session.lastActivity = Date.now();
+      })
+      .addCase(refreshToken.rejected, (state, action) => {
+        state.isRefreshing = false;
+        state.isAuthenticated = false;
+        state.user = null;
+        state.tokens = null;
+        state.session.isActive = false;
+        state.error = action.payload as string;
       });
   },
 });
 
-export const { clearError, setAuthenticated } = authSlice.actions;
+export const {
+  clearError,
+  setAuthenticated,
+  sessionExpired,
+  sessionResumed,
+  updateLastActivity,
+  setSessionTimeout,
+} = authSlice.actions;
+
 export default authSlice.reducer;

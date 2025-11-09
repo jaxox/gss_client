@@ -5,9 +5,11 @@ import {
   getApiError,
   type User,
   type AuthResponse,
+  type AuthTokens,
   type LoginRequest,
   type RegisterRequest,
   type SSOLoginRequest,
+  type SessionState,
 } from '@gss/shared';
 
 const authService = new AuthServiceImpl();
@@ -18,6 +20,8 @@ interface AuthState {
   isAuthenticated: boolean;
   loading: boolean;
   error: string | null;
+  isRefreshing: boolean;
+  session: SessionState;
 }
 
 const initialState: AuthState = {
@@ -25,6 +29,12 @@ const initialState: AuthState = {
   isAuthenticated: false,
   loading: false,
   error: null,
+  isRefreshing: false,
+  session: {
+    isActive: true,
+    lastActivity: Date.now(),
+    timeoutDuration: 30 * 60 * 1000, // 30 minutes
+  },
 };
 
 // Async thunks
@@ -124,6 +134,28 @@ export const getCurrentUser = createAsyncThunk(
   },
 );
 
+export const refreshToken = createAsyncThunk(
+  'auth/refreshToken',
+  async (_, { rejectWithValue }) => {
+    try {
+      const tokens = await secureStorage.getTokens();
+      if (!tokens) {
+        throw new Error('No refresh token available');
+      }
+
+      const newTokens: AuthTokens = await authService.refreshToken(
+        tokens.refreshToken,
+      );
+      await secureStorage.storeTokens(newTokens);
+      return newTokens;
+    } catch (error) {
+      const apiError = getApiError(error);
+      await secureStorage.clearTokens();
+      return rejectWithValue(apiError.message);
+    }
+  },
+);
+
 // Slice
 const authSlice = createSlice({
   name: 'auth',
@@ -134,6 +166,19 @@ const authSlice = createSlice({
     },
     setAuthenticated: (state, action: PayloadAction<boolean>) => {
       state.isAuthenticated = action.payload;
+    },
+    sessionExpired: state => {
+      state.session.isActive = false;
+    },
+    sessionResumed: state => {
+      state.session.isActive = true;
+      state.session.lastActivity = Date.now();
+    },
+    updateLastActivity: state => {
+      state.session.lastActivity = Date.now();
+    },
+    setSessionTimeout: (state, action: PayloadAction<number>) => {
+      state.session.timeoutDuration = action.payload;
     },
   },
   extraReducers: builder => {
@@ -249,8 +294,35 @@ const authSlice = createSlice({
         state.isAuthenticated = false;
         state.user = null;
       });
+
+    // Refresh Token
+    builder
+      .addCase(refreshToken.pending, state => {
+        state.isRefreshing = true;
+        state.error = null;
+      })
+      .addCase(refreshToken.fulfilled, state => {
+        state.isRefreshing = false;
+        state.session.isActive = true;
+        state.session.lastActivity = Date.now();
+      })
+      .addCase(refreshToken.rejected, (state, action) => {
+        state.isRefreshing = false;
+        state.isAuthenticated = false;
+        state.user = null;
+        state.session.isActive = false;
+        state.error = action.payload as string;
+      });
   },
 });
 
-export const { clearError, setAuthenticated } = authSlice.actions;
+export const {
+  clearError,
+  setAuthenticated,
+  sessionExpired,
+  sessionResumed,
+  updateLastActivity,
+  setSessionTimeout,
+} = authSlice.actions;
+
 export default authSlice.reducer;

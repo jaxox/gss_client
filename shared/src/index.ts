@@ -16,10 +16,14 @@ export * from './services/mock/mockAuth.service';
 export * from './services/mock/mockUser.service';
 export * from './services/http/client';
 export * from './services/storage/secureStorage';
+export * from './services/biometric/biometricAuth';
 export * from './services/profilePersistence.service';
 
 // Utilities
 export * from './utils/validation';
+export * from './utils/logger';
+export * from './utils/inputSanitization';
+export * from './utils/encryption';
 export * from './components/avatarUtils';
 
 // Hooks

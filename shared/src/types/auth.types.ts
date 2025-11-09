@@ -14,12 +14,25 @@ export interface User {
   xp: number;
   createdAt: string;
   updatedAt: string;
+  privacySettings?: PrivacySettings;
 }
 
 export interface AuthTokens {
   accessToken: string;
   refreshToken: string;
   expiresAt: number;
+}
+
+export interface TokenMetadata {
+  issuedAt: number;
+  expiresAt: number;
+  refreshExpiresAt: number;
+}
+
+export interface SessionState {
+  isActive: boolean;
+  lastActivity: number;
+  timeoutDuration: number; // milliseconds
 }
 
 export interface LoginRequest {
@@ -58,9 +71,20 @@ export interface AuthState {
   isLoading: boolean;
   error: string | null;
   loginMethod?: 'email' | 'google' | 'facebook' | 'apple';
+  isRefreshing: boolean;
+  session: SessionState;
 }
 
 export interface PrivacySettings {
-  reliabilityScoreVisibility: 'private' | 'public';
-  profileSearchable: boolean;
+  reliabilityScoreVisible: boolean; // false by default (private)
+  badgesVisible: boolean; // true by default (public)
+  levelVisible: boolean; // true by default (public)
+}
+
+export type BiometricType = 'faceId' | 'touchId' | 'fingerprint' | 'webauthn' | 'none';
+
+export interface BiometricSettings {
+  enabled: boolean;
+  type: BiometricType;
+  enrolledAt?: Date;
 }

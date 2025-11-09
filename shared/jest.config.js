@@ -55,4 +55,7 @@ module.exports = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
+
+  // Transform node_modules for ESM packages
+  transformIgnorePatterns: ['node_modules/(?!(ky)/)'],
 };
