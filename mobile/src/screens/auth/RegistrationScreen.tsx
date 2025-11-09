@@ -138,6 +138,7 @@ export default function RegistrationScreen() {
               style={styles.input}
               mode="outlined"
               error={!!errors.email}
+              testID="email-input"
             />
             {errors.email ? (
               <HelperText type="error" visible={!!errors.email}>
@@ -160,6 +161,7 @@ export default function RegistrationScreen() {
               style={styles.input}
               mode="outlined"
               error={!!errors.password}
+              testID="password-input"
               right={
                 <TextInput.Icon
                   icon={showPassword ? 'eye-off' : 'eye'}
@@ -205,6 +207,7 @@ export default function RegistrationScreen() {
               style={styles.input}
               mode="outlined"
               error={!!errors.displayName}
+              testID="displayName-input"
             />
             {errors.displayName ? (
               <HelperText type="error" visible={!!errors.displayName}>
@@ -225,6 +228,7 @@ export default function RegistrationScreen() {
               style={styles.input}
               mode="outlined"
               error={!!errors.homeCity}
+              testID="homeCity-input"
             />
             {errors.homeCity ? (
               <HelperText type="error" visible={!!errors.homeCity}>

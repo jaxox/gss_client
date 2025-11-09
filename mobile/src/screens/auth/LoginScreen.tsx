@@ -72,6 +72,7 @@ export default function LoginScreen() {
               style={styles.input}
               mode="outlined"
               error={!!authError}
+              testID="email-input"
             />
 
             <TextInput
@@ -84,6 +85,7 @@ export default function LoginScreen() {
               style={styles.input}
               mode="outlined"
               error={!!authError}
+              testID="password-input"
               right={
                 <TextInput.Icon
                   icon={showPassword ? 'eye-off' : 'eye'}
