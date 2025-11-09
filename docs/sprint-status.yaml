@@ -50,7 +50,7 @@ development_status:
   1-4-profile-crud-avatar-upload: done
   1-5-jwt-token-management: review
   1-6-security-implementation: review
-  1-7-cross-platform-consistency: ready-for-dev
+  1-7-cross-platform-consistency: done
   epic-1-retrospective: optional
 
   # Epic 2: Event Lifecycle & Attendance Commitment (Backend Complete, Frontend Needed)

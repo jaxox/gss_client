@@ -29,6 +29,43 @@ export * from './components/avatarUtils';
 // Hooks
 export * from './hooks/useProfile';
 
+// Constants - Centralized error messages
+export * from './constants/errorMessages';
+
+// Theme - Shared theme configuration
+export * from './theme/theme';
+
+// Validation - Re-export existing validation utilities and add new constants
+export * from './utils/validation';
+// Export validation constants separately to avoid naming conflicts
+export {
+  EMAIL_REGEX,
+  EMAIL_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_UPPERCASE_REGEX,
+  PASSWORD_LOWERCASE_REGEX,
+  PASSWORD_NUMBER_REGEX,
+  PASSWORD_SPECIAL_REGEX,
+  DISPLAY_NAME_MIN_LENGTH,
+  DISPLAY_NAME_MAX_LENGTH,
+  DISPLAY_NAME_REGEX,
+  CITY_MIN_LENGTH,
+  CITY_MAX_LENGTH,
+  API_TIMEOUT_MS,
+  TOKEN_REFRESH_TIMEOUT_MS,
+  LOGIN_TIMEOUT_MS,
+  REGISTRATION_TIMEOUT_MS,
+  PROFILE_LOAD_TIMEOUT_MS,
+  MAX_RETRY_ATTEMPTS,
+  RETRY_DELAYS_MS,
+  SESSION_TIMEOUT_MS,
+  SESSION_WARNING_MS,
+  LOADING_DELAY_MS,
+  calculatePasswordStrength,
+  PasswordStrength as PasswordStrengthEnum,
+} from './constants/validationRules';
+
 // Constants
 export const API_ENDPOINTS = {
   AUTH: {
