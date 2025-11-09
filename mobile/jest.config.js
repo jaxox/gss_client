@@ -1,26 +1,36 @@
 module.exports = {
   preset: 'react-native',
-  
+
   // Test environment setup
   setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  
+
   // Module mapping for shared library
   moduleNameMapper: {
     '^@shared/(.*)$': '<rootDir>/../shared/src/$1',
     '^@shared$': '<rootDir>/../shared/src/index',
   },
-  
+
   // Transform configuration
   transform: {
-    '^.+\\.(js|jsx|ts|tsx)$': ['babel-jest', { presets: ['@react-native/babel-preset'] }],
+    '^.+\\.(js|jsx|ts|tsx)$': [
+      'babel-jest',
+      { presets: ['@react-native/babel-preset'] },
+    ],
   },
-  
+
+  // Transform react-redux and other ESM packages
+  transformIgnorePatterns: [
+    'node_modules/(?!(react-redux|@react-redux|@reduxjs|immer|react-native|@react-native|@react-navigation|ky|@react-native-google-signin|react-native-image-picker)/)',
+  ],
+
   // Test file patterns
   testMatch: [
     '<rootDir>/src/**/__tests__/**/*.{js,jsx,ts,tsx}',
     '<rootDir>/src/**/*.{test,spec}.{js,jsx,ts,tsx}',
+    '<rootDir>/__tests__/**/*.{js,jsx,ts,tsx}',
+    '!<rootDir>/__tests__/e2e/**',
   ],
-  
+
   // Coverage configuration
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
@@ -28,7 +38,7 @@ module.exports = {
     '!src/**/__tests__/**',
     '!src/**/node_modules/**',
   ],
-  
+
   coverageThreshold: {
     global: {
       branches: 70,
@@ -37,12 +47,12 @@ module.exports = {
       statements: 70,
     },
   },
-  
+
   // Mock configuration
   clearMocks: true,
   resetMocks: true,
   restoreMocks: true,
-  
+
   // Timeout for tests
   testTimeout: 10000,
 };

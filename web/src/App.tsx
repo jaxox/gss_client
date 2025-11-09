@@ -3,6 +3,7 @@ import { ThemeProvider, createTheme, CssBaseline } from '@mui/material';
 import { Provider } from 'react-redux';
 import { store } from './store/store';
 import { RegistrationPage, LoginPage, ForgotPasswordPage, ResetPasswordPage } from './pages/auth';
+import ProfilePage from './pages/profile/ProfilePage';
 
 const theme = createTheme({
   palette: {
@@ -39,6 +40,7 @@ function App() {
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
           </Routes>
         </BrowserRouter>
       </ThemeProvider>

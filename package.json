@@ -17,16 +17,19 @@
     "dev": "concurrently \"npm run dev --workspace=web\" \"npm run dev --workspace=shared\"",
     "dev:web": "npm run dev --workspace=web",
     "dev:mobile": "npm run start --workspace=mobile",
-    "test": "npm run test:ci --workspaces --if-present || npm run test --workspaces",
-    "test:ci": "npm run test:ci --workspaces --if-present || npm run test --workspaces",
-    "test:mobile": "npm run test --workspace=mobile",
-    "test:web": "npm run test:ci --workspace=web",
-    "test:shared": "npm run test --workspace=shared",
+    "test": "npm run -ws test --if-present",
+    "test:watch": "npm run -ws test:watch --if-present",
+    "test:ci": "npm run -ws test:ci --if-present",
+    "test:mobile": "npm -w mobile run test:ci",
+    "test:web": "npm -w web run test:ci",
+    "test:shared": "npm -w shared run test:ci",
     "lint": "npm run lint --workspaces",
     "lint:fix": "npm run lint:fix --workspaces",
     "type-check": "npm run type-check --workspaces",
     "clean": "npm run clean --workspaces && rm -rf node_modules",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "metro:log": "npm run metro:log --workspace=mobile",
+    "ios:no-metro": "npm run ios:no-metro --workspace=mobile"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^6.21.0",
@@ -66,7 +69,12 @@
   },
   "keywords": [],
   "type": "commonjs",
-  "dependencies": {
-    "react": "^19.2.0"
+  "dependencies": {},
+  "overrides": {
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "react-test-renderer": "19.1.1",
+    "@types/react": "^19.1.0",
+    "@types/react-dom": "^19.1.0"
   }
 }

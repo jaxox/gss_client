@@ -9,6 +9,16 @@
 
 **BEFORE STARTING ANY WORK:** Every agent MUST read and understand this document completely.
 
+### 🔴 CRITICAL OPERATIONAL GUIDES
+
+**⚠️ READ THESE FIRST BEFORE ANY TESTING OR SIMULATOR WORK:**
+
+1. 📋 **[AGENT-TESTING-GUIDE.md](./AGENT-TESTING-GUIDE.md)** - MANDATORY for running tests and simulators
+   - How to run tests without hanging
+   - How to properly launch and monitor simulators
+   - Common errors and fixes
+   - **User is EXTREMELY frustrated with repeated mistakes - follow precisely!**
+
 ### Agent Session Handoff Protocol
 
 **For Incoming Agents:**
@@ -48,8 +58,8 @@ This repository contains **ONLY the frontend/client implementation** for the Gam
 
 **🚨 CRITICAL ERROR PREVENTION:** Every agent makes this mistake! Read carefully:
 
-**❌ WRONG:** "Epic 4/5/6 have tech specs in docs/shared/tech-specs/ so they're contexted"**
-**✅ CORRECT:** "docs/shared/tech-specs/ are BACKEND reference docs, they don't make epics contexted for FRONTEND"**
+**❌ WRONG:** "Epic 4/5/6 have tech specs in docs/shared/tech-specs/ so they're contexted"\*\*
+**✅ CORRECT:** "docs/shared/tech-specs/ are BACKEND reference docs, they don't make epics contexted for FRONTEND"\*\*
 
 **⚠️ IMPORTANT:** All files in `docs/shared/` are **READ-ONLY REFERENCE DOCUMENTS** copied from the backend project.
 
@@ -77,7 +87,7 @@ This repository contains **ONLY the frontend/client implementation** for the Gam
 When you see Epic 2 marked as "COMPLETE (2025-10-27)" in `docs/shared/epics.md`:
 
 - ✅ **Backend API endpoints for Epic 2 are implemented and working**
-- ✅ **Frontend can integrate with these completed backend endpoints**  
+- ✅ **Frontend can integrate with these completed backend endpoints**
 - ❌ **Frontend UI/components for Epic 2 are NOT implemented yet**
 
 ### Sprint Status Interpretation
@@ -107,7 +117,7 @@ The `docs/sprint-status.yaml` correctly shows everything as `backlog` because:
 ### Next Steps for Implementation
 
 1. **Epic Context Creation:** Start with `*epic-tech-context` for Epic 1
-2. **Story Development:** Use `*create-story` for individual frontend stories  
+2. **Story Development:** Use `*create-story` for individual frontend stories
 3. **Frontend Implementation:** Build React Native/React components
 4. **API Integration:** Connect frontend to existing backend endpoints
 5. **Status Updates:** Move stories from `backlog` → `drafted` → `ready-for-dev` → `in-progress` → `review` → `done`
@@ -126,12 +136,12 @@ The `docs/sprint-status.yaml` correctly shows everything as `backlog` because:
 
 ### Status Translation Guide
 
-| What You See | What It Actually Means |
-|--------------|------------------------|
-| Epic "COMPLETE" in docs/shared/ | Backend API ready, Frontend NOT implemented |
-| Story "DONE" in epics.md | Backend implemented, Frontend needs implementation |
-| Story "backlog" in sprint-status.yaml | Frontend story not started yet |
-| Tech spec exists | Epic ready for frontend story drafting |
+| What You See                          | What It Actually Means                             |
+| ------------------------------------- | -------------------------------------------------- |
+| Epic "COMPLETE" in docs/shared/       | Backend API ready, Frontend NOT implemented        |
+| Story "DONE" in epics.md              | Backend implemented, Frontend needs implementation |
+| Story "backlog" in sprint-status.yaml | Frontend story not started yet                     |
+| Tech spec exists                      | Epic ready for frontend story drafting             |
 
 ### Agent Role Responsibilities
 

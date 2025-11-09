@@ -65,7 +65,7 @@ export default function RegistrationPage() {
     if (!email) {
       newErrors.email = 'Email is required';
     } else if (!validateEmail(email)) {
-      newErrors.email = 'Invalid email format';
+      newErrors.email = 'Please enter a valid email address';
     }
 
     if (!password) {
@@ -74,7 +74,7 @@ export default function RegistrationPage() {
       newErrors.password = 'Password must be at least 8 characters';
     } else if (!/[A-Z]/.test(password)) {
       newErrors.password = 'Password must contain an uppercase letter';
-    } else if (/[0-9]/.test(password)) {
+    } else if (!/[0-9]/.test(password)) {
       newErrors.password = 'Password must contain a number';
     } else if (!/[^A-Za-z0-9]/.test(password)) {
       newErrors.password = 'Password must contain a special character';
@@ -100,7 +100,6 @@ export default function RegistrationPage() {
   };
 
   const passwordStrength = getPasswordStrength(password);
-  const isFormValid = email && password && displayName && homeCity;
 
   return (
     <Container maxWidth="sm">
@@ -212,7 +211,7 @@ export default function RegistrationPage() {
               fullWidth
               variant="contained"
               size="large"
-              disabled={!isFormValid || isLoading}
+              disabled={isLoading}
               sx={{ mt: 3, mb: 2, py: 1.5 }}
             >
               {isLoading ? 'Creating Account...' : 'Sign Up'}

@@ -4,6 +4,38 @@
 
 // Basic setup without external dependencies
 
+// Mock AsyncStorage
+jest.mock('@react-native-async-storage/async-storage', () => ({
+  setItem: jest.fn(() => Promise.resolve()),
+  getItem: jest.fn(() => Promise.resolve(null)),
+  removeItem: jest.fn(() => Promise.resolve()),
+  clear: jest.fn(() => Promise.resolve()),
+  getAllKeys: jest.fn(() => Promise.resolve([])),
+  multiGet: jest.fn(() => Promise.resolve([])),
+  multiSet: jest.fn(() => Promise.resolve()),
+  multiRemove: jest.fn(() => Promise.resolve()),
+}));
+
+// Mock Google Sign In
+jest.mock('@react-native-google-signin/google-signin', () => ({
+  GoogleSignin: {
+    configure: jest.fn(),
+    hasPlayServices: jest.fn(() => Promise.resolve(true)),
+    signIn: jest.fn(() =>
+      Promise.resolve({ user: { email: 'test@example.com' } }),
+    ),
+    signOut: jest.fn(() => Promise.resolve()),
+    isSignedIn: jest.fn(() => Promise.resolve(false)),
+    getCurrentUser: jest.fn(() => Promise.resolve(null)),
+  },
+  GoogleSigninButton: 'GoogleSigninButton',
+  statusCodes: {
+    SIGN_IN_CANCELLED: '0',
+    IN_PROGRESS: '1',
+    PLAY_SERVICES_NOT_AVAILABLE: '2',
+  },
+}));
+
 // Mock React Native modules
 jest.mock('react-native', () => {
   const RN = jest.requireActual('react-native');

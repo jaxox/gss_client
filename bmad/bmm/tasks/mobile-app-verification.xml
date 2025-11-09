@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Mobile App Verification Task
+  Critical workflow for React Native development to prevent hanging commands and verify app status
+  
+  Usage: Called automatically after any mobile app build/restart
+  Purpose: Ensure app is running without errors, prevent infinite loops, provide quick feedback
+-->
+<task id="mobile-app-verification" name="Mobile App Health Check">
+  
+  <context>
+    React Native development requires careful monitoring of:
+    - Metro bundler (JavaScript packager)
+    - iOS Simulator logs (native errors)
+    - App process status
+    - JavaScript errors in bundle
+    
+    Common failure modes:
+    - Metro hangs without feedback
+    - Simulator shows errors that aren't logged
+    - Log streaming commands run forever
+    - Cache issues cause silent failures
+  </context>
+
+  <critical-rules>
+    <rule id="1">ALWAYS use timeout command for potentially blocking operations (max 30s)</rule>
+    <rule id="2">NEVER use 'log stream' - it runs forever. Use 'log show --last Xs' instead</rule>
+    <rule id="3">After ANY app build/restart, MUST run verification steps before proceeding</rule>
+    <rule id="4">If stuck >30s, kill process and report to user immediately</rule>
+    <rule id="5">Metro bundler MUST run in background, check logs from file</rule>
+  </critical-rules>
+
+  <procedure>
+    
+    <step n="1" name="Clean Metro Processes">
+      <description>Kill any stale Metro bundler processes before starting</description>
+      <command>
+        # Kill existing Metro on port 8081
+        lsof -ti:8081 | xargs kill -9 2>/dev/null || true
+        
+        # Kill any node processes running react-native
+        pkill -f "react-native start" 2>/dev/null || true
+      </command>
+      <validation>Port 8081 should be free</validation>
+    </step>
+
+    <step n="2" name="Start Metro Bundler (Background)">
+      <description>Start Metro in background with log capture</description>
+      <command>
+        cd mobile
+        npm start -- --reset-cache > /tmp/metro_bundler.log 2>&1 &
+        METRO_PID=$!
+        echo $METRO_PID > /tmp/metro.pid
+      </command>
+      <wait>3 seconds for Metro to initialize</wait>
+      <validation>
+        # Check Metro started successfully (with timeout)
+        timeout 5 bash -c 'tail -f /tmp/metro_bundler.log | grep -q "Welcome to Metro"' || {
+          echo "❌ Metro failed to start"
+          cat /tmp/metro_bundler.log
+          exit 1
+        }
+      </validation>
+    </step>
+
+    <step n="3" name="Build and Launch App">
+      <description>Build iOS app (this step can take 30-60s)</description>
+      <command>
+        cd mobile
+        timeout 120 npm run ios 2>&1 | tail -30
+      </command>
+      <validation>Should see "success Successfully launched the app"</validation>
+      <on-timeout>Report build timeout to user, ask to check Xcode errors</on-timeout>
+    </step>
+
+    <step n="4" name="Wait for App Launch">
+      <description>Give app time to initialize</description>
+      <command>sleep 3</command>
+    </step>
+
+    <step n="5" name="Verify App Process">
+      <description>Check if app process is running</description>
+      <command>
+        APP_PID=$(ps aux | grep "GSS_Mobile.app/GSS_Mobile" | grep -v grep | awk '{print $2}')
+        if [ -z "$APP_PID" ]; then
+          echo "❌ App process not found"
+          exit 1
+        else
+          echo "✅ App running (PID: $APP_PID)"
+        fi
+      </command>
+    </step>
+
+    <step n="6" name="Check Simulator Logs for Errors">
+      <description>Look for JavaScript errors or native crashes (BOUNDED)</description>
+      <command>
+        # Use timeout to prevent hanging, check last 3 seconds only
+        ERROR_OUTPUT=$(timeout 5 xcrun simctl spawn booted log show --last 3s \
+          --predicate 'process == "GSS_Mobile"' 2>&1 | \
+          grep -i "error\|exception\|invariant violation" | head -20)
+        
+        if [ -n "$ERROR_OUTPUT" ]; then
+          echo "❌ Errors found in simulator logs:"
+          echo "$ERROR_OUTPUT"
+          exit 1
+        else
+          echo "✅ No errors in simulator logs"
+        fi
+      </command>
+      <timeout>5 seconds</timeout>
+    </step>
+
+    <step n="7" name="Check Metro Bundle Status">
+      <description>Verify Metro can serve the JavaScript bundle</description>
+      <command>
+        BUNDLE_CHECK=$(timeout 5 curl -s http://localhost:8081/status 2>&1)
+        if echo "$BUNDLE_CHECK" | grep -q "packager-status:running"; then
+          echo "✅ Metro bundler healthy"
+        else
+          echo "❌ Metro bundler not responding"
+          echo "Metro logs:"
+          tail -20 /tmp/metro_bundler.log
+          exit 1
+        fi
+      </command>
+      <timeout>5 seconds</timeout>
+    </step>
+
+    <step n="8" name="Visual Verification Screenshot">
+      <description>Capture screenshot to confirm UI state</description>
+      <command>
+        xcrun simctl io booted screenshot /tmp/app_verification_$(date +%s).png
+        echo "📸 Screenshot saved to /tmp/"
+      </command>
+    </step>
+
+    <step n="9" name="Check for RedBox Errors">
+      <description>Look for React Native RedBox in screenshot or recent Metro logs</description>
+      <command>
+        # Check last 10 lines of Metro log for errors
+        METRO_ERRORS=$(timeout 2 tail -10 /tmp/metro_bundler.log | grep -i "error\|failed" || true)
+        
+        if [ -n "$METRO_ERRORS" ]; then
+          echo "⚠️  Metro bundler reported errors:"
+          echo "$METRO_ERRORS"
+          echo ""
+          echo "Check screenshot and Metro logs for details"
+        fi
+      </command>
+    </step>
+
+  </procedure>
+
+  <output>
+    <success>
+      ✅ Mobile App Verification Complete
+      - App process running
+      - No simulator errors detected
+      - Metro bundler healthy
+      - Screenshot captured
+      
+      App is ready for testing/development.
+    </success>
+    
+    <failure>
+      ❌ Mobile App Verification Failed
+      
+      See error output above. Common fixes:
+      1. Metro cache issues: npm start -- --reset-cache
+      2. Xcode build errors: Open Xcode and check build logs
+      3. JavaScript errors: Check Metro bundler output in /tmp/metro_bundler.log
+      4. Simulator issues: Restart simulator with: xcrun simctl shutdown booted && xcrun simctl boot "iPhone 17 Pro"
+      
+      Ask user for guidance on next steps.
+    </failure>
+  </output>
+
+  <references>
+    <ref type="workflow">bmad/bmm/workflows/4-implementation/dev-story/workflow.yaml</ref>
+    <ref type="doc">React Native debugging guide</ref>
+  </references>
+
+</task>

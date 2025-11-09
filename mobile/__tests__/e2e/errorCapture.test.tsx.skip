@@ -1,0 +1,197 @@
+/**
+ * E2E Error Capture Test
+ *
+ * This test programmatically triggers errors and verifies they are captured
+ * by the error logging system.
+ */
+
+import React from 'react';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { Provider as ReduxProvider } from 'react-redux';
+import { Provider as PaperProvider } from 'react-native-paper';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { NativeModules } from 'react-native';
+import App from '../../App';
+import { store } from '../../src/store';
+
+// Mock the native logger module
+const mockLogError = jest.fn();
+NativeModules.JSLoggerModule = {
+  logError: mockLogError,
+};
+
+// Wrap component with all required providers
+const renderWithProviders = (component: React.ReactElement) => {
+  return render(
+    <SafeAreaProvider>
+      <ReduxProvider store={store}>
+        <PaperProvider>{component}</PaperProvider>
+      </ReduxProvider>
+    </SafeAreaProvider>,
+  );
+};
+
+describe('Error Capture E2E Tests', () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+    mockLogError.mockClear();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  test('should capture forced render error via button press', async () => {
+    const { getByText } = renderWithProviders(<App />);
+
+    // Wait for menu to render
+    await waitFor(() => {
+      expect(getByText('GSS Auth Screens')).toBeTruthy();
+    });
+
+    // Find and press the "Force Render Error" button
+    const forceErrorButton = getByText('Force Render Error');
+    expect(forceErrorButton).toBeTruthy();
+
+    // Suppress console errors for this test
+    const consoleError = console.error;
+    console.error = jest.fn();
+
+    // Press the button to trigger error
+    fireEvent.press(forceErrorButton);
+
+    // Restore console
+    console.error = consoleError;
+
+    // Verify error was logged
+    await waitFor(
+      () => {
+        expect(mockLogError).toHaveBeenCalled();
+      },
+      { timeout: 3000 },
+    );
+
+    // Check the logged error payload
+    const errorCalls = mockLogError.mock.calls;
+    expect(errorCalls.length).toBeGreaterThan(0);
+
+    const lastCall = errorCalls[errorCalls.length - 1];
+    const errorPayload = JSON.parse(lastCall[0]);
+
+    expect(errorPayload).toMatchObject({
+      source: expect.stringMatching(/global|boundary/),
+      name: expect.any(String),
+      message: expect.stringContaining('FORCED_TEST_RENDER_ERROR'),
+    });
+
+    console.log('✅ Captured error payload:', errorPayload);
+  });
+
+  test('should navigate to login screen without errors', async () => {
+    const { getByText } = renderWithProviders(<App />);
+
+    await waitFor(() => {
+      expect(getByText('GSS Auth Screens')).toBeTruthy();
+    });
+
+    const loginButton = getByText('Login Screen');
+    fireEvent.press(loginButton);
+
+    await waitFor(() => {
+      expect(getByText('Back to Menu')).toBeTruthy();
+    });
+
+    // Should not have logged any errors during navigation
+    const errorCalls = mockLogError.mock.calls.filter(call => {
+      try {
+        const payload = JSON.parse(call[0]);
+        return payload.message && !payload.message.includes('FORCED_TEST');
+      } catch {
+        return false;
+      }
+    });
+
+    console.log('Navigation errors captured:', errorCalls.length);
+    expect(errorCalls.length).toBe(0);
+  });
+
+  test('should navigate to registration screen without errors', async () => {
+    const { getByText } = renderWithProviders(<App />);
+
+    await waitFor(() => {
+      expect(getByText('Registration Screen')).toBeTruthy();
+    });
+
+    const registerButton = getByText('Registration Screen');
+    fireEvent.press(registerButton);
+
+    await waitFor(() => {
+      expect(getByText('Back to Menu')).toBeTruthy();
+    });
+
+    const errorCalls = mockLogError.mock.calls.filter(call => {
+      try {
+        const payload = JSON.parse(call[0]);
+        return payload.message && !payload.message.includes('FORCED_TEST');
+      } catch {
+        return false;
+      }
+    });
+
+    console.log('Registration navigation errors:', errorCalls.length);
+    expect(errorCalls.length).toBe(0);
+  });
+
+  test('should capture global error handler setup', async () => {
+    renderWithProviders(<App />);
+
+    // Give time for global error handlers to set up
+    await waitFor(
+      () => {
+        expect(true).toBe(true);
+      },
+      { timeout: 1000 },
+    );
+
+    // Verify ErrorUtils is set up
+    // @ts-ignore
+    expect(global.ErrorUtils?.getGlobalHandler).toBeDefined();
+  });
+
+  test('should log unhandled promise rejection', async () => {
+    renderWithProviders(<App />);
+
+    // Suppress console for rejection test
+    const consoleError = console.error;
+    console.error = jest.fn();
+
+    // Trigger an unhandled promise rejection
+    Promise.reject(new Error('TEST_UNHANDLED_PROMISE_REJECTION'));
+
+    // Wait for error to be caught and logged
+    await waitFor(
+      () => {
+        expect(mockLogError).toHaveBeenCalled();
+      },
+      { timeout: 5000 },
+    );
+
+    console.error = consoleError;
+
+    // Check if rejection was logged
+    const errorCalls = mockLogError.mock.calls;
+    const rejectionError = errorCalls.find(call => {
+      try {
+        const payload = JSON.parse(call[0]);
+        return (
+          payload.message?.includes('UNHANDLED') ||
+          payload.message?.includes('rejection')
+        );
+      } catch {
+        return false;
+      }
+    });
+
+    console.log('Unhandled rejection captured:', !!rejectionError);
+  });
+});

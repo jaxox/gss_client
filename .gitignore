@@ -87,3 +87,4 @@ pnpm-lock.yaml
 
 # Documentation builds
 docs/build/
+mobile/ios/GoogleService-Info.plist

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, View, TouchableOpacity } from 'react-native';
 import { Text, ActivityIndicator } from 'react-native-paper';
 import {
@@ -8,12 +8,9 @@ import {
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { loginSSO } from '../store/auth/authSlice';
 
-// Configure Google Sign-In
-GoogleSignin.configure({
-  webClientId: 'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com', // From Google Cloud Console
-  offlineAccess: true,
-  forceCodeForRefreshToken: true,
-});
+// Google OAuth client ID - configure via environment variable or GoogleService-Info.plist
+// @ts-ignore - React Native environment variables
+const GOOGLE_WEB_CLIENT_ID = process?.env?.GOOGLE_WEB_CLIENT_ID;
 
 interface GoogleSignInButtonProps {
   onSuccess?: () => void;
@@ -26,6 +23,52 @@ export default function GoogleSignInButton({
 }: GoogleSignInButtonProps) {
   const dispatch = useAppDispatch();
   const { loading } = useAppSelector(state => state.auth);
+  const [isConfigured, setIsConfigured] = useState(false);
+
+  useEffect(() => {
+    // Only configure Google Sign-In if we have valid credentials
+    // This prevents initialization errors when GoogleService-Info.plist is missing
+    const configureGoogleSignIn = async () => {
+      try {
+        if (
+          GOOGLE_WEB_CLIENT_ID &&
+          GOOGLE_WEB_CLIENT_ID !==
+            'YOUR_WEB_CLIENT_ID.apps.googleusercontent.com'
+        ) {
+          GoogleSignin.configure({
+            webClientId: GOOGLE_WEB_CLIENT_ID,
+            offlineAccess: true,
+            forceCodeForRefreshToken: true,
+          });
+          setIsConfigured(true);
+        } else {
+          // Try to configure with default values (works if GoogleService-Info.plist exists)
+          try {
+            GoogleSignin.configure({
+              offlineAccess: true,
+              forceCodeForRefreshToken: true,
+            });
+            setIsConfigured(true);
+          } catch (error) {
+            console.warn(
+              'Google Sign-In not configured. Add GoogleService-Info.plist or set GOOGLE_WEB_CLIENT_ID environment variable.',
+            );
+            setIsConfigured(false);
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to configure Google Sign-In:', error);
+        setIsConfigured(false);
+      }
+    };
+
+    configureGoogleSignIn();
+  }, []);
+
+  // Don't render the button if Google Sign-In is not properly configured
+  if (!isConfigured) {
+    return null;
+  }
 
   const handleGoogleSignIn = async () => {
     try {

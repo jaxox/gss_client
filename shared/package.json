@@ -8,9 +8,9 @@
     "build": "tsc",
     "build:watch": "tsc -w",
     "dev": "tsc -w",
-    "test": "jest",
-    "test:ci": "jest --passWithNoTests",
+    "test": "jest --watch=false",
     "test:watch": "jest --watch",
+    "test:ci": "jest --ci --watch=false",
     "test:coverage": "jest --coverage",
     "lint": "eslint src/**/*.{js,ts}",
     "lint:fix": "eslint src/**/*.{js,ts} --fix",
@@ -30,5 +30,8 @@
   "dependencies": {
     "ky": "^1.14.0",
     "zod": "^4.1.12"
+  },
+  "peerDependencies": {
+    "@react-native-async-storage/async-storage": "^1.0.0 || ^2.0.0"
   }
 }

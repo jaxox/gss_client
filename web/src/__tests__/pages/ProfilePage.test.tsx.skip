@@ -1,0 +1,298 @@
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { Provider } from 'react-redux';
+import { configureStore } from '@reduxjs/toolkit';
+import { BrowserRouter } from 'react-router-dom';
+import ProfilePage from '../../pages/profile/ProfilePage';
+import profileReducer from '../../store/profile/profileSlice';
+import authReducer from '../../store/auth/authSlice';
+
+// Mock the shared utilities
+vi.mock('@gss/shared', async importOriginal => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const actual = (await importOriginal()) as any;
+  return {
+    ...actual,
+    getInitials: vi.fn((name: string) => name.charAt(0).toUpperCase()),
+    generateAvatarColor: vi.fn(() => '#FF5722'),
+    validateDisplayName: vi.fn((name: string) => {
+      if (!name || name.length < 2) return 'Display name must be at least 2 characters';
+      if (name.length > 50) return 'Display name must be less than 50 characters';
+      return null;
+    }),
+    validateCity: vi.fn((city: string) => {
+      if (!city || city.length < 2) return 'City must be at least 2 characters';
+      if (city.length > 100) return 'City must be less than 100 characters';
+      return null;
+    }),
+    MockUserService: vi.fn().mockImplementation(() => ({
+      getProfile: vi.fn().mockResolvedValue({
+        id: 'test-user-123',
+        email: 'test@example.com',
+        displayName: 'Test User',
+        homeCity: 'San Francisco',
+        reliabilityScore: 85,
+        level: 5,
+        xp: 1250,
+        createdAt: '2025-01-01T00:00:00Z',
+        updatedAt: '2025-11-01T00:00:00Z',
+      }),
+      updateProfile: vi.fn().mockResolvedValue({
+        id: 'test-user-123',
+        email: 'test@example.com',
+        displayName: 'Updated User',
+        homeCity: 'New York',
+        reliabilityScore: 85,
+        level: 5,
+        xp: 1250,
+        createdAt: '2025-01-01T00:00:00Z',
+        updatedAt: '2025-11-01T00:00:00Z',
+      }),
+    })),
+  };
+});
+
+const mockUser = {
+  id: 'test-user-123',
+  email: 'test@example.com',
+  displayName: 'Test User',
+  homeCity: 'San Francisco',
+  reliabilityScore: 85,
+  level: 5,
+  xp: 1250,
+  createdAt: '2025-01-01T00:00:00Z',
+  updatedAt: '2025-11-01T00:00:00Z',
+};
+
+const createMockStore = (initialState = {}) => {
+  return configureStore({
+    reducer: {
+      auth: authReducer,
+      profile: profileReducer,
+    },
+    preloadedState: {
+      auth: {
+        user: mockUser,
+        isAuthenticated: true,
+        tokens: null,
+        isLoading: false,
+        error: null,
+      },
+      profile: {
+        currentProfile: null,
+        isLoading: false,
+        isEditing: false,
+        error: null,
+        lastUpdated: null,
+      },
+      ...initialState,
+    },
+  });
+};
+
+const renderWithProviders = (
+  component: React.ReactElement,
+  store: ReturnType<typeof createMockStore>
+) => {
+  return render(
+    <Provider store={store}>
+      <BrowserRouter>{component}</BrowserRouter>
+    </Provider>
+  );
+};
+
+describe('ProfilePage Integration Tests', () => {
+  it('should render profile view with user data', async () => {
+    const store = createMockStore({
+      profile: {
+        currentProfile: mockUser,
+        isLoading: false,
+        isEditing: false,
+        error: null,
+        lastUpdated: null,
+      },
+    });
+
+    renderWithProviders(<ProfilePage />, store);
+
+    await waitFor(() => {
+      expect(screen.getByText('Test User')).toBeInTheDocument();
+      expect(screen.getByText('test@example.com')).toBeInTheDocument();
+      expect(screen.getByText('San Francisco')).toBeInTheDocument();
+    });
+  });
+
+  it('should display loading indicator while fetching profile', () => {
+    const store = createMockStore({
+      profile: {
+        currentProfile: null,
+        isLoading: true,
+        isEditing: false,
+        error: null,
+        lastUpdated: null,
+      },
+    });
+
+    renderWithProviders(<ProfilePage />, store);
+
+    expect(screen.queryByText('Test User')).not.toBeInTheDocument();
+    expect(screen.getByRole('progressbar')).toBeInTheDocument();
+  });
+
+  it('should display offline indicator when network error occurs', async () => {
+    const store = createMockStore({
+      profile: {
+        currentProfile: mockUser,
+        isLoading: false,
+        isEditing: false,
+        error: 'Network error: Unable to fetch profile',
+        lastUpdated: null,
+      },
+    });
+
+    renderWithProviders(<ProfilePage />, store);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Offline Mode/i)).toBeInTheDocument();
+    });
+  });
+
+  it('should enter edit mode when Edit Profile button is clicked', async () => {
+    const store = createMockStore({
+      profile: {
+        currentProfile: mockUser,
+        isLoading: false,
+        isEditing: false,
+        error: null,
+        lastUpdated: null,
+      },
+    });
+
+    renderWithProviders(<ProfilePage />, store);
+
+    const editButton = screen.getByRole('button', { name: /edit profile/i });
+    fireEvent.click(editButton);
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: /save changes/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /cancel/i })).toBeInTheDocument();
+    });
+  });
+
+  it('should validate display name in edit mode', async () => {
+    const store = createMockStore({
+      profile: {
+        currentProfile: mockUser,
+        isLoading: false,
+        isEditing: true,
+        error: null,
+        lastUpdated: null,
+      },
+    });
+
+    renderWithProviders(<ProfilePage />, store);
+
+    const displayNameInput = screen.getByLabelText(/display name/i);
+
+    // Clear and type single character
+    fireEvent.change(displayNameInput, { target: { value: 'A' } });
+
+    await waitFor(() => {
+      expect(screen.queryByText(/at least 2 characters/i)).toBeInTheDocument();
+    });
+  });
+
+  it('should cancel edit and exit edit mode', async () => {
+    const store = createMockStore({
+      profile: {
+        currentProfile: mockUser,
+        isLoading: false,
+        isEditing: true,
+        error: null,
+        lastUpdated: null,
+      },
+    });
+
+    renderWithProviders(<ProfilePage />, store);
+
+    const cancelButton = screen.getByRole('button', { name: /cancel/i });
+    fireEvent.click(cancelButton);
+
+    const state = store.getState();
+    expect(state.profile.isEditing).toBe(false);
+  });
+
+  it('should display avatar with user initials', async () => {
+    const store = createMockStore({
+      profile: {
+        currentProfile: mockUser,
+        isLoading: false,
+        isEditing: false,
+        error: null,
+        lastUpdated: null,
+      },
+    });
+
+    renderWithProviders(<ProfilePage />, store);
+
+    // Avatar should show initials
+    await waitFor(() => {
+      expect(screen.getByText('T')).toBeInTheDocument(); // First letter of "Test User"
+    });
+  });
+
+  it('should show "Coming Soon" badge for avatar upload', async () => {
+    const store = createMockStore({
+      profile: {
+        currentProfile: mockUser,
+        isLoading: false,
+        isEditing: false,
+        error: null,
+        lastUpdated: null,
+      },
+    });
+
+    renderWithProviders(<ProfilePage />, store);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Avatar Upload Coming Soon/i)).toBeInTheDocument();
+    });
+  });
+
+  it('should display reliability score as Private', async () => {
+    const store = createMockStore({
+      profile: {
+        currentProfile: mockUser,
+        isLoading: false,
+        isEditing: false,
+        error: null,
+        lastUpdated: null,
+      },
+    });
+
+    renderWithProviders(<ProfilePage />, store);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Private/i)).toBeInTheDocument();
+    });
+  });
+
+  it('should display gamification data (level and XP)', async () => {
+    const store = createMockStore({
+      profile: {
+        currentProfile: mockUser,
+        isLoading: false,
+        isEditing: false,
+        error: null,
+        lastUpdated: null,
+      },
+    });
+
+    renderWithProviders(<ProfilePage />, store);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Level 5/i)).toBeInTheDocument();
+      expect(screen.getByText(/1250/i)).toBeInTheDocument(); // XP
+    });
+  });
+});
