@@ -1,0 +1,289 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2</storyId>
+    <title>Event RSVP & Deposit Authorization</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-09</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/2-2-event-rsvp-deposit-authorization.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>participant user</asA>
+    <iWant>to RSVP to events with secure deposit authorization</iWant>
+    <soThat>I can commit to attending events and demonstrate my reliability</soThat>
+    <tasks>
+      - Event Discovery Service Layer: Implement EventService.searchEvents(), getEventById(), LocationService.getCurrentLocation(), calculateDistance()
+      - RSVP and Payment Service Layer: Implement EventService.createRSVP(), PaymentService.authorizeDeposit(), validateInviteToken(), getMyRSVPs()
+      - State Management: Create EventStore and RSVPStore Redux slices, integrate TanStack Query for caching and optimistic updates
+      - Mobile Event Discovery UI: EventsScreen with list/map toggle, EventDetailScreen, location permission flow
+      - Mobile RSVP Flow UI: RSVP confirmation dialogs, Stripe Payment Sheet integration, RSVP confirmation screen with success animations
+      - Mobile RSVP Management UI: MyRSVPsScreen with RSVP list, status badges, cancel RSVP functionality
+      - Web Event Discovery UI: EventsPage with grid/list view, EventDetailPage with Google Maps integration
+      - Web RSVP Flow UI: RSVP dialogs, Stripe Payment Elements integration, RSVP confirmation modals
+      - Web RSVP Management UI: MyRSVPsPage with RSVP table/grid, status indicators
+      - Private Event Deep Linking: Configure iOS Universal Links, Android App Links, web routing for /events/invite/:token
+      - Testing: Unit tests for services and state management, component tests for RSVP flows, integration tests for complete flows, E2E tests with Detox (mobile) and Playwright (web)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    AC1: Event Discovery and Detail View - Events tab displays nearby public events sorted by date/distance, event cards show title/sport/date/location/participants/deposit, tap opens detail screen with full information including participant list and RSVP button
+    
+    AC2: RSVP Flow for Free Events - For $0 deposit events, RSVP button shows "RSVP (Free)", tap shows confirmation dialog, confirm calls eventService.createRSVP() without payment, confirmation screen displays success message with QR check-in instructions and reminder schedule
+    
+    AC3: RSVP Flow with Stripe Deposit Authorization - For events with deposit >$0, RSVP button shows "RSVP ($5/$10)", tap triggers Stripe payment sheet with authorization notice, user selects/adds payment method via Stripe-native UI, authorization occurs without charge via paymentService.authorizeDeposit(), confirmation screen shows deposit amount authorized and refundable on check-in messaging
+    
+    AC4: Private Event Access - Private events not visible in public browse, user accesses via invite link (deep link gss://event/invite/{token} or web URL), API validates token via eventService.validateInviteToken(), if valid shows event detail with RSVP option, if invalid shows error message
+    
+    AC5: RSVP Management and Status - "My RSVPs" screen shows all confirmed RSVPs sorted by date, displays RSVP status indicators (Confirmed/Checked In/Cancelled/No-Show), tap opens event detail with Cancel RSVP option before event, deposit status visible, real-time updates when check-in or cancellation occurs
+    
+    AC6: RSVP Capacity and Race Condition Handling - RSVP button disabled if event at capacity, optimistic UI update on RSVP with rollback if capacity race detected, backend validates capacity and returns 409 Conflict if full, client handles 409 with user-friendly "Event just filled up" message
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/tech-spec-epic-2.md</path>
+        <title>Epic 2 Technical Specification</title>
+        <section>AC2: Event Discovery and Browsing System</section>
+        <snippet>Event list displays nearby public events sorted by date and distance. Event cards show title, sport icon, date/time, location with distance, participant count (X/Y), deposit badge ($0/$5/$10). Map view with markers, filter panel (sport, date range, distance radius 5-50 miles, deposit amount, capacity available). Distance from user location requires location permission. Pull-to-refresh updates from backend.</snippet>
+      </doc>
+      <doc>
+        <path>docs/tech-spec-epic-2.md</path>
+        <title>Epic 2 Technical Specification</title>
+        <section>AC3: RSVP Flow with Stripe Deposit Authorization</section>
+        <snippet>For free events (depositAmount=$0), RSVP completes immediately. For paid events, Stripe payment sheet opens with existing payment methods and "Add Payment Method" option. Payment authorization (no charge) stores authorization ID. Backend schedules reminder notifications (24h, 1h before). RSVP confirmation shows deposit amount authorized and refundable on check-in. Error handling for card declined, network failures, capacity races.</snippet>
+      </doc>
+      <doc>
+        <path>docs/tech-spec-epic-2.md</path>
+        <title>Epic 2 Technical Specification</title>
+        <section>AC9: Private Event Invite System</section>
+        <snippet>Private events have visibility='private' and excluded from public browse. Host generates invite link via eventService.generateInviteLink() returning shareable URL. Recipient taps link, app validates token via eventService.validateInviteToken(). If valid, shows event detail with RSVP option. Invite tokens cryptographically secure with expiration.</snippet>
+      </doc>
+      <doc>
+        <path>docs/tech-spec-epic-2.md</path>
+        <title>Epic 2 Technical Specification</title>
+        <section>Data Models - Event, RSVP, RSVPRequest</section>
+        <snippet>Event interface includes depositAmount (cents), visibility ('public'|'private'), inviteToken (optional). RSVP interface includes status ('confirmed'|'cancelled'|'checked-in'|'no-show'), depositStatus ('authorized'|'captured'|'refunded'|'forfeited'), depositAuthorizationId (Stripe). RSVPRequest includes eventId, depositPaymentMethodId (Stripe payment method ID if deposit required).</snippet>
+      </doc>
+      <doc>
+        <path>docs/tech-spec-epic-2.md</path>
+        <title>Epic 2 Technical Specification</title>
+        <section>Services - EventService, PaymentService, LocationService</section>
+        <snippet>EventService: searchEvents(filters), getEvent(eventId), createRSVP(request), cancelRSVP(eventId, reason), getRSVPStatus(eventId), getMyRSVPs(userId), validateInviteToken(token). PaymentService: authorizeDeposit(amount, paymentMethodId), getPaymentMethods(), addPaymentMethod(). LocationService: getCurrentLocation(), calculateDistance(from, to), geocodeAddress(address).</snippet>
+      </doc>
+      <doc>
+        <path>docs/tech-spec-epic-2.md</path>
+        <title>Epic 2 Technical Specification</title>
+        <section>Performance Targets</section>
+        <snippet>Event list load <1200ms p95, RSVP flow completion <3s end-to-end, distance calculations <100ms for 50 events, Stripe payment sheet opens <500ms, deposit refund <60s. Map rendering 500 events <2s with 60fps pan/zoom.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Client Architecture</title>
+        <section>Project Structure - Mobile Screens</section>
+        <snippet>Mobile screens located in mobile/src/screens/events/ include EventsScreen (event list), EventDetailScreen (event detail with RSVP), MyRSVPsScreen (user RSVP list). Components in mobile/src/components/events/ include EventCard, EventList, EventDetails.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Client Architecture</title>
+        <section>Project Structure - Web Pages</section>
+        <snippet>Web pages located in web/src/pages/events/ include EventsPage (event grid/list), EventDetailPage (event detail with map), MyRSVPsPage (RSVP management). Components in web/src/components/events/ include EventCard, EventManagement.</snippet>
+      </doc>
+      <doc>
+        <path>docs/shared/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR006, FR007 - Event Browse and RSVP</section>
+        <snippet>FR006: Browse events with list+map view filtered by date, distance, sport, capacity, deposit. FR007: RSVP flow confirms attendance; if deposit >$0, Stripe authorization captured (refundable on check-in). User reliability score updated based on RSVP/check-in patterns.</snippet>
+      </doc>
+      <doc>
+        <path>docs/shared/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR025 - Private Events</section>
+        <snippet>FR025: Private events have visibility setting, access via direct invite link/token, excluded from public browse. Host shares invite link, recipient accesses via token validation.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>shared/src/services/api/events.service.ts</path>
+        <kind>service interface</kind>
+        <symbol>IEventService</symbol>
+        <lines>1-90</lines>
+        <reason>Core service interface for event operations including searchEvents(), getEvent(), createRSVP(), cancelRSVP(), getRSVPStatus(), getMyRSVPs(), validateInviteToken(). Defines contracts for all event discovery and RSVP functionality.</reason>
+      </artifact>
+      <artifact>
+        <path>shared/src/services/api/eventsServiceImpl.ts</path>
+        <kind>service implementation</kind>
+        <symbol>EventServiceImpl</symbol>
+        <lines>1-250</lines>
+        <reason>Real EventService implementation using ky HTTP client. Implements searchEvents(), getEvent(), createRSVP(), cancelRSVP(), getRSVPStatus(), getMyRSVPs(), validateInviteToken() with backend API calls and error handling.</reason>
+      </artifact>
+      <artifact>
+        <path>shared/src/services/mock/mockEvents.service.ts</path>
+        <kind>mock service</kind>
+        <symbol>MockEventService</symbol>
+        <lines>1-350</lines>
+        <reason>Mock implementation for development and testing. Provides realistic RSVP flow simulation with capacity handling, deposit authorization mocking, network delay simulation.</reason>
+      </artifact>
+      <artifact>
+        <path>shared/src/services/api/location.service.ts</path>
+        <kind>service interface</kind>
+        <symbol>ILocationService</symbol>
+        <lines>1-50</lines>
+        <reason>Location service interface defining geocodeAddress(), reverseGeocode(), calculateDistance(), getCurrentLocation(), requestLocationPermission(). Essential for event distance calculation and filtering.</reason>
+      </artifact>
+      <artifact>
+        <path>shared/src/services/api/locationServiceImpl.ts</path>
+        <kind>service implementation</kind>
+        <symbol>LocationServiceImpl</symbol>
+        <lines>1-120</lines>
+        <reason>Real LocationService implementation with Google Maps Geocoding API integration via backend proxy. Implements Haversine formula for distance calculations. Platform-specific location methods (getCurrentLocation, requestLocationPermission) to be implemented in mobile/web.</reason>
+      </artifact>
+      <artifact>
+        <path>shared/src/services/mock/mockLocation.service.ts</path>
+        <kind>mock service</kind>
+        <symbol>MockLocationService</symbol>
+        <lines>1-130</lines>
+        <reason>Mock LocationService with San Francisco area mock coordinates, geocoding simulation, distance calculation using Haversine formula. Used for development without Google Maps API dependencies.</reason>
+      </artifact>
+      <artifact>
+        <path>shared/src/types/event.types.ts</path>
+        <kind>type definitions</kind>
+        <symbol>Event, RSVP, RSVPRequest, CheckInRequest interfaces</symbol>
+        <lines>1-180</lines>
+        <reason>Core event data models: Event (with depositAmount, visibility, inviteToken), RSVP (with status, depositStatus, depositAuthorizationId), RSVPRequest (eventId, paymentMethodId), EventSearchResult, EventFilterRequest. Essential for type safety across all event operations.</reason>
+      </artifact>
+      <artifact>
+        <path>shared/src/types/location.types.ts</path>
+        <kind>type definitions</kind>
+        <symbol>Coordinates, GeocodeResponse, LocationPermissionStatus</symbol>
+        <lines>1-60</lines>
+        <reason>Location type definitions: Coordinates (latitude/longitude), GeocodeResponse, ReverseGeocodeResponse, LocationPermissionStatus enum. Used by LocationService and event distance calculations.</reason>
+      </artifact>
+      <artifact>
+        <path>docs/stories/2-1-host-event-creation.context.xml</path>
+        <kind>reference context</kind>
+        <symbol>Story 2-1 context</symbol>
+        <lines>120-180</lines>
+        <reason>Dependency: Story 2-1 creates events that this story enables users to RSVP to. Contains EventService.createEvent() implementation details, QR code generation patterns, location integration approach. Shares EventService, LocationService interfaces.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <shared>
+        <dep name="@reduxjs/toolkit" version="^2.10.1" usage="Redux Toolkit for EventStore and RSVPStore slices"/>
+        <dep name="@tanstack/react-query" version="^5.90.7" usage="Server state caching, event list caching, optimistic updates for RSVP"/>
+        <dep name="ky" version="^1.14.0" usage="HTTP client for EventService and PaymentService API calls"/>
+        <dep name="zod" version="^4.1.12" usage="RSVP form validation schemas"/>
+        <dep name="date-fns" version="^3.0.0" usage="Date formatting, relative time display, event scheduling"/>
+        <dep name="geolib" version="^3.3.4" usage="Distance calculations using Haversine formula, radius filtering"/>
+      </shared>
+      <mobile>
+        <dep name="react-native" version="^0.82.1" usage="Core mobile framework"/>
+        <dep name="@stripe/stripe-react-native" version="^0.35.0" usage="Stripe Payment Sheet for deposit authorization (native UI)"/>
+        <dep name="react-native-maps" version="^1.7.1" usage="Map view for event location display"/>
+        <dep name="react-native-geolocation-service" version="^5.3.1" usage="GPS location for distance calculation"/>
+        <dep name="@react-native-firebase/messaging" version="^18.6.0" usage="Event reminder push notifications"/>
+      </mobile>
+      <web>
+        <dep name="react" version="19.1.1" usage="React framework"/>
+        <dep name="@stripe/stripe-js" version="^2.2.0" usage="Stripe.js library for web payment integration"/>
+        <dep name="@stripe/react-stripe-js" version="^2.4.0" usage="React components for Stripe Elements"/>
+        <dep name="@googlemaps/js-api-loader" version="^1.16.2" usage="Google Maps JavaScript API for web map display"/>
+      </web>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="dependency">Story 2-1 (Host Event Creation) must be complete - events must exist before users can RSVP to them. Uses shared EventService interface and event data models.</constraint>
+    <constraint type="api-integration">Backend APIs assumed complete: GET /api/v1/events (event search), GET /api/v1/events/:id (event detail), POST /api/v1/events/:id/rsvp (create RSVP), DELETE /api/v1/events/:id/rsvp (cancel), GET /api/v1/events/my-rsvps (user RSVPs), POST /api/v1/events/validate-invite (private event token validation), POST /api/v1/payments/authorize (Stripe deposit authorization). Mock implementations required for development.</constraint>
+    <constraint type="stripe-integration">Mobile uses @stripe/stripe-react-native with native Payment Sheet UI (iOS/Android). Web uses @stripe/stripe-js + @stripe/react-stripe-js with Stripe Elements. Authorization-only flow - no charges occur until check-in failure. Test mode: use Stripe test publishable key pk_test_... and test cards for development.</constraint>
+    <constraint type="location-services">Mobile: react-native-geolocation-service for GPS. Web: Browser Geolocation API. Shared: geolib for distance calculations (Haversine formula). Request location permission with clear rationale "Show nearby events". Graceful fallback to manual location entry if permission denied.</constraint>
+    <constraint type="deep-linking">Mobile: Configure iOS Universal Links (Associated Domains entitlement) and Android App Links (Intent filters in AndroidManifest.xml) for gss://event/invite/{token}. Web: React Router route /events/invite/:token. Token validation via eventService.validateInviteToken() before displaying event detail.</constraint>
+    <constraint type="performance">Event list loads <1200ms p95 per NFR001. RSVP flow completes <3s from button tap to confirmation. Distance calculations <100ms for 50 events. Stripe payment sheet opens <500ms. Optimistic UI updates with rollback on errors.</constraint>
+    <constraint type="capacity-handling">Optimistic UI updates: RSVP increments participant count immediately. Backend validates capacity atomically (database-level check). 409 Conflict response triggers rollback and "Event just filled up" error message. Retry not allowed for capacity errors.</constraint>
+    <constraint type="authentication">All event operations require valid JWT authentication token from Epic 1. API calls include Authorization header with Bearer token. Token refresh handled by HTTP interceptor if 401 Unauthorized.</constraint>
+    <constraint type="state-management">EventStore Redux slice: eventList, selectedEvent, filters, loading, error. RSVPStore: myRSVPs, rsvpStatus, depositAuthorization. TanStack Query: useEvents hook for event list caching, useEventDetail for single event, useCreateRSVPMutation with optimistic updates and cache invalidation.</constraint>
+    <constraint type="offline-strategy">Offline mode displays cached events with staleness indicator. RSVP and check-in operations require online connectivity. Network failures show retry options with exponential backoff (3 attempts).</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface name="EventService.searchEvents" kind="function signature">
+      <signature>searchEvents(filters: EventFilterRequest): Promise&lt;EventSearchResult&gt;</signature>
+      <path>shared/services/api/events.service.ts</path>
+    </interface>
+    <interface name="EventService.getEvent" kind="function signature">
+      <signature>getEvent(eventId: string): Promise&lt;EventDetailView&gt;</signature>
+      <path>shared/services/api/events.service.ts</path>
+    </interface>
+    <interface name="EventService.createRSVP" kind="function signature">
+      <signature>createRSVP(request: RSVPRequest): Promise&lt;RSVP&gt;</signature>
+      <path>shared/services/api/events.service.ts</path>
+    </interface>
+    <interface name="EventService.cancelRSVP" kind="function signature">
+      <signature>cancelRSVP(eventId: string, reason?: string): Promise&lt;void&gt;</signature>
+      <path>shared/services/api/events.service.ts</path>
+    </interface>
+    <interface name="EventService.getMyRSVPs" kind="function signature">
+      <signature>getMyRSVPs(userId: string): Promise&lt;Event[]&gt;</signature>
+      <path>shared/services/api/events.service.ts</path>
+    </interface>
+    <interface name="EventService.validateInviteToken" kind="function signature">
+      <signature>validateInviteToken(token: string): Promise&lt;{ valid: boolean; eventId?: string }&gt;</signature>
+      <path>shared/services/api/events.service.ts</path>
+    </interface>
+    <interface name="LocationService.getCurrentLocation" kind="function signature">
+      <signature>getCurrentLocation(): Promise&lt;Coordinates&gt;</signature>
+      <path>shared/services/api/location.service.ts</path>
+    </interface>
+    <interface name="LocationService.calculateDistance" kind="function signature">
+      <signature>calculateDistance(from: Coordinates, to: Coordinates): number</signature>
+      <path>shared/services/api/location.service.ts</path>
+    </interface>
+    <interface name="LocationService.requestLocationPermission" kind="function signature">
+      <signature>requestLocationPermission(): Promise&lt;LocationPermissionStatus&gt;</signature>
+      <path>shared/services/api/location.service.ts</path>
+    </interface>
+    <interface name="PaymentService (placeholder)" kind="service interface">
+      <signature>interface IPaymentService {
+  authorizeDeposit(amount: number, paymentMethodId: string): Promise&lt;string&gt;
+  getPaymentMethods(): Promise&lt;PaymentMethod[]&gt;
+  addPaymentMethod(details: any): Promise&lt;PaymentMethod&gt;
+}</signature>
+      <path>shared/services/api/payment.service.ts (to be created)</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+Unit tests use Jest + React Testing Library (mobile and web). Integration tests use Mock Service Layer with realistic API response simulation. E2E tests use Detox (mobile) and Playwright (web). Target 70% unit test coverage for service layer, 80% for components, 90% for critical RSVP/payment flows. Test pyramid: 70% unit, 20% integration, 10% E2E strategic coverage.</standards>
+    <locations>
+      <location>shared/src/__tests__/services/events.service.test.ts</location>
+      <location>shared/src/__tests__/services/location.service.test.ts</location>
+      <location>mobile/src/__tests__/screens/events/EventsScreen.test.tsx</location>
+      <location>mobile/src/__tests__/screens/events/EventDetailScreen.test.tsx</location>
+      <location>mobile/src/__tests__/screens/events/MyRSVPsScreen.test.tsx</location>
+      <location>mobile/src/__tests__/hooks/useCreateRSVP.test.ts</location>
+      <location>mobile/__e2e__/event-rsvp-flow.test.ts (Detox)</location>
+      <location>web/src/__tests__/pages/events/EventsPage.test.tsx</location>
+      <location>web/src/__tests__/pages/events/EventDetailPage.test.tsx</location>
+      <location>web/src/__tests__/pages/events/MyRSVPsPage.test.tsx</location>
+      <location>web/__e2e__/event-rsvp-flow.spec.ts (Playwright)</location>
+    </locations>
+    <ideas>
+      <idea ac="AC1,AC2,AC3" priority="critical">Unit test EventService: searchEvents with various filters (sport, date range, distance, deposit), getEvent returns EventDetailView with participant list, createRSVP for free events (depositAmount=0) and deposit events (with paymentMethodId), mock Stripe authorization, error handling for network failures and capacity conflicts.</idea>
+      <idea ac="AC1,AC4" priority="high">Unit test LocationService: getCurrentLocation with permission granted/denied, calculateDistance with known coordinates (verify Haversine formula accuracy), geocodeAddress with valid/invalid addresses, permission request flow with rationale display.</idea>
+      <idea ac="AC3" priority="critical">Unit test PaymentService: authorizeDeposit with Stripe test mode (test cards for success and decline), getPaymentMethods returns list, addPaymentMethod flow, error handling for card declined (4000000000000002), network failures, validation errors.</idea>
+      <idea ac="AC5,AC6" priority="high">Unit test EventStore and RSVPStore Redux slices: fetchEventsStart/Success/Failure actions, setSelectedEvent, updateFilters, createRSVPStart/Success/Failure with optimistic updates, capacity race condition handling (409 Conflict rollback), RSVP status updates.</idea>
+      <idea ac="AC1,AC2,AC3" priority="high">Integration test complete RSVP flow: Browse events → select event → RSVP (free) → confirmation displayed. Browse → RSVP (deposit) → Stripe payment sheet → authorize → confirmation with deposit messaging. Verify API call sequences, state updates, cache invalidation.</idea>
+      <idea ac="AC4" priority="high">Integration test private event flow: Generate invite link → share → recipient opens link → validate token (valid/invalid/expired) → display event detail or error → RSVP flow if valid. Test deep link navigation on mobile (gss://event/invite/{token}) and web route (/events/invite/:token).</idea>
+      <idea ac="AC6" priority="high">Integration test capacity race condition: Multiple users RSVP to event near capacity → verify optimistic updates → backend validates capacity → 409 Conflict for users exceeding capacity → rollback UI → display "Event just filled up" message → refresh event detail showing updated capacity.</idea>
+      <idea ac="AC1,AC2,AC3" priority="critical">E2E test mobile (Detox): Launch app → browse events → apply filters (sport, distance) → tap event card → view detail → tap RSVP button → for free event: confirm RSVP → see success screen with QR instructions. For deposit event: see Stripe payment sheet → select test payment method → authorize → see confirmation with deposit messaging.</idea>
+      <idea ac="AC1,AC5" priority="high">E2E test mobile: Navigate to "My RSVPs" → see list of confirmed RSVPs sorted by date → verify status badges (Confirmed, Checked In, Cancelled) → tap RSVP card → open event detail → tap "Cancel RSVP" → confirm cancellation → verify RSVP removed from list and event capacity updated.</idea>
+      <idea ac="AC1,AC3" priority="critical">E2E test web (Playwright): Navigate to /events → see event grid → apply filters → click event card → see detail page with Google Map → click RSVP button → for deposit event: see Stripe Elements form → enter test card → authorize → see confirmation modal with deposit info → verify RSVP in My RSVPs page.</idea>
+      <idea ac="AC1" priority="medium">Performance test: Load event list with 50 events → measure p95 load time (<1200ms target) → apply distance filter → measure update latency (<800ms) → calculate distances for 50 events (<100ms) → open Stripe payment sheet (<500ms).</idea>
+      <idea ac="AC3" priority="medium">Security test: Verify payment data never touches client storage or logs → Stripe SDK handles card data client-side → only authorization ID stored → API calls require valid JWT → test RSVP without auth token (401 Unauthorized) → test capacity validation prevents race exploits.</idea>
+    </ideas>
+  </tests>
+</story-context>

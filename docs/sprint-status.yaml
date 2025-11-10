@@ -55,11 +55,11 @@ development_status:
 
   # Epic 2: Event Lifecycle & Attendance Commitment (Backend Complete, Frontend Needed)
   epic-2: contexted
-  2-1-host-event-creation: drafted
-  2-2-event-rsvp-deposit-authorization: drafted
-  2-3-qr-check-in-deposit-refund: drafted
-  2-4-event-browse-search-geo-filtering: drafted
-  2-5-event-reminders-cancellation-flow: drafted
+  2-1-host-event-creation: review # 85% complete - Tasks 1-6 done, testing partial
+  2-2-event-rsvp-deposit-authorization: ready-for-dev
+  2-3-qr-check-in-deposit-refund: ready-for-dev
+  2-4-event-browse-search-geo-filtering: ready-for-dev
+  2-5-event-reminders-cancellation-flow: ready-for-dev
   epic-2-retrospective: optional
 
   # Epic 3: Gamification Core (XP, Levels, Badges, Streaks) - Est. 14-18 stories
@@ -136,12 +136,36 @@ development_status:
   9-3-profile-privacy-settings-ui: backlog
   9-4-level-visibility-toggle: backlog
   # Additional stories TBD (2-5 more stories estimated)
-  epic-9-retrospective: optional
+  epic-9-retrospective:
+    optional
 
-  # Epic 10: Developer Experience & API Infrastructure (Parallel Track) - 4 stories
-  epic-10: backlog
+    # Epic 10: Developer Experience & API Infrastructure (Parallel Track) - 4 stories
+  epic-10: contexted
   10-1-client-configuration-endpoint: backlog
   10-2-swagger-annotations-epic-1-3: backlog
   10-3-swagger-annotations-epic-4-plus: backlog
   10-4-openapi-spec-publishing-cicd: backlog
   epic-10-retrospective: optional
+
+  # Epic 11: Groups & Communities (Phase 2) - Est. 18-25 stories
+  epic-11: contexted
+  11-1-group-creation-basic-profile: backlog
+  11-2-group-membership-join-requests-invitations: backlog
+  11-3-group-admin-role-management: backlog
+  11-4-group-member-list-profiles: backlog
+  11-5-group-settings-privacy-controls: backlog
+  11-6-leave-group-remove-members: backlog
+  11-7-group-event-creation: backlog
+  11-8-group-event-list-calendar: backlog
+  11-9-group-discovery-browse: backlog
+  11-10-group-recommendations: backlog
+  11-11-group-invitations-via-link: backlog
+  11-12-group-badges-xp-integration: backlog
+  11-13-group-feed-announcements: backlog
+  11-14-group-photo-sharing: backlog
+  11-15-group-discussion-threads: backlog
+  11-16-group-notifications-preferences: backlog
+  11-17-group-analytics-dashboard-admin: backlog
+  11-18-group-moderation-tools: backlog
+  # Additional stories TBD (7 more stories estimated: subgroups, recurring events, co-hosting, challenges, fundraising, merchandise, export - stretch goals)
+  epic-11-retrospective: optional

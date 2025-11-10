@@ -1,0 +1,26 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>5</storyId>
+    <title>Event Reminders & Cancellation Flow</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-10</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/2-5-event-reminders-cancellation-flow.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>participant user</asA>
+    <iWant>to receive event reminders and be able to cancel RSVPs with clear reliability impact</iWant>
+    <soThat>I stay informed about my commitments and can manage conflicts responsibly</soThat>
+  </story>
+
+  <acceptanceCriteria>
+    AC1: Event Reminder Notifications - Reminders scheduled on RSVP confirmation at 24h and 1h before event with event details, location, participants, quick actions, delivered via FCM
+    AC2: ETA Quick-Reply System - 1h reminder includes quick-reply actions (On time/5min/10min/15min late/Can't make it) sending updates without opening app
+    AC3: Cancellation Workflow - Cancel RSVP button with 4h grace period check, reliability impact preview, reason selection, deposit void, host notification
+    AC4: Grace Period Logic - 4h window before event, within: no penalty, outside: -2 points late cancellation penalty
+    AC5: Host Notifications - Push notifications on cancellation with timing/reason/count updates, real-time dashboard updates
+    AC6: Reliability Score - Cancellation shows score delta, profile displays check-in/late cancellation/no-show rates with color-coded badges
+  </acceptanceCriteria>
+</story-context>

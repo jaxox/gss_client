@@ -7,7 +7,6 @@ Status: Draft – To refine after review
 
 Deliver foundational reliability, habit loops, and host tooling before layering advanced social expansion (quests breadth, partner suggestions), then growth gating and analytics. Deferred Phase 2 group/community features excluded from active epic scope.
 
-
 ## Epic 1: Platform Foundation & Core Identity
 
 Goal: Establish deployable infrastructure, authentication, user profiles, and reliability-scoped data model.
@@ -314,13 +313,326 @@ Exit Criteria: Frontend developers can generate TypeScript clients with single c
 - **Builds on:** Epic 1-4 existing APIs
 - **Enables:** Future Epic 11 (Mobile App), Epic 12 (Web Admin Dashboard)
 
-## Deferred Phase 2 Epics (Not in current delivery)
+## Epic 11: Groups & Communities
 
-- Groups & Communities (FR042–FR052)
+**Status:** Backlog (Phase 2 Feature)  
+**Type:** Social / Community Building  
+**Priority:** Medium (after Epic 4-6 completion)
+
+Goal: Enable users to create and manage interest-based groups/communities, fostering recurring participation and deeper social connections through group events and shared spaces.
+
+Scope FRs: FR042–FR052 (assumed from Phase 2), new group-specific requirements.
+
+Stories (est.): 18-25
+
+Key Deliverables:
+
+- Group creation & basic profile management (name, description, avatar, category)
+- Group membership flows (join requests, invitations, approval/rejection)
+- Admin role management (owner, admin, moderator, member permissions)
+- Group event creation (events linked to groups, member-only or open)
+- Group discovery & search (browse by category, location, activity type)
+- Group feed & communication (announcements, shared photos, discussions)
+- Group privacy settings (public vs private groups, membership visibility)
+- Group analytics for admins (member count, engagement metrics, event participation)
+- Group badges & achievements (group-level XP, group streak tracking)
+- Member management tools (remove members, ban users, transfer ownership)
+
+**Implementation Timeline:**
+
+- **Phase 2.1 (Weeks 1-3):** Core group infrastructure (Stories 11.1-11.6)
+- **Phase 2.2 (Weeks 4-6):** Group events & discovery (Stories 11.7-11.12)
+- **Phase 2.3 (Weeks 7-9):** Group communication & analytics (Stories 11.13-11.18)
+- **Phase 2.4 (Weeks 10-12):** Advanced features & polish (Stories 11.19-11.25)
+
+**Stories (Estimated Breakdown):**
+
+### Phase 2.1: Core Group Infrastructure
+
+**Story 11.1: Group Creation & Basic Profile**
+As a **user**, I want **to create a group with a name, description, and category**, so that **I can organize recurring activities with like-minded people**.
+
+- Group creation form (name, description, category, avatar upload)
+- Group profile page (basic info display)
+- Group owner permissions
+- **Story Points:** 5 (3-4 dev sessions)
+
+**Story 11.2: Group Membership - Join Requests & Invitations**
+As a **user**, I want **to join groups via request or invitation**, so that **I can participate in group activities**.
+
+- Join request flow (public groups)
+- Invitation flow (private groups, email/in-app invites)
+- Pending requests list (for group admins)
+- Accept/reject membership actions
+- **Story Points:** 5 (3-4 dev sessions)
+
+**Story 11.3: Group Admin Role Management**
+As a **group owner**, I want **to assign admin/moderator roles to members**, so that **I can delegate group management tasks**.
+
+- Role hierarchy (Owner > Admin > Moderator > Member)
+- Role assignment UI
+- Permission matrix (create events, approve members, remove users)
+- Transfer ownership flow
+- **Story Points:** 3 (2-3 dev sessions)
+
+**Story 11.4: Group Member List & Profiles**
+As a **group member**, I want **to see all group members and their profiles**, so that **I can connect with other members**.
+
+- Member list page with avatars, names, join dates
+- Member profile view (tap to see user profile)
+- Member search/filter (by name, role)
+- Member count display
+- **Story Points:** 3 (2-3 dev sessions)
+
+**Story 11.5: Group Settings & Privacy Controls**
+As a **group admin**, I want **to configure group privacy and membership settings**, so that **I can control who can join and what is visible**.
+
+- Privacy toggle (Public vs Private)
+- Membership approval mode (Auto-approve vs Manual-approve)
+- Group visibility settings (discoverable vs invite-only)
+- Member list visibility (public vs members-only)
+- **Story Points:** 3 (2-3 dev sessions)
+
+**Story 11.6: Leave Group & Remove Members**
+As a **group member**, I want **to leave a group**, and as **admin**, I want **to remove members**, so that **group participation is voluntary and manageable**.
+
+- Leave group flow (confirmation dialog)
+- Remove member flow (admin action with reason)
+- Ban member flow (prevent rejoining)
+- Transfer ownership before leaving (for owners)
+- **Story Points:** 3 (2-3 dev sessions)
+
+### Phase 2.2: Group Events & Discovery
+
+**Story 11.7: Group Event Creation**
+As a **group admin**, I want **to create events linked to my group**, so that **members can easily find and RSVP to group activities**.
+
+- Event creation form with group link
+- Group event badge/indicator on event cards
+- Member-only vs open event toggle
+- Group members auto-notified of new events
+- **Story Points:** 5 (3-4 dev sessions)
+
+**Story 11.8: Group Event List & Calendar**
+As a **group member**, I want **to see all upcoming group events in one place**, so that **I can plan my participation**.
+
+- Group events tab (list and calendar views)
+- Filter by date range, sport type
+- RSVP status indicators
+- Past events archive
+- **Story Points:** 3 (2-3 dev sessions)
+
+**Story 11.9: Group Discovery & Browse**
+As a **user**, I want **to discover groups I might be interested in**, so that **I can expand my social network**.
+
+- Group browse page (grid/list view)
+- Category filters (Running, Cycling, Yoga, etc.)
+- Location-based search (groups near me)
+- Search by name/keyword
+- **Story Points:** 5 (3-4 dev sessions)
+
+**Story 11.10: Group Recommendations**
+As a **user**, I want **to receive group recommendations based on my activity**, so that **I can find relevant communities**.
+
+- Recommendation algorithm (based on attended events, sports preferences)
+- "Suggested Groups" section on home screen
+- "Similar Groups" on group profile pages
+- Track recommendation acceptance rate
+- **Story Points:** 5 (3-4 dev sessions)
+
+**Story 11.11: Group Invitations via Link**
+As a **group admin**, I want **to generate shareable invite links**, so that **I can easily invite people outside the app**.
+
+- Generate invite link (unique URL per group)
+- Link preview with group info
+- Link expiration options (never, 7 days, 30 days)
+- Track link usage analytics
+- **Story Points:** 3 (2-3 dev sessions)
+
+**Story 11.12: Group Badges & XP Integration**
+As a **group member**, I want **to earn badges and XP for group participation**, so that **I feel recognized for my contributions**.
+
+- Group-specific badges ("Group Founder", "Super Attendee", "Group MVP")
+- Group XP tracking (separate from personal XP)
+- Group leaderboard (most active members)
+- Badge display on member profiles
+- **Story Points:** 5 (3-4 dev sessions)
+
+### Phase 2.3: Group Communication & Analytics
+
+**Story 11.13: Group Feed & Announcements**
+As a **group admin**, I want **to post announcements to the group feed**, so that **I can keep members informed**.
+
+- Group feed (chronological posts)
+- Announcement creation (admins only)
+- Post types (text, photo, event link)
+- Feed pagination & infinite scroll
+- **Story Points:** 5 (3-4 dev sessions)
+
+**Story 11.14: Group Photo Sharing**
+As a **group member**, I want **to share event photos in the group**, so that **we can celebrate our activities together**.
+
+- Photo upload to group feed
+- Photo gallery view (grid layout)
+- Photo comments & likes
+- Photo moderation (admins can delete)
+- **Story Points:** 3 (2-3 dev sessions)
+
+**Story 11.15: Group Discussion Threads**
+As a **group member**, I want **to start discussion threads**, so that **we can coordinate activities and share tips**.
+
+- Discussion thread creation
+- Threaded comments (reply to posts)
+- Pinned threads (admin feature)
+- Thread search & filter
+- **Story Points:** 5 (3-4 dev sessions)
+
+**Story 11.16: Group Notifications & Preferences**
+As a **group member**, I want **to control which group notifications I receive**, so that **I'm not overwhelmed**.
+
+- Notification preferences per group
+- Notification types (new events, announcements, new members)
+- Mute group option (stay in group but silence notifications)
+- Push notification settings
+- **Story Points:** 3 (2-3 dev sessions)
+
+**Story 11.17: Group Analytics Dashboard (Admin)**
+As a **group admin**, I want **to see group engagement metrics**, so that **I can understand group health and growth**.
+
+- Member count over time (line chart)
+- Event participation rate (% members attending)
+- Active members (posted/commented in last 30 days)
+- Growth metrics (new joins, churn rate)
+- **Story Points:** 5 (3-4 dev sessions)
+
+**Story 11.18: Group Moderation Tools**
+As a **group moderator**, I want **to manage inappropriate content and behavior**, so that **the group remains welcoming**.
+
+- Report post/comment flow
+- Moderation queue (flagged content)
+- Delete content action
+- Ban member flow (with ban duration options)
+- Moderation audit log
+- **Story Points:** 5 (3-4 dev sessions)
+
+### Phase 2.4: Advanced Features
+
+**Story 11.19: Group Subgroups / Chapters**
+As a **large group owner**, I want **to create subgroups for different regions or skill levels**, so that **members can find more relevant activities**.
+
+- Subgroup creation (linked to parent group)
+- Subgroup-specific events
+- Cross-post to parent group option
+- Subgroup member management
+- **Story Points:** 5 (3-4 dev sessions) - Optional/Stretch
+
+**Story 11.20: Group Event Series / Recurring Events**
+As a **group admin**, I want **to create recurring event series**, so that **I don't have to manually create weekly/monthly events**.
+
+- Recurring event pattern (weekly, monthly, custom)
+- Series management (edit all vs single instance)
+- Series cancellation handling
+- Attendance tracking across series
+- **Story Points:** 5 (3-4 dev sessions)
+
+**Story 11.21: Group Co-Hosting (Multi-Admin Events)**
+As a **group admin**, I want **to co-host events with other groups**, so that **we can cross-promote activities**.
+
+- Multi-group event linking
+- Co-host approval flow
+- Event appears in all linked groups
+- Split attendance tracking
+- **Story Points:** 3 (2-3 dev sessions) - Optional/Stretch
+
+**Story 11.22: Group Challenges & Competitions**
+As a **group admin**, I want **to create group challenges**, so that **I can motivate members to stay active**.
+
+- Challenge creation (e.g., "Attend 5 events this month")
+- Challenge progress tracking
+- Leaderboard for challenge participants
+- Challenge completion badges
+- **Story Points:** 5 (3-4 dev sessions) - Optional/Stretch
+
+**Story 11.23: Group Fundraising / Dues**
+As a **group admin**, I want **to collect optional dues or donations**, so that **we can fund group activities**.
+
+- Dues collection flow (optional membership fee)
+- Fundraising campaigns (group goal tracking)
+- Payment integration (Stripe)
+- Transparency dashboard (how funds are used)
+- **Story Points:** 8 (4-5 dev sessions) - Optional/Stretch
+
+**Story 11.24: Group Merchandise / Swag**
+As a **group member**, I want **to purchase group-branded merchandise**, so that **I can represent my community**.
+
+- Merchandise catalog (t-shirts, water bottles, etc.)
+- Group admin can configure available items
+- Order placement & fulfillment integration
+- Revenue sharing with group
+- **Story Points:** 8 (4-5 dev sessions) - Optional/Stretch
+
+**Story 11.25: Group Export & Portability**
+As a **group owner**, I want **to export group data**, so that **I have backup and portability**.
+
+- Export member list (CSV)
+- Export event history (CSV)
+- Export discussion threads (JSON)
+- GDPR compliance (data portability)
+- **Story Points:** 3 (2-3 dev sessions)
+
+Exit Criteria:
+
+- Users can create and join public/private groups
+- Group admins can create member-only events
+- Group feed supports announcements and discussions
+- Group discovery enables finding relevant communities
+- Group analytics show engagement metrics
+- 80% of active users have joined at least one group
+- Group event RSVP rate ≥ individual event rate + 15%
+
+**Dependencies:**
+
+- **Builds on:** Epic 1 (Auth, Profiles), Epic 2 (Events, RSVP), Epic 3 (XP, Badges), Epic 4 (Social Interactions)
+- **Enables:** Community-driven growth, recurring engagement, local chapter model
+
+**Business Value:**
+
+- Increase user retention through community belonging
+- Drive recurring event participation (group events > one-off events)
+- Enable grassroots community building (local chapters)
+- Create network effects (members invite friends to groups)
+- Potential monetization (group subscriptions, merchandise)
+
+**Risks:**
+
+- Group moderation overhead (toxic communities, spam)
+- Group abandonment (inactive groups clutter discovery)
+- Split focus (users prioritize groups over platform-wide events)
+- Technical complexity (group permissions, nested data structures)
+
+**Assumptions:**
+
+- Backend group APIs need to be built (not part of current backend scope)
+- Groups are optional (users can engage without joining groups)
+- Group owners are responsible for moderation (platform provides tools)
+- Groups enhance rather than replace individual event participation
+
+**Open Questions:**
+
+- Should groups support direct messaging between members? (Assumed no, deferred to chat epic)
+- Should groups have their own currency/credits? (Assumed no, use platform XP only)
+- Should groups be able to charge membership fees from launch? (Assumed optional/stretch goal)
+- Maximum group size limits? (Assumed 500 members MVP, scalable later)
+
+---
+
+## Deferred Phase 3 Epics (Not in current delivery)
+
 - Competitive Performance Layer Expansion (post-gating metrics)
 - Sponsorship & Local Rewards Integration
 - Advanced Analytics Dashboard for Hosts
 - ML Partner Matching Service
+- Group Direct Messaging & Chat
 
 ## Risk & Dependency Notes
 
@@ -331,17 +643,17 @@ Exit Criteria: Frontend developers can generate TypeScript clients with single c
 
 ## Metrics Alignment Matrix (Excerpt)
 
-| Epic | Primary KPI Influence | Supporting Metrics |
-|------|-----------------------|--------------------|
-| 1 | Activation Funnel Completion | Time to profile completion |
-| 2 | RSVP→Check-In Conversion | Deposit refund latency, No-show rate |
-| 3 | Streak Retention | Badge unlock rate, XP distribution |
-| 4 | Partner Diversity | Quest completion rate, Kudos activity |
-| 5 | Notification Opt-In Health | Late ETA resolution time |
-| 6 | Reliability Stability During Growth | Invite utilization %, Wave promotion success |
-| 7 | Partner Suggestion Acceptance | Social mixing uplift, Suggestion CTR |
-| 8 | Community Health | Flag resolution SLA, Abuse rate |
-| 9 | Privacy Setting Adoption | Private event fill rate |
+| Epic | Primary KPI Influence               | Supporting Metrics                           |
+| ---- | ----------------------------------- | -------------------------------------------- |
+| 1    | Activation Funnel Completion        | Time to profile completion                   |
+| 2    | RSVP→Check-In Conversion            | Deposit refund latency, No-show rate         |
+| 3    | Streak Retention                    | Badge unlock rate, XP distribution           |
+| 4    | Partner Diversity                   | Quest completion rate, Kudos activity        |
+| 5    | Notification Opt-In Health          | Late ETA resolution time                     |
+| 6    | Reliability Stability During Growth | Invite utilization %, Wave promotion success |
+| 7    | Partner Suggestion Acceptance       | Social mixing uplift, Suggestion CTR         |
+| 8    | Community Health                    | Flag resolution SLA, Abuse rate              |
+| 9    | Privacy Setting Adoption            | Private event fill rate                      |
 
 ## Next Actions
 

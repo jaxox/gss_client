@@ -16,11 +16,22 @@ import RegistrationScreen from './src/screens/auth/RegistrationScreen';
 import ForgotPasswordScreen from './src/screens/auth/ForgotPasswordScreen';
 import ResetPasswordScreen from './src/screens/auth/ResetPasswordScreen';
 import ProfileScreen from './src/screens/profile/ProfileScreen';
+import CreateEventScreen from './src/screens/events/CreateEventScreen';
+import MyEventsScreen from './src/screens/events/MyEventsScreen';
 import ErrorBoundary from './src/components/ErrorBoundary';
 import { logJsError } from './src/utils/jsLogger';
 import { NativeModules } from 'react-native';
 
-type Screen = 'menu' | 'login' | 'register' | 'forgot' | 'reset' | 'profile';
+type Screen =
+  | 'menu'
+  | 'login'
+  | 'register'
+  | 'forgot'
+  | 'reset'
+  | 'profile'
+  | 'createEvent'
+  | 'myEvents'
+  | 'createEvent';
 
 function App() {
   // Global error handler to catch all errors
@@ -157,6 +168,20 @@ function App() {
           >
             Profile Screen
           </Button>
+          <Button
+            mode="contained"
+            onPress={() => setCurrentScreen('createEvent')}
+            style={styles.menuButton}
+          >
+            Create Event Screen
+          </Button>
+          <Button
+            mode="contained"
+            onPress={() => setCurrentScreen('myEvents')}
+            style={styles.menuButton}
+          >
+            My Events Screen
+          </Button>
         </View>
       );
     }
@@ -195,6 +220,16 @@ function App() {
         {currentScreen === 'profile' && (
           <ErrorBoundary>
             <ProfileScreen />
+          </ErrorBoundary>
+        )}
+        {currentScreen === 'createEvent' && (
+          <ErrorBoundary>
+            <CreateEventScreen />
+          </ErrorBoundary>
+        )}
+        {currentScreen === 'myEvents' && (
+          <ErrorBoundary>
+            <MyEventsScreen />
           </ErrorBoundary>
         )}
       </View>

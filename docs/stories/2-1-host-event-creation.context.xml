@@ -1,0 +1,267 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2-1</storyId>
+    <title>Host Event Creation</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-09</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/2-1-host-event-creation.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>a host user</asA>
+    <iWant>to create and manage sports events with comprehensive details</iWant>
+    <soThat>I can organize events with clear information and attract the right participants</soThat>
+    <tasks>
+      <task id="1" acs="1,2">Event Creation Service Layer - Implement EventService.createEvent() and LocationService.geocodeAddress() with QR code generation</task>
+      <task id="2" acs="1,5">State Management - Create EventStore with Redux slice and TanStack Query integration for caching</task>
+      <task id="3" acs="1,2,3,4">Mobile Event Creation UI - CreateEventScreen with form, LocationPicker, and QRCodeDisplay components</task>
+      <task id="4" acs="1,2,3,4">Web Event Creation UI - CreateEventPage with form, MapPicker, and QRCodeDisplay components</task>
+      <task id="5" acs="1,4">Form Validation and Error Handling - Zod schema validation with user-friendly error messages</task>
+      <task id="6" acs="5">Event Management Features - Edit event, cancel event, and My Events list functionality</task>
+      <task id="7" acs="all">Testing - Unit, integration, and E2E tests for event creation flow</task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1" priority="critical">
+      <title>Event Creation Form (Tech Spec AC1)</title>
+      <requirements>
+        - Event creation form accessible from host accounts with "Create Event" button
+        - Form inputs with validation: title (3-100 chars), description (max 500 chars with counter), sport selector (pickleball default), location (map picker or autocomplete), date/time (future only), capacity (1-100), deposit ($0/$5/$10), visibility (public/private)
+        - Real-time client-side validation prevents invalid submissions
+        - Address geocoding to coordinates with error handling
+        - Successful creation calls eventService.createEvent(), returns event with QR code
+        - Navigate to event detail screen showing created event and QR code
+        - Error handling displays user-friendly messages
+        - Works on both mobile (React Native) and web (React)
+      </requirements>
+    </criterion>
+    <criterion id="AC2" priority="high">
+      <title>QR Code Generation</title>
+      <requirements>
+        - QR code automatically generated on event creation with secure token
+        - QR code displayed prominently on event detail screen for hosts
+        - Tap/click QR code to enlarge full-screen for easier scanning
+        - QR code cached locally for offline access
+        - QR code includes event ID and cryptographic token for validation
+      </requirements>
+    </criterion>
+    <criterion id="AC3" priority="high">
+      <title>Location Integration</title>
+      <requirements>
+        - Map picker allows visual location selection
+        - Address autocomplete using Google Maps API
+        - Geocoding converts addresses to coordinates
+        - Location validation ensures valid coordinates within service area
+        - Map preview displays selected location with marker
+        - Venue type selection (indoor/outdoor) optional
+        - Location permission requested on first use with clear rationale
+      </requirements>
+    </criterion>
+    <criterion id="AC4" priority="medium">
+      <title>Form UX and Accessibility</title>
+      <requirements>
+        - Clear labels and placeholder text for form fields
+        - Inline validation errors with field-specific messages
+        - Loading states during geocoding and API calls with spinners
+        - Form persistence: draft data saved to prevent loss on navigation
+        - Cancel option returns to previous screen with confirmation dialog
+        - Accessibility: keyboard navigable, screen reader friendly
+        - Mobile: optimized keyboard types (numeric for capacity, native date picker)
+      </requirements>
+    </criterion>
+    <criterion id="AC5" priority="medium">
+      <title>Event Management Post-Creation</title>
+      <requirements>
+        - Created event appears in "My Events" list immediately (optimistic update)
+        - Host can edit event details (title, description, time, capacity) before event starts
+        - Host can cancel event with confirmation dialog and participant notifications
+        - Event status indicators: Upcoming, Ongoing, Completed, Cancelled
+        - Participant count updates in real-time as RSVPs occur
+        - Event deletion restricted after RSVPs exist (only cancellation allowed)
+      </requirements>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc path="docs/tech-spec-epic-2.md" title="Epic 2 Technical Specification" section="AC1: Host Event Creation System">
+        Comprehensive specification for event creation system including form validation, location integration with Google Maps, QR code generation, and multi-platform support (mobile + web). Defines EventService.createEvent() interface, CreateEventRequest/CreateEventResponse models, and event creation workflow (form input → validation → geocoding → API call → QR generation → navigation).
+      </doc>
+      <doc path="docs/tech-spec-epic-2.md" title="Epic 2 Technical Specification" section="Services and Modules">
+        Defines EventService (CRUD operations, RSVP management), LocationService (geocoding, distance calculation, map integration), QRService (QR code generation/scanning), and module ownership (shared/services/api/events.service.ts, shared/services/api/location.service.ts).
+      </doc>
+      <doc path="docs/tech-spec-epic-2.md" title="Epic 2 Technical Specification" section="Data Models - Event, CreateEventRequest">
+        Event interface with required fields (title, description, sport, location with coordinates, dateTime, capacity, depositAmount, visibility, hostId, qrCode, inviteToken, status). EventLocation includes address, coordinates, venueName, venueType. CreateEventRequest defines API payload structure.
+      </doc>
+      <doc path="docs/tech-spec-epic-2.md" title="Epic 2 Technical Specification" section="APIs and Interfaces">
+        Backend API endpoints: POST /api/v1/events (create), PUT /api/v1/events/:id (update), DELETE /api/v1/events/:id (cancel), GET /api/v1/events/my-events (host's events). IEventService and ILocationService interface definitions with method signatures.
+      </doc>
+      <doc path="docs/shared/PRD.md" title="Product Requirements Document" section="FR005: Create Event">
+        Host specifies title, description, location (address + map), date/time, capacity, deposit amount ($0/$5/$10 test arms), visibility (public/private). QR code generation per event for check-ins.
+      </doc>
+      <doc path="docs/architecture.md" title="Client Architecture" section="Event Discovery Components">
+        EventCard, EventFilters, MapView, EventList component patterns. EventService, LocationService interface definitions. Redux Toolkit + TanStack Query for state management. React Native Paper (mobile) and MUI (web) for UI components.
+      </doc>
+      <doc path="docs/architecture.md" title="Client Architecture" section="Project Structure">
+        Shared library: shared/services/api/events.service.ts, shared/types/event.ts, shared/validation/eventValidation.ts. Mobile: mobile/src/screens/events/CreateEventScreen.tsx, mobile/src/components/events/LocationPicker.tsx, mobile/src/store/events/eventSlice.ts. Web: web/src/pages/events/CreateEventPage.tsx, web/src/components/events/MapPicker.tsx.
+      </doc>
+      <doc path="docs/ux-design-specification.md" title="UX Design Specification" section="Trust &amp; Reliability Theme">
+        Primary color: #3B82F6 (Blue). Typography: Inter font system. Spacing: 8px system. Form components: clear labels, inline validation errors, loading states with spinners. Mobile: optimized keyboard types, native date pickers.
+      </doc>
+    </docs>
+    <code>
+      <artifact path="shared/src/services/api/authServiceImpl.ts" kind="service" symbol="AuthServiceImpl" lines="1-150" reason="Reference implementation pattern for API service with error handling, demonstrates service structure and HTTP client usage with Ky for EventService implementation"/>
+      <artifact path="shared/src/services/http/" kind="directory" symbol="client.ts, interceptors.ts" reason="HTTP client configuration with Ky, auth token interceptors, error handling patterns to be used by EventService and LocationService"/>
+      <artifact path="shared/src/services/mock/" kind="directory" symbol="mockAuth.service.ts" reason="Mock service implementation pattern for development/testing, demonstrates realistic delay simulation and data generation for MockEventService"/>
+      <artifact path="shared/src/types/" kind="directory" symbol="api.types.ts, user.types.ts" reason="Existing TypeScript type definitions pattern, reference for creating event.types.ts with Event, CreateEventRequest, CreateEventResponse interfaces"/>
+      <artifact path="mobile/src/store/" kind="directory" symbol="slices/" reason="Redux Toolkit slice examples (auth.slice.ts, user.slice.ts) demonstrating actions, reducers, selectors pattern for eventSlice.ts implementation"/>
+      <artifact path="shared/src/utils/validation.ts" kind="utility" symbol="validation functions" reason="Form validation utilities and patterns, reference for eventValidation.ts Zod schema creation"/>
+    </code>
+    <dependencies>
+      <shared>
+        <dep name="ky" version="^1.14.0" usage="HTTP client for API calls (EventService, LocationService)"/>
+        <dep name="zod" version="^4.1.12" usage="Form validation schemas (eventValidation.ts)"/>
+        <dep name="validator" version="^13.15.22" usage="Additional validation utilities (email, URL, coordinate validation)"/>
+      </shared>
+      <mobile>
+        <dep name="react-native" version="0.82.1" usage="Core mobile framework"/>
+        <dep name="react-native-paper" version="^5.14.5" usage="UI components (Button, TextInput, Select)"/>
+        <dep name="react-native-maps" version="TBD" usage="Map display and location picker (react-native-maps library)"/>
+        <dep name="react-native-geolocation-service" version="TBD" usage="GPS location services"/>
+        <dep name="react-native-qrcode-svg" version="TBD" usage="QR code generation for mobile"/>
+        <dep name="@react-native-picker/picker" version="TBD" usage="Sport selector dropdown"/>
+        <dep name="@react-native-community/datetimepicker" version="TBD" usage="Native date/time picker"/>
+        <dep name="@tanstack/react-query" version="^5.90.7" usage="Event data caching and mutations"/>
+        <dep name="@reduxjs/toolkit" version="^2.10.1" usage="State management for event creation flow"/>
+      </mobile>
+      <web>
+        <dep name="@mui/material" version="TBD" usage="UI components (TextField, Select, Button)"/>
+        <dep name="@googlemaps/js-api-loader" version="TBD" usage="Google Maps JavaScript API for web map picker"/>
+        <dep name="qrcode.react" version="TBD" usage="QR code generation for web"/>
+        <dep name="@mui/x-date-pickers" version="TBD" usage="Date/time picker components for web"/>
+      </web>
+      <external>
+        <dep name="Google Maps Platform APIs" usage="Geocoding API, Maps API, Places API for location services"/>
+        <dep name="Stripe SDK" usage="Deposit amount validation (validates against backend limits)"/>
+        <dep name="Firebase Cloud Messaging" usage="Event notifications (inherited from Epic 1)"/>
+      </external>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="architecture">EventService and LocationService must be implemented in shared/ library with interface-based design supporting both mock (development) and real (production) implementations via serviceFactory pattern</constraint>
+    <constraint type="architecture">State management: Redux Toolkit for event creation state + TanStack Query for API caching/mutations (no direct HTTP calls in components)</constraint>
+    <constraint type="design-system">Mobile: React Native Paper components only. Web: MUI components only. Trust &amp; Reliability theme colors (#3B82F6 primary blue). Inter font system. 8px spacing grid.</constraint>
+    <constraint type="validation">All form validation must use Zod schemas defined in shared/validation/eventValidation.ts. Real-time validation on blur, form-level validation on submit.</constraint>
+    <constraint type="api-integration">Backend APIs assumed complete: POST /api/v1/events, PUT /api/v1/events/:id, DELETE /api/v1/events/:id, GET /api/v1/events/my-events. Mock implementations required for development.</constraint>
+    <constraint type="location">Google Maps Platform API keys must be configured in environment variables. Geocoding must include error handling and fallback to manual coordinate entry.</constraint>
+    <constraint type="qr-code">QR code format: gss://event/{eventId}/checkin/{token} with HMAC-SHA256 signature. Generated on event creation, cached locally for offline access.</constraint>
+    <constraint type="performance">Form renders in &lt;300ms on baseline devices (iPhone 11, Pixel 5). Geocoding completes in &lt;1s for US addresses. Event creation API call &lt;2s. QR code generation &lt;100ms.</constraint>
+    <constraint type="offline">Event creation requires online connectivity (payment validation). Show clear offline indicator if network unavailable. Draft form data persists to AsyncStorage (mobile) / localStorage (web) to prevent loss on navigation.</constraint>
+    <constraint type="security">Client-side validation before API submission. Sanitize event descriptions (XSS prevention). QR code tokens cryptographically signed. Host-only access to creation form (role-based UI control).</constraint>
+    <constraint type="accessibility">WCAG 2.1 AA compliance. Form keyboard navigable, screen reader friendly. Clear labels and placeholder text. Inline validation errors with field-specific messages.</constraint>
+    <constraint type="testing">70% unit test coverage (services, validation, state management). 20% integration tests (form submission, geocoding, QR generation). 10% E2E tests (Detox mobile, Playwright web).</constraint>
+    <constraint type="dependencies">Epic 1 authentication foundation required (JWT tokens, user session). Firebase Cloud Messaging setup for notifications. Stripe configuration for deposit validation.</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface name="IEventService.createEvent" kind="REST endpoint">
+      <signature>POST /api/v1/events
+Request: CreateEventRequest {
+  title: string (3-100 chars),
+  description: string (max 500 chars),
+  sportId: string,
+  location: EventLocation {
+    address: string,
+    city: string,
+    state: string,
+    zipCode: string,
+    coordinates: { latitude: number, longitude: number },
+    venueName?: string,
+    venueType?: 'indoor' | 'outdoor'
+  },
+  dateTime: string (ISO 8601),
+  capacity: number (1-100),
+  depositAmount: number (0, 500, or 1000 cents),
+  visibility: 'public' | 'private'
+}
+Response: Event {
+  id: string,
+  ...CreateEventRequest fields,
+  hostId: string,
+  host: User,
+  qrCode: string (base64 or URL),
+  inviteToken?: string (if private),
+  status: 'upcoming',
+  createdAt: string,
+  updatedAt: string
+}</signature>
+      <path>shared/services/api/events.service.ts</path>
+    </interface>
+    <interface name="ILocationService.geocodeAddress" kind="function signature">
+      <signature>geocodeAddress(address: string): Promise&lt;{ latitude: number, longitude: number, formattedAddress: string }&gt;</signature>
+      <path>shared/services/api/location.service.ts</path>
+    </interface>
+    <interface name="EventService (shared service)" kind="class interface">
+      <signature>class EventServiceImpl implements IEventService {
+  createEvent(event: CreateEventRequest): Promise&lt;Event&gt;
+  updateEvent(eventId: string, updates: Partial&lt;CreateEventRequest&gt;): Promise&lt;Event&gt;
+  deleteEvent(eventId: string): Promise&lt;void&gt;
+  getMyEvents(userId: string): Promise&lt;Event[]&gt;
+}</signature>
+      <path>shared/services/api/events.service.ts</path>
+    </interface>
+    <interface name="eventSlice Redux actions" kind="Redux actions">
+      <signature>createEventStart(payload: CreateEventRequest)
+createEventSuccess(payload: Event)
+createEventFailure(payload: { error: string })
+selectCreatedEvents(state): Event[]
+selectEventCreationStatus(state): 'idle' | 'loading' | 'success' | 'error'</signature>
+      <path>mobile/src/store/events/eventSlice.ts, web/src/store/events/eventSlice.ts</path>
+    </interface>
+    <interface name="useCreateEvent hook" kind="React hook">
+      <signature>useCreateEvent(): {
+  createEvent: (data: CreateEventRequest) =&gt; Promise&lt;Event&gt;,
+  isLoading: boolean,
+  error: string | null,
+  reset: () =&gt; void
+}</signature>
+      <path>mobile/src/hooks/useCreateEvent.ts, web/src/hooks/useCreateEvent.ts</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+Testing follows Jest + React Native Testing Library (mobile) and Vitest (web) patterns. 70% unit test coverage target for services, validation, and state management. 20% integration tests for form submission flows, API integration, and geocoding. 10% E2E tests with Detox (mobile) and Playwright (web) for critical paths. Mock service implementations used for development and testing. API mocking via Mock Service Worker (MSW) for integration tests. All tests must be deterministic and fast (&lt;5s per suite).
+    </standards>
+    <locations>
+      <location>shared/src/__tests__/services/events.service.test.ts</location>
+      <location>shared/src/__tests__/services/location.service.test.ts</location>
+      <location>shared/src/__tests__/validation/eventValidation.test.ts</location>
+      <location>mobile/src/__tests__/screens/events/CreateEventScreen.test.tsx</location>
+      <location>mobile/src/__tests__/components/events/LocationPicker.test.tsx</location>
+      <location>mobile/src/__tests__/store/events/eventSlice.test.ts</location>
+      <location>mobile/src/__tests__/hooks/useCreateEvent.test.ts</location>
+      <location>mobile/__e2e__/event-creation.test.ts (Detox)</location>
+      <location>web/src/__tests__/pages/events/CreateEventPage.test.tsx</location>
+      <location>web/src/__tests__/components/events/MapPicker.test.tsx</location>
+      <location>web/__e2e__/event-creation.spec.ts (Playwright)</location>
+    </locations>
+    <ideas>
+      <idea ac="AC1" priority="high">Unit test EventService.createEvent with valid data, invalid data (missing fields, invalid capacity, past dates), network failures, API errors. Verify CreateEventRequest → Event transformation, QR code generation, error handling.</idea>
+      <idea ac="AC1" priority="high">Unit test LocationService.geocodeAddress with valid addresses, invalid addresses, network failures, geocoding API errors. Verify coordinate validation (latitude -90 to 90, longitude -180 to 180).</idea>
+      <idea ac="AC1" priority="high">Integration test form validation schema: all field validators (title length, description max chars, future date, capacity range, valid coordinates). Test Zod schema error messages mapping to user-friendly text.</idea>
+      <idea ac="AC1,AC4" priority="high">Component test CreateEventScreen form rendering, input changes, real-time validation on blur, form submission with loading states, error display, navigation on success.</idea>
+      <idea ac="AC2" priority="medium">Unit test QR code generation: verify format gss://event/{eventId}/checkin/{token}, HMAC signature validation, base64 encoding. Test QRCodeDisplay component tap-to-enlarge interaction.</idea>
+      <idea ac="AC3" priority="high">Component test LocationPicker: map rendering, marker placement, drag handling, address autocomplete, geocoding trigger on address selection, location permission request flow.</idea>
+      <idea ac="AC5" priority="medium">Integration test event management: create event → appears in My Events list (optimistic update), edit event (form pre-filled, validation, API call), cancel event (confirmation dialog, participant notification handling).</idea>
+      <idea ac="AC1" priority="critical">E2E test mobile (Detox): Navigate to Create Event → fill form (title, description, sport, location via map, date/time, capacity, deposit, visibility) → submit → verify success screen → verify QR code displayed → verify event in My Events list.</idea>
+      <idea ac="AC1" priority="critical">E2E test web (Playwright): Same flow as mobile but verify web-specific components (MUI inputs, Google Maps web map picker, QR code modal dialog).</idea>
+      <idea ac="AC1,AC4" priority="medium">Integration test error scenarios: network failure during creation (retry logic), geocoding failure (fallback to manual coordinates), validation errors (inline display), offline indicator when network unavailable.</idea>
+      <idea ac="AC5" priority="low">E2E test cross-platform consistency: Create event on mobile → verify appears on web. Create event on web → verify appears on mobile. Verify same event data (title, location, capacity) across platforms.</idea>
+    </ideas>
+  </tests>
+</story-context>

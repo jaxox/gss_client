@@ -1,0 +1,254 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>3</storyId>
+    <title>QR Check-In & Deposit Refund</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-10</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/2-3-qr-check-in-deposit-refund.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>participant user</asA>
+    <iWant>to check in to events using QR codes with automatic deposit refunds</iWant>
+    <soThat>I can confirm my attendance easily and get my deposit back immediately</soThat>
+    <tasks>
+      - QR Check-In Service Layer: Implement EventService.checkIn(), EventService.manualCheckIn(), PaymentService.refundDeposit()
+      - QR Scanner Service: Implement QRService with validateQRFormat(), parseQRData(), configure react-native-vision-camera (mobile) and html5-qrcode (web)
+      - Check-In State Management: Update RSVPStore Redux slice with check-in state, integrate TanStack Query for check-in mutation with optimistic updates
+      - Mobile QR Check-In UI: CheckInScreen with camera view and QR scanner overlay, CheckInSuccess component with success animation, manual check-in request flow, error handling UI
+      - Web QR Check-In UI: CheckInDialog with html5-qrcode scanner, success modal, manual check-in request, error dialogs
+      - Host Dashboard Manual Check-In UI: Add "Pending Check-Ins" section to Host Dashboard with confirm/deny actions
+      - Deposit Refund Notification: Implement refund notification service with push and in-app notifications, handle refund failures
+      - Testing: Unit tests for check-in/refund services and state management, component tests for check-in flows, integration tests for complete flows, E2E tests with Detox (mobile) and Playwright (web)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    AC1: QR Code Check-In Flow - Check-in button on event detail for RSVP'd events, tap opens camera with QR scanner overlay and targeting guides, camera permissions requested with rationale, scanner detects host QR code, client-side validation (format gss://event/{eventId}/checkin/{token}), API call to eventService.checkIn() with token, backend validates (correct event, active RSVP, not checked in, within time window), success triggers deposit refund within 60s, success animation with "✓ Checked in!" message and deposit refund confirmation, participant list updates, prevents duplicate check-ins
+    
+    AC2: Manual Check-In Fallback - "Request Manual Check-In" button after QR scan timeout (30s), tap sends notification to host, host receives push notification with user info, host opens dashboard and sees pending request, host verifies presence and taps "Confirm Check-In", API call to eventService.manualCheckIn() with userId, backend logs as 'manual' with host ID and timestamp audit trail, deposit refund triggered same as QR, both user and host receive confirmation, user app updates to checked-in status with manual method indication
+    
+    AC3: Deposit Refund Automation - Refund triggered automatically on successful check-in, API call to paymentService.refundDeposit() with authorization ID, Stripe refund completes <60s p95 per NFR024, user receives immediate UI confirmation and push notification, refund appears in payment method within 5-10 days, RSVP status updated to 'checked-in' with refund confirmation, idempotency prevents double refunds, refund failure handling with error logging and manual reconciliation flag
+    
+    AC4: QR Scanner UX and Error Handling - Scanner overlay with targeting guides (corner brackets), flashlight toggle for low-light, haptic feedback on successful scan, auto-focus on QR detection, error messages (Invalid QR/Wrong event/Already checked in/Too early/Too late/Network error), scanner timeout 30s shows manual check-in option, cancel button returns to event detail
+    
+    AC5: Check-In Status and History - Event detail shows status indicator (Not Checked In/Checked In/Manual Check-In/No-Show), check-in timestamp displayed, deposit refund status visible, check-in method logged (QR Scan/Manual by Host), historical check-ins in "My RSVPs" with filters, check-in data used for reliability score calculation
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/tech-spec-epic-2.md</path>
+        <title>Epic 2 Technical Specification</title>
+        <section>AC4: QR Code Check-In System</section>
+        <snippet>Check-in button on event detail for RSVP'd events. Camera opens with QR scanner overlay and targeting guides. Camera permissions requested with rationale. Scanner detects host QR code (format gss://event/{eventId}/checkin/{token}). Client-side format validation before API call. Backend validates: correct event, active RSVP, not already checked in, within time window (event start - 30min to event end + 30min). Success triggers deposit refund within 60s. Success animation: confetti effect, "✓ Checked in!" message. Participant list updates with check-in timestamp.</snippet>
+      </doc>
+      <doc>
+        <path>docs/tech-spec-epic-2.md</path>
+        <title>Epic 2 Technical Specification</title>
+        <section>AC5: Manual Check-In Fallback System</section>
+        <snippet>"Request Manual Check-In" button if QR scan fails. Sends notification to event host. Host receives push notification with user info. Host opens event dashboard, sees pending check-in request. Host verifies user presence, taps "Confirm Check-In". API call to eventService.manualCheckIn() with userId. Backend logs check-in method as 'manual' with host ID and timestamp audit trail. Deposit refund triggered same as QR check-in. Both user and host receive confirmation notifications. Manual check-ins tracked separately in analytics.</snippet>
+      </doc>
+      <doc>
+        <path>docs/tech-spec-epic-2.md</path>
+        <title>Epic 2 Technical Specification</title>
+        <section>NFR024: Deposit Refund Automation</section>
+        <snippet>Deposit refund triggered automatically on confirmed check-in (QR or manual). Stripe refund processing target <60s confirmation (p95). Idempotency keys prevent double refunds. User receives immediate UI confirmation and push notification. Refund appears in payment method within Stripe standard timeframe (5-10 business days).</snippet>
+      </doc>
+      <doc>
+        <path>docs/tech-spec-epic-2.md</path>
+        <title>Epic 2 Technical Specification</title>
+        <section>Data Models - CheckInRequest, CheckInResponse</section>
+        <snippet>CheckInRequest: { eventId: string, qrToken: string (optional), method: 'qr' | 'manual', userId?: string (for manual) }. CheckInResponse: { success: boolean, rsvp: RSVP (updated), depositRefunded: boolean, xpAwarded?: number (Epic 3 placeholder), message: string }. RSVP updated with checkedInAt, checkedInMethod ('qr' | 'manual'), checkedInBy (host userId for manual), depositStatus ('refunded').</snippet>
+      </doc>
+      <doc>
+        <path>docs/tech-spec-epic-2.md</path>
+        <title>Epic 2 Technical Specification</title>
+        <section>Services - EventService check-in methods</section>
+        <snippet>EventService: checkIn(request: CheckInRequest): Promise&lt;CheckInResponse&gt; - QR or manual check-in with backend validation. manualCheckIn(eventId: string, userId: string): Promise&lt;CheckInResponse&gt; - Host-initiated manual check-in with audit logging. generateQRCode(eventId: string): Promise&lt;string&gt; - Generate QR code for event (Story 2-1). validateQRToken(token: string): Promise&lt;{ valid: boolean, eventId?: string }&gt; - Validate QR token format and signature.</snippet>
+      </doc>
+      <doc>
+        <path>docs/tech-spec-epic-2.md</path>
+        <title>Epic 2 Technical Specification</title>
+        <section>Services - PaymentService refund methods</section>
+        <snippet>PaymentService: refundDeposit(authorizationId: string): Promise&lt;void&gt; - Refund Stripe deposit with idempotency key. captureDeposit(authorizationId: string): Promise&lt;void&gt; - Capture deposit on no-show (deferred). Idempotency keys format: `refund_{authorizationId}_{timestamp}` to prevent duplicate processing.</snippet>
+      </doc>
+      <doc>
+        <path>docs/tech-spec-epic-2.md</path>
+        <title>Epic 2 Technical Specification</title>
+        <section>Dependencies - QR Code Technology</section>
+        <snippet>Mobile: react-native-vision-camera (^3.6.0) for high-performance camera access, vision-camera-code-scanner (^0.2.0) for real-time QR detection. Web: html5-qrcode (^2.3.8) for browser-based QR scanning. QR format: gss://event/{eventId}/checkin/{token} with HMAC-SHA256 signature. Tokens time-limited (24h), single-use, tamper-proof.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Client Architecture</title>
+        <section>Project Structure - Check-In Components</section>
+        <snippet>Mobile check-in components in mobile/src/components/checkin/ include CheckInFlow, QRScanner, CheckInSuccess, ManualCheckInRequest. Web check-in components in web/src/components/checkin/ include CheckInDialog, QRScanner, CheckInSuccess. QR service in shared/services/qr/ with platform-specific implementations.</snippet>
+      </doc>
+      <doc>
+        <path>docs/shared/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR008, FR009 - QR Check-In and Manual Fallback</section>
+        <snippet>FR008: QR code generation per event (host side) and scanning (attendee side) to confirm check-in and trigger deposit refund + XP award. FR009: Manual check-in fallback (host marks attendee present) with audit log (host id, timestamp) – refund + XP processed. FR024: Deposit refund automation - on confirmed check-in, Stripe refund triggered within target <60s confirmation.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/2-1-host-event-creation.context.xml</path>
+        <title>Story 2-1 Context - QR Code Generation</title>
+        <section>QR Code Format and Generation</section>
+        <snippet>QR code format: gss://event/{eventId}/checkin/{token} with HMAC-SHA256 signature. Generated on event creation via EventService.generateQRCode(). Cached locally for offline access. Mobile: react-native-qrcode-svg for QR generation. Web: qrcode.react for QR display. Token includes cryptographic signature to prevent forgery.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/2-2-event-rsvp-deposit-authorization.context.xml</path>
+        <title>Story 2-2 Context - Deposit Authorization</title>
+        <section>Stripe Deposit Authorization</section>
+        <snippet>Deposit authorization via Stripe SDK (authorization-only, no charge). Authorization ID stored with RSVP. Mobile: @stripe/stripe-react-native. Web: @stripe/stripe-js + @stripe/react-stripe-js. This story implements deposit refund on successful check-in using stored authorization ID.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>shared/src/services/api/events.service.ts</path>
+        <kind>service interface</kind>
+        <symbol>IEventService.checkIn, IEventService.manualCheckIn</symbol>
+        <lines>40-50</lines>
+        <reason>Core service interface methods for check-in operations: checkIn(request: CheckInRequest) for QR/manual check-in, manualCheckIn(eventId, userId) for host-initiated fallback, generateQRCode(eventId), validateQRToken(token). Defines contracts for all check-in functionality.</reason>
+      </artifact>
+      <artifact>
+        <path>shared/src/services/api/eventsServiceImpl.ts</path>
+        <kind>service implementation</kind>
+        <symbol>EventServiceImpl.checkIn, EventServiceImpl.manualCheckIn</symbol>
+        <lines>210-250</lines>
+        <reason>Real EventService implementation for check-in methods. Implements checkIn() with POST /api/v1/events/:id/check-in, manualCheckIn() with POST /api/v1/events/:id/manual-check-in. Handles backend API calls, response parsing, error handling for check-in flows.</reason>
+      </artifact>
+      <artifact>
+        <path>shared/src/services/mock/mockEvents.service.ts</path>
+        <kind>mock service</kind>
+        <symbol>MockEventService.checkIn, MockEventService.manualCheckIn</symbol>
+        <lines>280-330</lines>
+        <reason>Mock implementation for check-in development and testing. Simulates QR validation, time window checks, duplicate check-in prevention, deposit refund triggers. Provides realistic check-in flow simulation with network delays.</reason>
+      </artifact>
+      <artifact>
+        <path>shared/src/types/event.types.ts</path>
+        <kind>type definitions</kind>
+        <symbol>CheckInRequest, CheckInResponse, RSVP (with check-in fields)</symbol>
+        <lines>140-180</lines>
+        <reason>Check-in data models: CheckInRequest (eventId, qrToken, method), CheckInResponse (success, rsvp, depositRefunded, message). RSVP interface extended with checkedInAt, checkedInMethod ('qr'|'manual'), checkedInBy (host userId for manual), depositStatus fields.</reason>
+      </artifact>
+      <artifact>
+        <path>docs/stories/2-1-host-event-creation.context.xml</path>
+        <kind>reference context</kind>
+        <symbol>QR Code Generation</symbol>
+        <lines>100-150</lines>
+        <reason>Story 2-1 implements QR code generation on event creation using EventService.generateQRCode(). QR format: gss://event/{eventId}/checkin/{token} with HMAC signature. This story implements the attendee-side QR scanning and validation that complements host QR generation.</reason>
+      </artifact>
+      <artifact>
+        <path>docs/stories/2-2-event-rsvp-deposit-authorization.context.xml</path>
+        <kind>reference context</kind>
+        <symbol>Deposit Authorization</symbol>
+        <lines>150-200</lines>
+        <reason>Story 2-2 implements deposit authorization via Stripe SDK, storing authorization ID with RSVP. This story implements deposit refund on check-in using PaymentService.refundDeposit() with stored authorization ID. Depends on deposit authorization being complete.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <shared>
+        <dep name="@reduxjs/toolkit" version="^2.10.1" usage="Redux Toolkit for RSVPStore check-in state"/>
+        <dep name="@tanstack/react-query" version="^5.90.7" usage="Check-in mutation with optimistic updates and cache invalidation"/>
+        <dep name="ky" version="^1.14.0" usage="HTTP client for check-in and refund API calls"/>
+      </shared>
+      <mobile>
+        <dep name="react-native" version="^0.82.1" usage="Core mobile framework"/>
+        <dep name="react-native-vision-camera" version="^3.6.0" usage="High-performance camera access for QR scanning"/>
+        <dep name="vision-camera-code-scanner" version="^0.2.0" usage="QR code detection and decoding plugin for vision-camera"/>
+        <dep name="@stripe/stripe-react-native" version="^0.35.0" usage="Stripe SDK for deposit refund processing (inherited from Story 2-2)"/>
+        <dep name="react-native-confetti-cannon" version="TBD" usage="Success animation confetti effect on check-in"/>
+        <dep name="@react-native-firebase/messaging" version="^18.6.0" usage="Push notifications for manual check-in requests and refund confirmations"/>
+      </mobile>
+      <web>
+        <dep name="react" version="19.1.1" usage="React framework"/>
+        <dep name="html5-qrcode" version="^2.3.8" usage="Browser-based QR code scanning"/>
+        <dep name="@stripe/stripe-js" version="^2.2.0" usage="Stripe.js for refund processing (inherited from Story 2-2)"/>
+        <dep name="lottie-react" version="TBD" usage="Success animation on web check-in"/>
+      </web>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="dependency">Story 2-1 (Host Event Creation) must be complete - QR codes must be generated on event creation. Story 2-2 (RSVP & Deposit Authorization) must be complete - RSVPs and deposit authorizations must exist before check-in. Uses shared EventService and PaymentService interfaces.</constraint>
+    <constraint type="api-integration">Backend APIs assumed complete: POST /api/v1/events/:id/check-in (QR check-in), POST /api/v1/events/:id/manual-check-in (manual check-in), POST /api/v1/payments/refund (Stripe refund). Mock implementations required for development.</constraint>
+    <constraint type="qr-technology">Mobile uses react-native-vision-camera (^3.6.0) + vision-camera-code-scanner (^0.2.0) for native camera access and real-time QR detection. Web uses html5-qrcode (^2.3.8) for browser-based scanning with fallback for unsupported browsers. QR format: gss://event/{eventId}/checkin/{token} with HMAC-SHA256 signature. Tokens time-limited (24h), single-use, tamper-proof.</constraint>
+    <constraint type="deposit-refund">Stripe refund API with idempotency keys format: refund_{authorizationId}_{timestamp}. Target p95 <60s from check-in to refund confirmation per NFR024. Idempotency prevents double refunds on duplicate check-in attempts. Refund appears in user account in 5-10 business days (Stripe standard).</constraint>
+    <constraint type="time-window">Check-in window opens 30 minutes before event start, closes 30 minutes after event end. Backend validates time window, returns 422 Unprocessable Entity if outside window. Host can override via manual check-in.</constraint>
+    <constraint type="performance">QR scan detection <500ms from code in view to parse. Check-in API call <2s from scan to success confirmation. Deposit refund <60s from check-in to refund confirmation (NFR024). Manual check-in notification delivery <5s from host to user.</constraint>
+    <constraint type="security">QR tokens cryptographically signed (HMAC-SHA256) to prevent forgery. Single-use tokens invalidated after successful check-in. Manual check-in audit trail: host ID, timestamp, user ID, event ID logged. Refund idempotency keys prevent duplicate processing. Backend validates all check-in attempts (never trust client).</constraint>
+    <constraint type="camera-permissions">Mobile: Camera permission required for QR scanning. Request with clear rationale: "Scan QR code to check in". Handle permission denied gracefully with manual check-in fallback. Web: Browser camera access with getUserMedia API, fallback for unsupported browsers.</constraint>
+    <constraint type="state-management">RSVPStore Redux slice extended with: checkInStatus ('not-checked-in'|'checked-in'|'manual'|'no-show'), checkInTimestamp, refundStatus ('pending'|'completed'|'failed'), checkInMethod ('qr'|'manual'). TanStack Query: useCheckInMutation hook with optimistic updates (update UI before API response), rollback on error.</constraint>
+    <constraint type="notifications">Firebase Cloud Messaging for: manual check-in request to host, check-in confirmation to user, deposit refund confirmation to user. In-app notification banners for same events. Email confirmation for refund (optional, deferred).</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface name="EventService.checkIn" kind="function signature">
+      <signature>checkIn(request: CheckInRequest): Promise&lt;CheckInResponse&gt;</signature>
+      <path>shared/services/api/events.service.ts</path>
+    </interface>
+    <interface name="EventService.manualCheckIn" kind="function signature">
+      <signature>manualCheckIn(eventId: string, userId: string): Promise&lt;CheckInResponse&gt;</signature>
+      <path>shared/services/api/events.service.ts</path>
+    </interface>
+    <interface name="EventService.generateQRCode" kind="function signature">
+      <signature>generateQRCode(eventId: string): Promise&lt;string&gt;</signature>
+      <path>shared/services/api/events.service.ts</path>
+    </interface>
+    <interface name="EventService.validateQRToken" kind="function signature">
+      <signature>validateQRToken(token: string): Promise&lt;{ valid: boolean; eventId?: string }&gt;</signature>
+      <path>shared/services/api/events.service.ts</path>
+    </interface>
+    <interface name="PaymentService.refundDeposit" kind="function signature">
+      <signature>refundDeposit(authorizationId: string): Promise&lt;void&gt;</signature>
+      <path>shared/services/api/payment.service.ts (to be created)</path>
+    </interface>
+    <interface name="QRService (to be created)" kind="service interface">
+      <signature>interface IQRService {
+  validateQRFormat(data: string): boolean
+  parseQRData(data: string): { eventId: string; token: string } | null
+  generateQR(data: string): Promise&lt;string&gt;
+  scanQR(): Promise&lt;string&gt; // Platform-specific implementation
+}</signature>
+      <path>shared/services/qr/qrService.ts (to be created)</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+Unit tests use Jest + React Testing Library (mobile and web). Mock Service Layer for API response simulation. QR scanning mocked with test QR codes. E2E tests use Detox (mobile) and Playwright (web) with mock QR codes. Target 70% unit test coverage for service layer, 80% for components, 90% for critical check-in/refund flows. Test pyramid: 70% unit, 20% integration, 10% E2E strategic coverage.</standards>
+    <locations>
+      <location>shared/src/__tests__/services/events.service.checkin.test.ts</location>
+      <location>shared/src/__tests__/services/payment.service.refund.test.ts</location>
+      <location>shared/src/__tests__/services/qr.service.test.ts</location>
+      <location>mobile/src/__tests__/screens/events/CheckInScreen.test.tsx</location>
+      <location>mobile/src/__tests__/components/checkin/CheckInSuccess.test.tsx</location>
+      <location>mobile/src/__tests__/hooks/useCheckIn.test.ts</location>
+      <location>mobile/src/__tests__/hooks/useQRScanner.test.ts</location>
+      <location>mobile/__e2e__/qr-checkin-flow.test.ts (Detox)</location>
+      <location>web/src/__tests__/components/checkin/CheckInDialog.test.tsx</location>
+      <location>web/src/__tests__/components/checkin/QRScanner.test.tsx</location>
+      <location>web/__e2e__/qr-checkin-flow.spec.ts (Playwright)</location>
+    </locations>
+    <ideas>
+      <idea ac="AC1,AC3" priority="critical">Unit test EventService: checkIn with valid QR token (success, deposit refunded), invalid QR token (400 error), wrong event (422 error), already checked in (409 error), outside time window (422 error), network failure (retry logic). Verify CheckInResponse structure, RSVP status updates, deposit refund trigger.</idea>
+      <idea ac="AC2" priority="critical">Unit test EventService: manualCheckIn with valid userId and eventId, host authentication validation, audit trail logging (host ID, timestamp), deposit refund trigger same as QR check-in, error handling for invalid user/event.</idea>
+      <idea ac="AC3" priority="critical">Unit test PaymentService: refundDeposit with Stripe test mode, idempotency key generation (refund_{authId}_{timestamp}), duplicate refund prevention (idempotency), Stripe API errors (card not found, already refunded), network failures, timeout handling.</idea>
+      <idea ac="AC4" priority="high">Unit test QRService: validateQRFormat with valid format (gss://event/{eventId}/checkin/{token}), invalid format (wrong scheme, missing parts), parseQRData extracts eventId and token correctly, HMAC signature validation.</idea>
+      <idea ac="AC1,AC5" priority="high">Unit test RSVPStore Redux slice: checkInStart/Success/Failure actions, check-in status updates (not-checked-in → checked-in), refund status updates (pending → completed), optimistic updates with rollback on error, check-in timestamp and method storage.</idea>
+      <idea ac="AC1,AC2,AC3" priority="high">Integration test complete QR check-in flow: User RSVPs to event (Story 2-2) → arrives at event → opens check-in screen → camera activates → scans mock QR code → API validates → deposit refund triggered → success animation displayed → RSVP status updated → participant list refreshed. Verify API call sequences, state updates, cache invalidation.</idea>
+      <idea ac="AC2" priority="high">Integration test manual check-in flow: QR scan fails/times out → user taps "Request Manual Check-In" → notification sent to host → host receives push notification → host opens dashboard → sees pending request → taps "Confirm Check-In" → API validates → deposit refund → both user and host notified → RSVP updated with manual method. Test complete flow with mock notifications.</idea>
+      <idea ac="AC3" priority="high">Integration test deposit refund automation: Check-in succeeds → PaymentService.refundDeposit called with authorization ID → Stripe refund API called with idempotency key → refund confirmation received <60s → user receives push notification "Your $X deposit has been refunded" → UI updates with refund status. Test with Stripe test mode.</idea>
+      <idea ac="AC1,AC4" priority="critical">E2E test mobile (Detox): Navigate to event detail → tap "Check In" → camera opens with overlay → scan mock QR code (test fixture) → see processing indicator → see success animation with confetti → see "Checked in! Deposit refunded: $5" → return to event detail → verify checked-in status → verify deposit refunded badge.</idea>
+      <idea ac="AC2" priority="high">E2E test mobile manual fallback: Attempt QR scan → simulate timeout (30s) → tap "Request Manual Check-In" → confirm request → see "Host notified" message → simulate host approval (mock notification) → see success screen "Host confirmed your check-in" → verify checked-in status with "Manual by Host" label.</idea>
+      <idea ac="AC1,AC3" priority="critical">E2E test web (Playwright): Navigate to event detail → click "Check In" button → see check-in modal with camera → grant camera permission → scan mock QR code → see success animation → see "Checked in message with refund info → close modal → verify event detail shows "Checked In" status with green badge and timestamp.</idea>
+      <idea ac="AC4" priority="high">Error scenario tests: Test "Invalid QR code" error (malformed token), "Wrong event" error (QR for different event), "Already checked in" error (duplicate scan), "Too early" error (30min before event), "Too late" error (30min after event), "Network error" (connectivity issue with retry). Verify error messages and UI handling.</idea>
+      <idea ac="AC3" priority="high">Performance test: Measure QR scan detection latency (<500ms target), check-in API response time (<2s target), deposit refund confirmation time (<60s target per NFR024). Load test with 20 concurrent check-ins to same event. Verify refund idempotency under race conditions.</idea>
+      <idea ac="AC1,AC2" priority="medium">Security test: Test QR token forgery prevention (invalid HMAC signature rejected), single-use token enforcement (second scan with same token fails), manual check-in without host role denied (403 Forbidden), refund idempotency prevents financial exploits (duplicate refund attempts fail).</idea>
+    </ideas>
+  </tests>
+</story-context>

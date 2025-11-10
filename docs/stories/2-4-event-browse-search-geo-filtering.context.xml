@@ -1,0 +1,285 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>4</storyId>
+    <title>Event Browse & Search with Geo-Filtering</title>
+    <status>ready-for-dev</status>
+    <generatedAt>2025-11-10</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/2-4-event-browse-search-geo-filtering.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>participant user</asA>
+    <iWant>to discover events through advanced browsing and filtering with map views</iWant>
+    <soThat>I can find events that match my interests, location, and schedule</soThat>
+    <tasks>
+      - Advanced Filtering Service Layer: Update EventService.searchEvents() with filter parameters (sport[], dateRange, radius, capacity, deposit), implement FiltersStore Redux slice, implement filter persistence
+      - Location Services Implementation: Enhance LocationService.getCurrentLocation() with permission handling, implement geocodeLocation() for manual entry, implement calculateDistance() with geolib
+      - Map View Implementation: Mobile map with react-native-maps (clustering, custom markers, callouts), Web map with Google Maps API (custom markers, InfoWindow, clustering), map/list toggle UI
+      - Mobile Event List UI: Enhanced EventsScreen with search, FilterPanel modal, active filter chips, sort dropdown, infinite scroll, pull-to-refresh
+      - Web Event List UI: Enhanced EventsPage with search, FilterSidebar, active filters, sort dropdown, pagination
+      - Search Implementation: Debounced search (300ms), backend search API, client-side search for cached events, recent searches storage
+      - Performance Optimization: TanStack Query caching (5min), batch distance calculations, marker clustering, virtualized lists
+      - Testing: Unit tests (filtering, distance, search), component tests (filter UI, map), integration tests (complete flows), E2E tests (browse + filter + map)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    AC1: Event List View with Sorting - Events tab displays nearby public events sorted by date/distance/capacity, event cards show title/sport/date/location/distance/participants/deposit, pull-to-refresh and infinite scroll (20 per page), empty state and loading skeleton, tap card navigates to detail
+    
+    AC2: Map Toggle View - Toggle between list and map, map displays event markers with clustering, centered on user location, markers show sport icon and deposit badge, tap marker shows preview card, tap preview navigates to detail, "Redo search in this area" button after panning, distance radius overlay
+    
+    AC3: Advanced Filtering - Filter panel with sport multi-select, date range (presets + custom), distance radius slider (5/10/25/50 mi), capacity toggle (available spots only), deposit filter (All/Free/$5/$10), Apply filters updates list <800ms, active filter chips with remove option, Clear all filters, filter state persists across sessions
+    
+    AC4: Location Services Integration - Location permission requested with rationale "Show nearby events sorted by distance", GPS coordinates for distance calculation, distance displayed on cards ("1.2 mi away"), events sorted by distance when location available, manual location entry fallback (city/zip geocoded), location icon shows source (GPS/manual/unavailable), update location button, location data not stored persistently
+    
+    AC5: Search Functionality - Search bar for event title/sport/location, real-time results with 300ms debounce, search highlights matching text, clear search button, recent searches saved (last 5), search combines with filters (AND logic)
+    
+    AC6: Performance and Caching - Event list loads <1200ms p95, filter application <800ms, distance calculations <100ms for 50 events, map rendering <2s at 60fps with 100+ markers, TanStack Query 5-minute cache, background refetch when stale, offline mode with cached events and staleness indicator
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/tech-spec-epic-2.md</path>
+        <title>Epic 2 Technical Specification</title>
+        <section>AC2: Event Discovery and Browsing System</section>
+        <snippet>Events tab displays public events sorted by date/distance/capacity. Event cards show: title, sport icon with name, date/time, location with distance, participant count (X/Y), deposit badge. Pull-to-refresh reloads from backend. Infinite scroll pagination (20 per page). Map toggle view with event markers (clustering for dense areas), map centered on user location, tap marker shows preview card. Filter panel: sport multi-select, date range (Today/Tomorrow/Week/Weekend/Custom), distance radius (5/10/25/50 mi), capacity filter (available spots), deposit filter (All/Free/$5/$10). Apply filters <800ms. Active filter chips with remove option. Search bar: event title, sport, location. Real-time search (300ms debounce). Recent searches (last 5). Empty state: "No events nearby. Try adjusting your filters."</snippet>
+      </doc>
+      <doc>
+        <path>docs/tech-spec-epic-2.md</path>
+        <title>Epic 2 Technical Specification</title>
+        <section>AC11: Geo-Location Integration and Distance Filtering</section>
+        <snippet>Location permission requested on first event browse: "Show nearby events sorted by distance". GPS coordinates via react-native-geolocation-service (mobile) or Geolocation API (web). Distance calculation using geolib Haversine formula. Distance displayed: "1.2 mi away" or "3.5 km away" (locale-based). Events sorted by distance (nearest first) when location available. Permission denied fallback: manual location entry (city/zip code) geocoded via Google Maps Geocoding API. Location icon shows source: GPS (green), manual (blue), unavailable (gray). Update location button. Location data NOT stored persistently (privacy). Distance radius overlay on map view shows search area. Performance: distance calculations <100ms for 50 events.</snippet>
+      </doc>
+      <doc>
+        <path>docs/tech-spec-epic-2.md</path>
+        <title>Epic 2 Technical Specification</title>
+        <section>NFR001: Performance - Event List Load</section>
+        <snippet>Event list initial load <1200ms (p95). Filter application <800ms. Distance calculations <100ms for 50 events. Map rendering <2s with 100+ markers at 60fps. TanStack Query caches event data 5 minutes. Stale data fetched in background without blocking UI. Offline mode displays cached events with staleness indicator.</snippet>
+      </doc>
+      <doc>
+        <path>docs/tech-spec-epic-2.md</path>
+        <title>Epic 2 Technical Specification</title>
+        <section>Data Models - EventSearchRequest, EventSearchResult</section>
+        <snippet>EventSearchRequest: { sport?: string[], dateStart?: string, dateEnd?: string, latitude?: number, longitude?: number, radius?: number (miles), minCapacity?: number, depositAmount?: number[], searchQuery?: string, limit: number (default 20), offset: number }. EventSearchResult: { events: Event[], totalCount: number, hasMore: boolean }. Events include computed distance field when lat/lng provided.</snippet>
+      </doc>
+      <doc>
+        <path>docs/tech-spec-epic-2.md</path>
+        <title>Epic 2 Technical Specification</title>
+        <section>Services - EventService search and filters</section>
+        <snippet>EventService: searchEvents(request: EventSearchRequest): Promise&lt;EventSearchResult&gt; - Backend API GET /api/v1/events with query params. Supports pagination, filtering, sorting. Returns events with computed distance when location provided. Client-side filtering for cached events in offline mode. LocationService: getCurrentLocation(): Promise&lt;Coordinates&gt; - GPS or browser location with permission handling. geocodeLocation(address: string): Promise&lt;Coordinates&gt; - Google Maps Geocoding API. calculateDistance(from: Coordinates, to: Coordinates): number - geolib Haversine formula, returns miles or km. requestLocationPermission(): Promise&lt;boolean&gt; - Permission request with rationale.</snippet>
+      </doc>
+      <doc>
+        <path>docs/tech-spec-epic-2.md</path>
+        <title>Epic 2 Technical Specification</title>
+        <section>Dependencies - Maps and Location</section>
+        <snippet>Mobile: react-native-maps (^1.7.1) for map view, react-native-map-clustering for marker clustering, react-native-geolocation-service (^5.3.1) for GPS. Web: @googlemaps/js-api-loader (^1.16.2) for Google Maps, @googlemaps/markerclusterer for clustering. Shared: geolib (^3.3.4) for distance calculations. Google Maps Platform API keys required for maps and geocoding.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Client Architecture</title>
+        <section>Project Structure - Event Discovery Components</section>
+        <snippet>Mobile: EventsScreen (mobile/src/screens/events/), FilterPanel modal, MapView component, EventCard. Web: EventsPage (web/src/pages/events/), FilterSidebar drawer, EventMap component, EventCard. Shared: EventService with searchEvents(), LocationService with distance calculations, FiltersStore Redux slice for filter state, event.types.ts with EventSearchRequest/Result interfaces.</snippet>
+      </doc>
+      <doc>
+        <path>docs/shared/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR006, FR007 - Event Discovery and Filtering</section>
+        <snippet>FR006: Event discovery screen with list/map toggle. Filter by sport, date range, distance radius, capacity, deposit. Search by title, sport, location. Sort by date, distance, capacity. FR007: Map view with event markers, clustering for performance, tap marker shows preview, pan map to search new area. Location permission for distance-based sorting. Manual location entry fallback.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/2-2-event-rsvp-deposit-authorization.context.xml</path>
+        <title>Story 2-2 Context - Event Discovery Foundation</title>
+        <section>Basic Event Discovery</section>
+        <snippet>Story 2-2 implements basic event discovery with EventService.searchEvents() returning nearby events. Event cards display basic info. Location services for distance calculation. This story enhances with advanced filtering, map view, search functionality.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>shared/src/services/api/events.service.ts</path>
+        <kind>service interface</kind>
+        <symbol>IEventService.searchEvents</symbol>
+        <lines>30-40</lines>
+        <reason>Core service interface for event discovery. searchEvents(request: EventSearchRequest) returns EventSearchResult with filtered/paginated events. This story enhances searchEvents to support advanced filter parameters (sport[], dateRange, radius, capacity, deposit, searchQuery). Interface includes pagination (limit, offset) and computed distance field.</reason>
+      </artifact>
+      <artifact>
+        <path>shared/src/services/api/eventsServiceImpl.ts</path>
+        <kind>service implementation</kind>
+        <symbol>EventServiceImpl.searchEvents</symbol>
+        <lines>80-120</lines>
+        <reason>Real EventService implementation for searchEvents. Constructs URL with query parameters for filtering, pagination, location. Makes GET /api/v1/events API call. Parses EventSearchResult response. This story adds support for all filter parameters: sport[], dateStart, dateEnd, lat, lng, radius, minCapacity, depositAmount[], searchQuery.</reason>
+      </artifact>
+      <artifact>
+        <path>shared/src/services/mock/mockEvents.service.ts</path>
+        <kind>mock service</kind>
+        <symbol>MockEventService.searchEvents</symbol>
+        <lines>120-180</lines>
+        <reason>Mock implementation for event search development. Simulates filtering by sport, date range, distance, capacity, deposit. Simulates pagination and distance calculations. Provides realistic event search simulation with configurable delays for testing loading states.</reason>
+      </artifact>
+      <artifact>
+        <path>shared/src/services/api/location.service.ts</path>
+        <kind>service interface</kind>
+        <symbol>ILocationService.calculateDistance, ILocationService.getCurrentLocation</symbol>
+        <lines>20-40</lines>
+        <reason>Location service interface for distance calculations and GPS. calculateDistance(from, to) uses geolib Haversine formula. getCurrentLocation() requests permission and gets GPS coordinates. This story enhances with geocodeLocation(address) for manual location entry and requestLocationPermission() with custom rationale.</reason>
+      </artifact>
+      <artifact>
+        <path>shared/src/services/api/locationServiceImpl.ts</path>
+        <kind>service implementation</kind>
+        <symbol>LocationServiceImpl.calculateDistance, LocationServiceImpl.getCurrentLocation</symbol>
+        <lines>40-80</lines>
+        <reason>Real LocationService implementation. Uses geolib.getDistance() for Haversine calculations, formats to miles/km. Uses react-native-geolocation-service (mobile) or navigator.geolocation (web) for GPS. This story adds geocodeLocation() using Google Maps Geocoding API for manual location fallback.</reason>
+      </artifact>
+      <artifact>
+        <path>shared/src/types/event.types.ts</path>
+        <kind>type definitions</kind>
+        <symbol>EventSearchRequest, EventSearchResult, Event (with distance)</symbol>
+        <lines>60-100</lines>
+        <reason>Event search data models. EventSearchRequest: sport?, dateStart?, dateEnd?, latitude?, longitude?, radius?, minCapacity?, depositAmount[]?, searchQuery?, limit, offset. EventSearchResult: events[], totalCount, hasMore. Event interface includes computed distance field (miles/km) when location provided.</reason>
+      </artifact>
+      <artifact>
+        <path>shared/src/types/filter.types.ts</path>
+        <kind>type definitions</kind>
+        <symbol>EventFilters, FilterOption</symbol>
+        <lines>1-40</lines>
+        <reason>Filter data models for state management. EventFilters: activeSport[], dateRange (preset or custom), radius, capacityOnly, depositFilter, searchQuery. FilterOption: sport options with icons, deposit options ($0/$5/$10), distance presets (5/10/25/50 mi), date presets (Today/Tomorrow/Week/Weekend).</reason>
+      </artifact>
+      <artifact>
+        <path>docs/stories/2-2-event-rsvp-deposit-authorization.context.xml</path>
+        <kind>reference context</kind>
+        <symbol>Event Discovery Foundation</symbol>
+        <lines>80-120</lines>
+        <reason>Story 2-2 implements basic event discovery with EventService.searchEvents() and event cards. This story enhances with advanced filtering (sport, date, distance, capacity, deposit), map view with clustering, search functionality, and location-based sorting.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <shared>
+        <dep name="@reduxjs/toolkit" version="^2.10.1" usage="Redux Toolkit for FiltersStore state management"/>
+        <dep name="@tanstack/react-query" version="^5.90.7" usage="Event caching with 5-minute TTL, infinite queries for pagination"/>
+        <dep name="ky" version="^1.14.0" usage="HTTP client for event search and geocoding APIs"/>
+        <dep name="geolib" version="^3.3.4" usage="Haversine distance calculations between coordinates"/>
+        <dep name="date-fns" version="^3.0.0" usage="Date range parsing and formatting"/>
+      </shared>
+      <mobile>
+        <dep name="react-native" version="^0.82.1" usage="Core mobile framework"/>
+        <dep name="react-native-maps" version="^1.7.1" usage="Google Maps (Android) / Apple Maps (iOS) integration"/>
+        <dep name="react-native-map-clustering" version="TBD" usage="Marker clustering for performance with many events"/>
+        <dep name="react-native-geolocation-service" version="^5.3.1" usage="GPS location access with permission handling"/>
+        <dep name="@react-native-async-storage/async-storage" version="^1.19.0" usage="Filter persistence across app sessions"/>
+      </mobile>
+      <web>
+        <dep name="react" version="19.1.1" usage="React framework"/>
+        <dep name="@googlemaps/js-api-loader" version="^1.16.2" usage="Google Maps JavaScript API for map view"/>
+        <dep name="@googlemaps/markerclusterer" version="^2.5.0" usage="Marker clustering for map performance"/>
+      </web>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="dependency">Story 2-1 (Host Event Creation) must be complete - events must exist to browse. Story 2-2 (RSVP & Deposit Authorization) provides basic event discovery foundation. This story enhances with advanced filtering and maps. Uses shared EventService and LocationService interfaces.</constraint>
+    <constraint type="api-integration">Backend APIs assumed complete: GET /api/v1/events with query params (sport[], dateStart, dateEnd, lat, lng, radius, minCapacity, depositAmount[], searchQuery, limit, offset). Google Maps Platform APIs: Geocoding API for address-to-coordinates, Maps JavaScript API for web maps. Mock implementations required for development.</constraint>
+    <constraint type="maps-technology">Mobile uses react-native-maps (^1.7.1) with Google Maps (Android) / Apple Maps (iOS). Web uses @googlemaps/js-api-loader (^1.16.2) for Google Maps JavaScript API. Marker clustering reduces render count: react-native-map-clustering (mobile), @googlemaps/markerclusterer (web). Custom markers show sport icons and deposit badges. API keys required for Google Maps Platform.</constraint>
+    <constraint type="location-services">GPS location via react-native-geolocation-service (mobile) or navigator.geolocation (web). Permission requested with rationale: "Show nearby events sorted by distance". Permission denial fallback: manual location entry (city/zip) geocoded via Google Maps Geocoding API. Distance calculations use geolib Haversine formula. Location data NOT stored persistently (privacy). Update location button refreshes GPS or changes manual location.</constraint>
+    <constraint type="performance">Event list initial load <1200ms p95 (NFR001). Filter application <800ms. Distance calculations <100ms for 50 events (batch calculation, memoization). Map rendering <2s with 100+ markers at 60fps (clustering, virtualization). Search debounced 300ms. TanStack Query caches events 5 minutes. Background refetch when stale. Offline mode displays cached events with staleness indicator.</constraint>
+    <constraint type="filtering">Sport filter: multi-select (All, Pickleball, Tennis, Basketball, Soccer, etc.). Date range: presets (Today, Tomorrow, This Week, This Weekend) + custom picker. Distance radius: 5, 10, 25, 50 miles (or km based on locale). Capacity: toggle "Available spots only" (filters full events). Deposit: All, Free only, $5 only, $10 only. Filters combine with AND logic. Active filters shown as chips with remove (X). Clear all filters resets to defaults. Filter state persists across sessions (AsyncStorage/localStorage).</constraint>
+    <constraint type="search">Search bar for event title, sport name, location (address/city). Real-time results with 300ms debounce. Backend search API or client-side search for cached events (offline). Search highlights matching text in event cards. Recent searches saved locally (last 5). Clear search button (X). Search combines with active filters (AND logic).</constraint>
+    <constraint type="state-management">FiltersStore Redux slice: activeSport[], dateRange, radius, capacityOnly, depositFilter, searchQuery. Actions: updateFilter, clearFilters, resetFilters. Selectors: selectActiveFilters, selectFilterCount. TanStack Query: useEvents hook with infinite query for pagination, cache key includes filters for separate cache entries. Map view state: isMapView boolean, mapRegion for bounds.</constraint>
+    <constraint type="pagination">Infinite scroll on mobile (FlatList onEndReached). Pagination or infinite scroll on web. 20 events per page. TanStack Query infinite query with hasMore flag. Loading indicator at bottom while fetching next page. Pull-to-refresh on mobile (RefreshControl) invalidates cache and refetches.</constraint>
+    <constraint type="offline">TanStack Query caches events for 5 minutes. Offline mode displays cached events with staleness indicator. Client-side filtering and search for cached data. Network error handling with retry button. Empty state when no cached events available offline.</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface name="EventService.searchEvents" kind="function signature">
+      <signature>searchEvents(request: EventSearchRequest): Promise&lt;EventSearchResult&gt;</signature>
+      <path>shared/services/api/events.service.ts</path>
+    </interface>
+    <interface name="LocationService.getCurrentLocation" kind="function signature">
+      <signature>getCurrentLocation(): Promise&lt;{ latitude: number; longitude: number }&gt;</signature>
+      <path>shared/services/api/location.service.ts</path>
+    </interface>
+    <interface name="LocationService.calculateDistance" kind="function signature">
+      <signature>calculateDistance(from: Coordinates, to: Coordinates): number</signature>
+      <path>shared/services/api/location.service.ts</path>
+    </interface>
+    <interface name="LocationService.geocodeLocation" kind="function signature">
+      <signature>geocodeLocation(address: string): Promise&lt;{ latitude: number; longitude: number }&gt;</signature>
+      <path>shared/services/api/location.service.ts (to be enhanced)</path>
+    </interface>
+    <interface name="LocationService.requestLocationPermission" kind="function signature">
+      <signature>requestLocationPermission(): Promise&lt;boolean&gt;</signature>
+      <path>shared/services/api/location.service.ts (to be enhanced)</path>
+    </interface>
+    <interface name="EventSearchRequest" kind="type interface">
+      <signature>interface EventSearchRequest {
+  sport?: string[]
+  dateStart?: string
+  dateEnd?: string
+  latitude?: number
+  longitude?: number
+  radius?: number
+  minCapacity?: number
+  depositAmount?: number[]
+  searchQuery?: string
+  limit: number
+  offset: number
+}</signature>
+      <path>shared/types/event.types.ts</path>
+    </interface>
+    <interface name="EventSearchResult" kind="type interface">
+      <signature>interface EventSearchResult {
+  events: Event[]
+  totalCount: number
+  hasMore: boolean
+}</signature>
+      <path>shared/types/event.types.ts</path>
+    </interface>
+    <interface name="EventFilters" kind="type interface">
+      <signature>interface EventFilters {
+  activeSport: string[]
+  dateRange: { preset?: string; start?: Date; end?: Date }
+  radius: number
+  capacityOnly: boolean
+  depositFilter: 'all' | 'free' | '500' | '1000'
+  searchQuery: string
+}</signature>
+      <path>shared/types/filter.types.ts (to be created)</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+Unit tests use Jest + React Testing Library (mobile and web). Mock Service Layer for API response simulation. Mock location data for distance calculations. E2E tests use Detox (mobile) and Playwright (web) with mock events and location. Target 70% unit test coverage for service layer, 80% for components, 90% for critical filtering/search flows. Test pyramid: 70% unit, 20% integration, 10% E2E strategic coverage.</standards>
+    <locations>
+      <location>shared/src/__tests__/services/events.service.search.test.ts</location>
+      <location>shared/src/__tests__/services/location.service.test.ts</location>
+      <location>shared/src/__tests__/stores/filters.store.test.ts</location>
+      <location>mobile/src/__tests__/screens/events/EventsScreen.test.tsx</location>
+      <location>mobile/src/__tests__/components/events/FilterPanel.test.tsx</location>
+      <location>mobile/src/__tests__/components/events/MapView.test.tsx</location>
+      <location>mobile/src/__tests__/hooks/useEvents.test.ts</location>
+      <location>mobile/__e2e__/event-browse-filter.test.ts (Detox)</location>
+      <location>web/src/__tests__/pages/events/EventsPage.test.tsx</location>
+      <location>web/src/__tests__/components/events/FilterSidebar.test.tsx</location>
+      <location>web/src/__tests__/components/events/EventMap.test.tsx</location>
+      <location>web/__e2e__/event-browse-filter.spec.ts (Playwright)</location>
+    </locations>
+    <ideas>
+      <idea ac="AC1,AC3" priority="critical">Unit test EventService.searchEvents: with no filters (all events), with sport filter (Pickleball only), with date range (This Week), with distance radius (10 mi with lat/lng), with capacity filter (available only), with deposit filter (Free only), with multiple filters combined (sport + date + distance), with pagination (limit 20, offset 0/20/40), verify EventSearchResult structure (events, totalCount, hasMore).</idea>
+      <idea ac="AC4" priority="critical">Unit test LocationService: getCurrentLocation() success with GPS coordinates, permission denied returns null, geocodeLocation() converts "San Francisco" to lat/lng, invalid address throws error, calculateDistance() with known coordinates (SF to LA = ~347 mi), distance formatting (miles vs km based on locale), batch distance calculation for 50 events <100ms.</idea>
+      <idea ac="AC3,AC6" priority="high">Unit test FiltersStore Redux slice: updateFilter action updates state, clearFilters resets to defaults, resetFilters restores from persistence, selectActiveFilters returns only non-default filters, selectFilterCount returns number of active filters, filter persistence saves to AsyncStorage/localStorage, filter restoration loads on app launch.</idea>
+      <idea ac="AC5" priority="high">Unit test search functionality: search query debounced 300ms, search combines with filters (AND logic), search highlights matching text in results, recent searches stored (last 5), recent searches retrieved in order, clear search resets query, backend search API called with query param, client-side search for cached events offline.</idea>
+      <idea ac="AC2" priority="high">Unit test map marker clustering: 100+ events cluster at low zoom, clusters expand on zoom in, cluster badge shows event count, tap cluster zooms to expand, tap individual marker shows preview card, map bounds update on pan/zoom, "Redo search" button appears after panning, distance radius overlay displays correctly.</idea>
+      <idea ac="AC1,AC3,AC5" priority="high">Integration test complete filtering flow: Open events screen → see default event list → tap filter button → open filter panel → select "Pickleball" sport → set date range "This Week" → set radius 10 mi → toggle "Available spots only" → tap Apply → see filtered event list <800ms → verify filter chips displayed → tap chip X to remove filter → verify list updates.</idea>
+      <idea ac="AC2,AC4" priority="high">Integration test map view: Tap map toggle → see map view with event markers → location permission requested → permission granted → map centers on user location → see distance radius overlay → tap event marker → see preview card (title, date, participants) → tap preview → navigate to event detail → tap back → map state preserved.</idea>
+      <idea ac="AC4" priority="high">Integration test location permission: First event browse → permission dialog appears with rationale "Show nearby events sorted by distance" → deny permission → see manual location prompt → enter "San Francisco, CA" → geocoding converts to lat/lng → events sorted by distance → see location icon (manual/blue) → tap "Update location" → grant GPS permission → location updates to GPS → icon changes to GPS/green.</idea>
+      <idea ac="AC1,AC6" priority="critical">E2E test mobile (Detox): Launch app → navigate to Events tab → see event list loading → see 20 events with cards (title, sport, date, distance, capacity) → scroll down → infinite scroll loads next 20 → pull down to refresh → see loading indicator → list refreshes → tap event card → navigate to detail → tap back → scroll position preserved.</idea>
+      <idea ac="AC2,AC3" priority="critical">E2E test mobile map and filters: Open Events → tap map toggle → see map with markers → tap filter button → select "Tennis" + "Tomorrow" + "5 mi" → tap Apply → see filtered markers on map → tap marker → see preview card → tap list toggle → see filtered list view → tap "Clear filters" → see all events again.</idea>
+      <idea ac="AC5" priority="high">E2E test web search: Open Events page → type "basketball" in search bar → wait 300ms → see filtered results with "basketball" highlighted → type " san francisco" → see results for basketball in SF → clear search → see all events → search history dropdown shows recent searches → click recent search → applies search again.</idea>
+      <idea ac="AC6" priority="high">Performance test: Measure event list initial load time (target <1200ms p95), filter application time (target <800ms), distance calculation time for 50 events (target <100ms), map rendering with 100 markers (target <2s at 60fps), search debounce prevents excessive API calls, TanStack Query cache hit reduces load time to <100ms.</idea>
+      <idea ac="AC1,AC3" priority="medium">Error scenario tests: Network error during event load (retry button, cached events displayed), location permission denied permanently (manual entry required), geocoding API failure (error message with retry), invalid filter combination (e.g. date range end before start), empty result set with active filters (helpful empty state message), map API key invalid (fallback to list view).</idea>
+      <idea ac="AC6" priority="medium">Offline mode test: Load events with network → disconnect network → see cached events with staleness indicator → apply filters → client-side filtering works → search works on cached data → tap refresh → error message "No internet connection" → reconnect → background refetch updates cache → staleness indicator removed.</idea>
+    </ideas>
+  </tests>
+</story-context>

@@ -6,14 +6,26 @@
 // Types
 export * from './types/auth.types';
 export * from './types/api.types';
+export * from './types/event.types';
+export * from './types/location.types';
 
-// Services
+// Services - Authentication
 export * from './services/api/auth.service';
 export * from './services/api/authServiceImpl';
 export * from './services/api/user.service';
 export * from './services/api/userServiceImpl';
 export * from './services/mock/mockAuth.service';
 export * from './services/mock/mockUser.service';
+
+// Services - Events and Location
+export * from './services/api/events.service';
+export * from './services/api/eventsServiceImpl';
+export * from './services/api/location.service';
+export * from './services/api/locationServiceImpl';
+export * from './services/mock/mockEvents.service';
+export * from './services/mock/mockLocation.service';
+
+// Services - Infrastructure
 export * from './services/http/client';
 export * from './services/storage/secureStorage';
 export * from './services/biometric/biometricAuth';
@@ -25,6 +37,9 @@ export * from './utils/logger';
 export * from './utils/inputSanitization';
 export * from './utils/encryption';
 export * from './components/avatarUtils';
+
+// Validation Schemas
+export * from './validation/eventValidation';
 
 // Hooks
 export * from './hooks/useProfile';

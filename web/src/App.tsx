@@ -4,6 +4,8 @@ import { Provider } from 'react-redux';
 import { store } from './store/store';
 import { RegistrationPage, LoginPage, ForgotPasswordPage, ResetPasswordPage } from './pages/auth';
 import ProfilePage from './pages/profile/ProfilePage';
+import CreateEventPage from './pages/events/CreateEventPage';
+import MyEventsPage from './pages/events/MyEventsPage';
 
 const theme = createTheme({
   palette: {
@@ -41,6 +43,8 @@ function App() {
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/dashboard" element={<DashboardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/events/create" element={<CreateEventPage />} />
+            <Route path="/events/my-events" element={<MyEventsPage />} />
           </Routes>
         </BrowserRouter>
       </ThemeProvider>
