@@ -1,6 +1,6 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import path from 'path'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+import path from 'path';
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -10,7 +10,7 @@ export default defineConfig({
       include: ['**/*.tsx', '**/*.ts', '**/*.jsx', '**/*.js'],
     }),
   ],
-  
+
   // Development server configuration
   server: {
     port: 5173,
@@ -32,7 +32,7 @@ export default defineConfig({
     // Chunk splitting for better caching
     rollupOptions: {
       output: {
-        manualChunks: (id) => {
+        manualChunks: id => {
           if (id.includes('node_modules')) {
             if (id.includes('react') || id.includes('react-dom')) {
               return 'vendor';
@@ -52,6 +52,16 @@ export default defineConfig({
       '@shared': path.resolve(__dirname, '../shared/src'),
       '@': path.resolve(__dirname, 'src'),
     },
+  },
+
+  // Optimize dependencies - exclude React Native packages
+  optimizeDeps: {
+    exclude: [
+      'react-native',
+      'react-native-keychain',
+      '@react-native-async-storage/async-storage',
+      '@react-native-community/netinfo',
+    ],
   },
 
   // Environment variables
@@ -74,4 +84,4 @@ export default defineConfig({
     host: true,
     cors: true,
   },
-})
+});

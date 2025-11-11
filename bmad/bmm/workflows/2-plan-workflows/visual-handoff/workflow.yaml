@@ -1,0 +1,46 @@
+# Visual Design Handoff Workflow Configuration
+name: visual-handoff
+description: 'Translate UX Design Specification into concrete visual requirements for story implementation. Creates visual specifications, component details, and design acceptance criteria that bridge the gap between UX vision and dev implementation.'
+author: 'BMad'
+
+# Critical variables from config
+config_source: '{project-root}/bmad/bmm/config.yaml'
+output_folder: '{config_source}:output_folder'
+user_name: '{config_source}:user_name'
+communication_language: '{config_source}:communication_language'
+document_output_language: '{config_source}:document_output_language'
+user_skill_level: '{config_source}:user_skill_level'
+date: system-generated
+
+# Input requirements
+recommended_inputs:
+  - ux_design: 'UX Design Specification with design system and component patterns'
+  - story: 'Story markdown file requiring visual design details'
+  - design_system: 'Design system specification (if separate from UX spec)'
+
+# Input file references (fuzzy matched from output folder)
+ux_design_file: '{output_folder}/ux-design-specification.md or ux-design.md or design-spec.md'
+design_system_file: '{output_folder}/design-system.md or design-guidelines.md'
+story_dir: '{config_source}:dev_story_location'
+
+# Smart input file references
+input_file_patterns:
+  ux_design:
+    whole: '{output_folder}/*ux*.md'
+    sharded: '{output_folder}/*ux*/index.md'
+
+  design_system:
+    whole: '{output_folder}/*design-system*.md'
+    sharded: '{output_folder}/*design*/index.md'
+
+# Module path and component files
+installed_path: '{project-root}/bmad/bmm/workflows/2-plan-workflows/visual-handoff'
+instructions: '{installed_path}/instructions.md'
+validation: '{installed_path}/checklist.md'
+template: '{installed_path}/visual-spec-template.md'
+
+# Output configuration
+default_output_file: '{story_dir}/{{story_key}}-visual-spec.md'
+wireframe_file: '{output_folder}/wireframes/{{story_key}}-wireframe.md'
+
+standalone: true

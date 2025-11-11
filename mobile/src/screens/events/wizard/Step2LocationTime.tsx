@@ -1,0 +1,507 @@
+/**
+ * Create Event Wizard - Step 2: Location & Time
+ * Implements location autocomplete (internal DB), native date/time pickers, duration dropdown
+ * Visual Spec: Screen 2 - 19 acceptance criteria
+ */
+
+import React, { useState } from 'react';
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+} from 'react-native';
+import {
+  Text,
+  TextInput,
+  Button,
+  HelperText,
+  useTheme,
+  Menu,
+} from 'react-native-paper';
+import { DatePickerModal, TimePickerModal } from 'react-native-paper-dates';
+import type { WizardData } from './CreateEventWizard';
+
+interface Props {
+  data: WizardData;
+  onNext: (data: Partial<WizardData>) => void;
+  onBack: () => void;
+}
+
+// Mock location data - internal database
+const MOCK_LOCATIONS = [
+  {
+    id: '1',
+    name: 'Golden Gate Park Tennis Courts',
+    address: '1100 John F Kennedy Dr',
+    city: 'San Francisco',
+    state: 'CA',
+  },
+  {
+    id: '2',
+    name: 'Dolores Park Recreation Center',
+    address: '500 Dolores St',
+    city: 'San Francisco',
+    state: 'CA',
+  },
+  {
+    id: '3',
+    name: 'Mission Bay Pickleball Courts',
+    address: '170 Channel St',
+    city: 'San Francisco',
+    state: 'CA',
+  },
+  {
+    id: '4',
+    name: 'Presidio Sports Complex',
+    address: '250 Arguello Blvd',
+    city: 'San Francisco',
+    state: 'CA',
+  },
+  {
+    id: '5',
+    name: 'SF State Recreation Center',
+    address: '1600 Holloway Ave',
+    city: 'San Francisco',
+    state: 'CA',
+  },
+  {
+    id: '6',
+    name: 'Alice Marble Tennis Courts',
+    address: '1360 Greenwich St',
+    city: 'San Francisco',
+    state: 'CA',
+  },
+  {
+    id: '7',
+    name: 'Crocker Amazon Playground',
+    address: '799 Moscow St',
+    city: 'San Francisco',
+    state: 'CA',
+  },
+  {
+    id: '8',
+    name: 'Sunset Playground Tennis Courts',
+    address: '2201 28th Ave',
+    city: 'San Francisco',
+    state: 'CA',
+  },
+];
+
+// Duration options: 30-min increments from 0.5h to 6h (12 options)
+const DURATION_OPTIONS = [
+  { label: '30 minutes', value: 30 },
+  { label: '1 hour', value: 60 },
+  { label: '1.5 hours', value: 90 },
+  { label: '2 hours', value: 120 },
+  { label: '2.5 hours', value: 150 },
+  { label: '3 hours', value: 180 },
+  { label: '3.5 hours', value: 210 },
+  { label: '4 hours', value: 240 },
+  { label: '4.5 hours', value: 270 },
+  { label: '5 hours', value: 300 },
+  { label: '5.5 hours', value: 330 },
+  { label: '6 hours', value: 360 },
+];
+
+export default function Step2LocationTime({ data, onNext, onBack }: Props) {
+  const theme = useTheme();
+  const [location, setLocation] = useState(data.location);
+  const [date, setDate] = useState<Date | null>(data.date);
+  const [time, setTime] = useState<Date | null>(data.time);
+  const [duration, setDuration] = useState(data.duration);
+
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [showDurationMenu, setShowDurationMenu] = useState(false);
+  const [locationQuery, setLocationQuery] = useState('');
+  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
+  const [touched, setTouched] = useState({
+    location: false,
+    date: false,
+    time: false,
+  });
+
+  // Filter locations based on search query
+  const filteredLocations = MOCK_LOCATIONS.filter(
+    loc =>
+      loc.name.toLowerCase().includes(locationQuery.toLowerCase()) ||
+      loc.address.toLowerCase().includes(locationQuery.toLowerCase()) ||
+      loc.city.toLowerCase().includes(locationQuery.toLowerCase()),
+  ).slice(0, 5); // Show max 5 suggestions
+
+  // Validation - check BOTH location and locationQuery
+  const locationError =
+    touched.location && !location.trim() && !locationQuery.trim()
+      ? 'Location is required'
+      : null;
+
+  const dateError =
+    touched.date && !date
+      ? 'Date is required'
+      : date && date < new Date(new Date().setHours(0, 0, 0, 0))
+        ? 'Date must be in the future'
+        : null;
+
+  const timeError = touched.time && !time ? 'Time is required' : null;
+
+  // Valid if either location OR locationQuery has content
+  const hasLocation = location.trim() !== '' || locationQuery.trim() !== '';
+  const isValid = hasLocation && date !== null && time !== null;
+
+  const handleNext = () => {
+    if (!isValid) {
+      setTouched({ location: true, date: true, time: true });
+      return;
+    }
+    // Use locationQuery if location is empty
+    const finalLocation = location || locationQuery;
+    onNext({ location: finalLocation, date, time, duration });
+  };
+
+  const formatDate = (d: Date | null) => {
+    if (!d) return '';
+    return d.toLocaleDateString('en-US', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  const formatTime = (t: Date | null) => {
+    if (!t) return '';
+    return t.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+  };
+
+  const getDurationLabel = (minutes: number) => {
+    const option = DURATION_OPTIONS.find(opt => opt.value === minutes);
+    return option ? option.label : `${minutes} minutes`;
+  };
+
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        {/* Progress Indicator */}
+        <View style={styles.progressSection}>
+          <View style={styles.progressDots}>
+            <View style={[styles.dot, styles.dotActive]} />
+            <View style={styles.dotLine} />
+            <View style={[styles.dot, styles.dotActive]} />
+            <View style={styles.dotLine} />
+            <View style={styles.dot} />
+            <View style={styles.dotLine} />
+            <View style={styles.dot} />
+          </View>
+          <Text variant="labelMedium" style={styles.progressText}>
+            Step 2 of 4
+          </Text>
+        </View>
+
+        {/* Section Header */}
+        <Text variant="titleLarge" style={styles.sectionHeader}>
+          Location & Time
+        </Text>
+
+        {/* Location Input with Autocomplete */}
+        <View>
+          <TextInput
+            label="Location *"
+            value={locationQuery || location}
+            onChangeText={query => {
+              setLocationQuery(query);
+              setLocation(query); // Update location as user types
+              setShowLocationSuggestions(query.length >= 2);
+            }}
+            onFocus={() => {
+              if ((locationQuery || location).length >= 2) {
+                setShowLocationSuggestions(true);
+              }
+            }}
+            onBlur={() => {
+              setTimeout(() => {
+                setShowLocationSuggestions(false);
+                setTouched(prev => ({ ...prev, location: true }));
+              }, 200);
+            }}
+            mode="outlined"
+            error={!!locationError}
+            placeholder="Enter address or search venues"
+            style={styles.input}
+            left={<TextInput.Icon icon="map-marker" />}
+          />
+
+          {/* Location Suggestions */}
+          {showLocationSuggestions && filteredLocations.length > 0 && (
+            <View style={styles.suggestionsList}>
+              {filteredLocations.map(loc => (
+                <Pressable
+                  key={loc.id}
+                  style={styles.suggestionItem}
+                  onPress={() => {
+                    const fullAddress = `${loc.name}, ${loc.city}, ${loc.state}`;
+                    setLocation(fullAddress);
+                    setLocationQuery('');
+                    setShowLocationSuggestions(false);
+                  }}
+                >
+                  <View>
+                    <Text variant="bodyMedium" style={styles.locationName}>
+                      {loc.name}
+                    </Text>
+                    <Text variant="bodySmall" style={styles.locationAddress}>
+                      {loc.address}, {loc.city}, {loc.state}
+                    </Text>
+                  </View>
+                </Pressable>
+              ))}
+            </View>
+          )}
+        </View>
+
+        <HelperText type="error" visible={!!locationError}>
+          {locationError}
+        </HelperText>
+        <HelperText
+          type="info"
+          visible={!locationError && !showLocationSuggestions}
+        >
+          Enter any address or type 2+ characters to search venues
+        </HelperText>
+
+        {/* Date Picker */}
+        <TextInput
+          label="Date *"
+          value={formatDate(date)}
+          mode="outlined"
+          error={!!dateError}
+          editable={false}
+          onPressIn={() => setShowDatePicker(true)}
+          style={styles.input}
+          right={
+            <TextInput.Icon
+              icon="calendar"
+              onPress={() => setShowDatePicker(true)}
+            />
+          }
+        />
+        <HelperText type="error" visible={!!dateError}>
+          {dateError}
+        </HelperText>
+
+        <DatePickerModal
+          locale="en"
+          mode="single"
+          visible={showDatePicker}
+          onDismiss={() => setShowDatePicker(false)}
+          date={date || new Date()}
+          onConfirm={params => {
+            setShowDatePicker(false);
+            setDate(params.date || null);
+            setTouched(prev => ({ ...prev, date: true }));
+          }}
+          validRange={{
+            startDate: new Date(),
+          }}
+        />
+
+        {/* Time Picker */}
+        <TextInput
+          label="Start Time *"
+          value={formatTime(time)}
+          mode="outlined"
+          error={!!timeError}
+          editable={false}
+          onPressIn={() => setShowTimePicker(true)}
+          style={styles.input}
+          right={
+            <TextInput.Icon
+              icon="clock-outline"
+              onPress={() => setShowTimePicker(true)}
+            />
+          }
+        />
+        <HelperText type="error" visible={!!timeError}>
+          {timeError}
+        </HelperText>
+
+        <TimePickerModal
+          locale="en"
+          visible={showTimePicker}
+          onDismiss={() => setShowTimePicker(false)}
+          onConfirm={params => {
+            setShowTimePicker(false);
+            const newTime = new Date();
+            newTime.setHours(params.hours, params.minutes);
+            setTime(newTime);
+            setTouched(prev => ({ ...prev, time: true }));
+          }}
+          hours={time?.getHours() || 12}
+          minutes={time?.getMinutes() || 0}
+        />
+
+        {/* Duration Dropdown */}
+        <Menu
+          visible={showDurationMenu}
+          onDismiss={() => setShowDurationMenu(false)}
+          anchor={
+            <TextInput
+              label="Duration *"
+              value={getDurationLabel(duration)}
+              mode="outlined"
+              editable={false}
+              onPressIn={() => setShowDurationMenu(true)}
+              style={styles.input}
+              right={
+                <TextInput.Icon
+                  icon="chevron-down"
+                  onPress={() => setShowDurationMenu(true)}
+                />
+              }
+            />
+          }
+          anchorPosition="bottom"
+        >
+          <ScrollView style={styles.menuScroll}>
+            {DURATION_OPTIONS.map(option => (
+              <Menu.Item
+                key={option.value}
+                onPress={() => {
+                  setDuration(option.value);
+                  setShowDurationMenu(false);
+                }}
+                title={option.label}
+                titleStyle={
+                  duration === option.value
+                    ? { color: theme.colors.primary }
+                    : undefined
+                }
+              />
+            ))}
+          </ScrollView>
+        </Menu>
+        <HelperText type="info">
+          Event duration (30-minute increments)
+        </HelperText>
+
+        {/* Action Buttons */}
+        <View style={styles.buttonContainer}>
+          <Button mode="outlined" onPress={onBack} style={styles.backButton}>
+            Back
+          </Button>
+          <Button
+            mode="contained"
+            onPress={handleNext}
+            disabled={!isValid}
+            style={styles.nextButton}
+            icon="arrow-right"
+            contentStyle={styles.nextButtonContent}
+          >
+            Next
+          </Button>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+  progressSection: {
+    marginBottom: 24,
+    alignItems: 'center',
+  },
+  progressDots: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  dot: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#9CA3AF',
+  },
+  dotActive: {
+    backgroundColor: '#3B82F6',
+  },
+  dotLine: {
+    width: 24,
+    height: 2,
+    backgroundColor: '#E5E7EB',
+    marginHorizontal: 4,
+  },
+  progressText: {
+    color: '#6B7280',
+  },
+  sectionHeader: {
+    marginBottom: 20,
+    fontWeight: 'bold',
+  },
+  input: {
+    marginBottom: 4,
+  },
+  suggestionsList: {
+    position: 'absolute',
+    top: 60,
+    left: 0,
+    right: 0,
+    backgroundColor: 'white',
+    borderRadius: 8,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    zIndex: 1000,
+    maxHeight: 200,
+  },
+  suggestionItem: {
+    padding: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  locationName: {
+    fontWeight: '600',
+    marginBottom: 2,
+  },
+  locationAddress: {
+    color: '#6B7280',
+  },
+  menuScroll: {
+    maxHeight: 300,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 24,
+    gap: 12,
+  },
+  backButton: {
+    flex: 1,
+  },
+  nextButton: {
+    flex: 2,
+  },
+  nextButtonContent: {
+    flexDirection: 'row-reverse',
+  },
+});

@@ -2,9 +2,9 @@
 
 **GSS Client - Mobile & Web Frontend**
 
-*Generated: November 4, 2025*  
-*Project: gss_client (Frontend Client Repository)*  
-*Level: 2 (Scoped Architecture for Client-Side Concerns)*
+_Generated: November 4, 2025_  
+_Project: gss_client (Frontend Client Repository)_  
+_Level: 2 (Scoped Architecture for Client-Side Concerns)_
 
 ## Executive Summary
 
@@ -43,19 +43,19 @@ This establishes the multi-platform foundation with:
 
 ## Decision Summary Table
 
-| Category | Decision | Technology/Pattern | Version | Epic Impact |
-|----------|----------|-------------------|---------|-------------|
-| **Starter Template** | TheCodingMachine RN Boilerplate | React Native CLI Template | v4.0.1 | Epic 1 (Foundation) |
-| **State Management** | Redux Toolkit + TanStack Query | @reduxjs/toolkit, @tanstack/react-query | Latest | All Epics |
-| **Authentication** | Secure Storage + Auto-refresh | React Native Keychain, JWT | Latest | Epic 1, 5 |
-| **API Integration** | Mock-First with Abstraction | Service interfaces + Mock impl | Custom | All Epics |
-| **Offline Strategy** | Cache-First Background Sync | MMKV + TanStack Query | Latest | Epic 2, 3 |
-| **Push Notifications** | Firebase Cloud Messaging | @react-native-firebase/messaging | Latest | Epic 5 |
-| **QR Scanning** | Vision Camera + Code Scanner | react-native-vision-camera | Latest | Epic 2 |
-| **Image Handling** | React Native Image Picker | react-native-image-picker | Latest | Epic 1, 4 |
-| **Error Handling** | Error Boundaries + Toast | react-error-boundary | Latest | All Epics |
-| **Analytics** | Firebase Analytics + Crashlytics | @react-native-firebase/analytics | Latest | Epic 8 |
-| **Web Architecture** | Separate React + Vite App | Vite, React Router | Latest | All Epics (Web) |
+| Category               | Decision                         | Technology/Pattern                      | Version | Epic Impact         |
+| ---------------------- | -------------------------------- | --------------------------------------- | ------- | ------------------- |
+| **Starter Template**   | TheCodingMachine RN Boilerplate  | React Native CLI Template               | v4.0.1  | Epic 1 (Foundation) |
+| **State Management**   | Redux Toolkit + TanStack Query   | @reduxjs/toolkit, @tanstack/react-query | Latest  | All Epics           |
+| **Authentication**     | Secure Storage + Auto-refresh    | React Native Keychain, JWT              | Latest  | Epic 1, 5           |
+| **API Integration**    | Mock-First with Abstraction      | Service interfaces + Mock impl          | Custom  | All Epics           |
+| **Offline Strategy**   | Cache-First Background Sync      | MMKV + TanStack Query                   | Latest  | Epic 2, 3           |
+| **Push Notifications** | Firebase Cloud Messaging         | @react-native-firebase/messaging        | Latest  | Epic 5              |
+| **QR Scanning**        | Vision Camera + Code Scanner     | react-native-vision-camera              | Latest  | Epic 2              |
+| **Image Handling**     | React Native Image Picker        | react-native-image-picker               | Latest  | Epic 1, 4           |
+| **Error Handling**     | Error Boundaries + Toast         | react-error-boundary                    | Latest  | All Epics           |
+| **Analytics**          | Firebase Analytics + Crashlytics | @react-native-firebase/analytics        | Latest  | Epic 8              |
+| **Web Architecture**   | Separate React + Vite App        | Vite, React Router                      | Latest  | All Epics (Web)     |
 
 ## Complete Project Structure
 
@@ -501,10 +501,10 @@ interface CompetitiveUnlockState {
 ```typescript
 interface ApiErrorResponse {
   error: {
-    code: string;           // Machine-readable error code
-    message: string;        // User-friendly message
-    details?: object;       // Additional context for debugging
-    retryable: boolean;     // Whether automatic retry is appropriate
+    code: string; // Machine-readable error code
+    message: string; // User-friendly message
+    details?: object; // Additional context for debugging
+    retryable: boolean; // Whether automatic retry is appropriate
   };
 }
 ```
@@ -531,8 +531,8 @@ interface ApiErrorResponse {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000,      // 5 minutes
-      cacheTime: 10 * 60 * 1000,     // 10 minutes  
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      cacheTime: 10 * 60 * 1000, // 10 minutes
       retry: (failureCount, error) => {
         // Retry logic based on error type
         return failureCount < 3 && isRetryableError(error);
@@ -582,7 +582,7 @@ interface User {
   displayName: string;
   avatar?: string;
   homeCity: string;
-  reliabilityScore: number;        // Private by default
+  reliabilityScore: number; // Private by default
   level: number;
   xp: number;
   badges: Badge[];
@@ -606,12 +606,12 @@ interface Event {
   dateTime: string;
   capacity: number;
   currentParticipants: number;
-  depositAmount: number;           // In cents
+  depositAmount: number; // In cents
   visibility: 'public' | 'private';
   hostId: string;
   host: User;
   participants: EventParticipant[];
-  qrCode?: string;                // Generated for check-ins
+  qrCode?: string; // Generated for check-ins
   status: 'upcoming' | 'ongoing' | 'completed' | 'cancelled';
   createdAt: string;
   updatedAt: string;
@@ -838,7 +838,7 @@ interface PaginatedResponse<T> {
 **Monitoring and Analytics:**
 
 - **Firebase Analytics:** User behavior tracking across platforms
-- **Crashlytics:** Crash reporting and stability monitoring  
+- **Crashlytics:** Crash reporting and stability monitoring
 - **Performance Monitoring:** API response times, app performance metrics
 - **Custom Analytics:** FR032 instrumentation events tracking
 
@@ -895,7 +895,7 @@ npm run build
 ```bash
 # Mobile environment files
 mobile/.env.development
-mobile/.env.staging  
+mobile/.env.staging
 mobile/.env.production
 
 # Web environment files
@@ -916,7 +916,7 @@ npm run start          # Start Metro bundler
 npm run ios           # Run iOS simulator
 npm run android       # Run Android emulator
 
-# Web development  
+# Web development
 cd web
 npm run dev           # Start Vite dev server
 npm run build         # Production build
@@ -1119,4 +1119,4 @@ Check status anytime with: `workflow-status`
 
 ---
 
-*This architecture document serves as the consistency contract for all AI agents implementing the GSS Client across mobile and web platforms.*
+_This architecture document serves as the consistency contract for all AI agents implementing the GSS Client across mobile and web platforms._

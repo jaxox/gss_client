@@ -747,6 +747,239 @@ What speaks to you?
 <template-output>design_direction_decision</template-output>
 </step>
 
+<step n="5b" goal="Generate visual wireframes for key screens and flows">
+  <critical>WIREFRAMES BEFORE IMPLEMENTATION - Users need to see structure before building</critical>
+  <critical>Generate ASCII/Markdown wireframes showing layout, components, and interactions</critical>
+  <critical>This is the bridge between design vision and developer implementation</critical>
+
+<output>Perfect! Now let's create wireframes that developers can actually build from.
+
+Wireframes are blueprint-level mockups showing:
+
+- Exact component placement and layout
+- Content hierarchy and spacing
+- Interaction patterns and states
+- Navigation flows
+
+These will guide implementation and ensure everyone's on the same page before coding starts.</output>
+
+<action>Identify screens requiring wireframes:
+
+    Priority wireframes based on chosen design direction:
+    1. Key entry points (home, dashboard, landing)
+    2. Core user action screens (primary tasks)
+    3. Complex flows (multi-step processes)
+    4. Novel interaction patterns
+    5. Critical conversion screens
+
+    For each screen:
+    - Extract layout structure from design direction mockups
+    - Identify all components and their states
+    - Document content hierarchy
+    - Note responsive behavior
+    - Specify interaction patterns
+
+  </action>
+
+<ask>I'll create wireframes for your key screens. Which screens should I prioritize?
+
+Based on your design, I recommend wireframes for:
+{{#each recommended_screens}}
+
+- **{{screen_name}}** - {{rationale}}
+  {{/each}}
+
+Should I:
+
+1. Generate all recommended wireframes (thorough)
+2. Focus on {{top_3_screens}} (essential first)
+3. You tell me which specific screens to wireframe
+
+What works best for you?</ask>
+
+<action>For each selected screen, generate comprehensive ASCII/Markdown wireframe:
+
+    Create file: {wireframes_folder}/{{screen-name}}-wireframe.md
+
+    Wireframe Structure:
+
+    # {{Screen Name}} - Wireframe
+
+    **Purpose:** {{what_this_screen_does}}
+    **User Goal:** {{what_user_accomplishes}}
+    **Design Direction:** {{reference_to_chosen_direction}}
+
+    ---
+
+    ## Layout Structure
+
+    ```
+    ┌────────────────────────────────────────────┐
+    │  {{AppBar/Header with elements}}           │
+    ├────────────────────────────────────────────┤
+    │  {{Navigation if applicable}}              │
+    ├────────────────────────────────────────────┤
+    │                                            │
+    │  {{Section Header}}                        │
+    │                                            │
+    │  ┌──────────────────────────────────────┐ │
+    │  │ {{Component with details}}           │ │
+    │  │ {{Content hierarchy}}                │ │
+    │  └──────────────────────────────────────┘ │
+    │                                            │
+    │  {{Additional sections...}}                │
+    │                                            │
+    │  [{{Action Buttons}}]                      │
+    └────────────────────────────────────────────┘
+    ```
+
+    ---
+
+    ## Component Breakdown
+
+    ### 1. {{Component Name}}
+    - **Type:** {{design_system_component}} or Custom
+    - **Props:** {{key_properties}}
+    - **Content:** {{what_it_displays}}
+    - **States:** {{default_hover_active_disabled_error}}
+    - **Interaction:** {{what_happens_on_user_action}}
+
+    ### 2. {{Next Component}}
+    ...
+
+    ---
+
+    ## Visual Hierarchy
+
+    **Typography:**
+    - {{Element}}: {{font_size_weight_color}}
+
+    **Color Application:**
+    - {{Element}}: {{color_and_usage}}
+
+    **Spacing:**
+    - {{Measurement}}: {{spacing_value}}
+
+    ---
+
+    ## Interaction States
+
+    ### State 1: {{State Name}}
+    - Trigger: {{what_causes_this_state}}
+    - Visual changes: {{what_user_sees}}
+    - User actions available: {{what_they_can_do}}
+
+    ### State 2: {{State Name}}
+    ...
+
+    ---
+
+    ## Responsive Behavior
+
+    **Mobile (< 768px):**
+    - {{Layout changes}}
+    - {{Component adaptations}}
+    - {{Navigation modifications}}
+
+    **Tablet (768px - 1024px):**
+    - {{Layout changes}}
+
+    **Desktop (> 1024px):**
+    - {{Layout changes}}
+
+    ---
+
+    ## Accessibility Requirements
+
+    - **Keyboard Navigation:** {{tab_order_and_shortcuts}}
+    - **Screen Reader:** {{aria_labels_and_announcements}}
+    - **Touch Targets:** {{minimum_sizes}}
+    - **Color Contrast:** {{ratios_met}}
+
+    ---
+
+    ## Design Acceptance Checklist
+
+    - [ ] Layout matches wireframe structure
+    - [ ] Components use {{design_system}} as specified
+    - [ ] All interaction states implemented
+    - [ ] Typography matches design system
+    - [ ] Colors match {{chosen_theme}}
+    - [ ] Spacing uses {{spacing_system}}
+    - [ ] Responsive behavior works across breakpoints
+    - [ ] Accessibility requirements met (WCAG {{level}})
+    - [ ] Touch targets meet minimum size (44×44px)
+
+    ---
+
+    ## UX Pattern References
+    - {{Pattern}}: UX Spec Section {{section}}
+    - {{Component}}: Design System {{reference}}
+
+  </action>
+
+<action>Create wireframes folder if it doesn't exist</action>
+<action>Generate wireframes for all selected screens</action>
+<action>Create index file: {wireframes_folder}/README.md listing all wireframes with descriptions</action>
+
+<output>✨ **Wireframes Generated!**
+
+Created {{wireframe_count}} detailed wireframes in: `{wireframes_folder}/`
+
+**Generated Wireframes:**
+{{#each wireframes}}
+
+- `{{filename}}` - {{screen_description}}
+  {{/each}}
+
+Each wireframe includes:
+✓ ASCII layout mockup showing exact structure
+✓ Component breakdown with types and properties
+✓ All interaction states documented
+✓ Responsive behavior specified
+✓ Accessibility requirements detailed
+✓ Design acceptance checklist
+
+**Next Step:** Review wireframes to confirm they match your vision before proceeding to implementation.</output>
+
+<ask>Let's review the wireframes together. Open any wireframe file to see the detailed structure.
+
+Questions to consider:
+
+- Does the layout feel right for the user's goal?
+- Are components in the right hierarchy?
+- Is the interaction flow clear?
+- Any missing states or edge cases?
+
+Should I:
+
+1. **Proceed** - Wireframes look good, continue to next workflow step
+2. **Revise** - Make changes to specific wireframes (tell me which and what to change)
+3. **Add more** - Create wireframes for additional screens
+
+What would you like to do?</ask>
+
+  <check if="user_wants_revisions">
+    <ask>Which wireframe(s) need changes? Tell me:
+- Wireframe filename or screen name
+- What needs to change (layout, components, interactions, etc.)
+- Your vision for how it should be instead</ask>
+
+    <action>Update specified wireframes based on feedback</action>
+    <action>Save revised versions</action>
+    <output>✅ Updated wireframes saved!</output>
+    <ask>Better? Ready to proceed?</ask>
+
+  </check>
+
+  <check if="user_wants_more">
+    <ask>Which additional screens should I wireframe?</ask>
+    <action>Generate additional wireframes following same comprehensive structure</action>
+  </check>
+
+<template-output>wireframes_generated</template-output>
+</step>
+
 <step n="6" goal="Collaborative user journey design">
   <critical>User journeys are conversations, not just flowcharts</critical>
   <critical>Design WITH the user, exploring options for each key flow</critical>

@@ -32,8 +32,8 @@ import {
   DEFAULT_DEPOSIT_AMOUNT,
   DEFAULT_VISIBILITY,
   DEPOSIT_OPTIONS,
-} from '@shared/validation/eventValidation';
-import type { CreateEventRequest } from '@shared/types/event.types';
+} from '@gss/shared';
+import type { CreateEventRequest } from '@gss/shared';
 
 // Sport options (hardcoded for now, can be fetched from backend later)
 const SPORTS = [

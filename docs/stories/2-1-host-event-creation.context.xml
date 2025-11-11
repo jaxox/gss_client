@@ -111,6 +111,15 @@
       <doc path="docs/ux-design-specification.md" title="UX Design Specification" section="Trust &amp; Reliability Theme">
         Primary color: #3B82F6 (Blue). Typography: Inter font system. Spacing: 8px system. Form components: clear labels, inline validation errors, loading states with spinners. Mobile: optimized keyboard types, native date pickers.
       </doc>
+      <doc path="docs/stories/2-1-host-event-creation-visual-spec.md" title="Visual Design Specification" section="ALL">
+        CRITICAL: Concrete visual implementation guidance with 6 screen wireframes (Basic Info, Location &amp; Time, Details, Review &amp; Publish, Add Cohosts, Add Link). Defines multi-step wizard flow, card-based sport selector with Material Design icons (NOT emojis), internal database autocomplete for addresses (NO Google Maps API), native date/time pickers (react-native-paper-dates, @mui/x-date-pickers), deposit removal, cost per person with payment methods, cohosts feature, guest invite toggle, external links builder, reliability banner. Includes component composition, 7 interaction states per component, responsive behavior, accessibility requirements, and 44-item design acceptance checklist. MUST follow specifications exactly.
+      </doc>
+      <doc path="docs/ux-design-specification.md" title="UX Design Specification" section="4.1, 6.1, 7.1">
+        Core UX patterns: Hybrid Event Discovery (4.1 - progressive disclosure, card-based selection), Trust Indicators (6.1 - reliability scores, verification badges), Consistency Rules (7.1 - visual hierarchy, spacing, typography). Apply to all screens.
+      </doc>
+      <doc path="docs/design-system.md" title="Design System" section="ALL">
+        Complete design system: Trust &amp; Reliability color palette (primary #3B82F6, success #10B981, error #EF4444, warning #F59E0B, semantic grays), Inter typography scale (xs 12px to 4xl 36px, 1.5 line height), 8px spacing system (xs 4px to 3xl 64px), breakpoints (mobile &lt;768px, tablet 768-1024px, desktop &gt;1024px), component specifications (buttons, inputs, cards, chips, modals). All implementations must use design system values.
+      </doc>
     </docs>
     <code>
       <artifact path="shared/src/services/api/authServiceImpl.ts" kind="service" symbol="AuthServiceImpl" lines="1-150" reason="Reference implementation pattern for API service with error handling, demonstrates service structure and HTTP client usage with Ky for EventService implementation"/>
@@ -165,6 +174,9 @@
     <constraint type="accessibility">WCAG 2.1 AA compliance. Form keyboard navigable, screen reader friendly. Clear labels and placeholder text. Inline validation errors with field-specific messages.</constraint>
     <constraint type="testing">70% unit test coverage (services, validation, state management). 20% integration tests (form submission, geocoding, QR generation). 10% E2E tests (Detox mobile, Playwright web).</constraint>
     <constraint type="dependencies">Epic 1 authentication foundation required (JWT tokens, user session). Firebase Cloud Messaging setup for notifications. Stripe configuration for deposit validation.</constraint>
+    <constraint type="visual-design">CRITICAL: Implementation MUST follow visual specification (2-1-host-event-creation-visual-spec.md). Multi-step wizard (4 steps with progress indicator), Card components for sport selector (NOT SegmentedButtons/ToggleButtonGroup), Material Design icons (NOT emojis), internal database autocomplete for addresses (NO Google Maps API cost), native date/time pickers (NOT text inputs), deposit section REMOVED completely, cost per person with payment methods (Venmo/Cash App/PayPal), cohosts feature (max 5), guest invite toggle (default OFF), external links builder (max 5 with icon picker), reliability banner, review &amp; publish step. Check 44-item design acceptance checklist before marking complete.</constraint>
+    <constraint type="component-library">Mobile: React Native Paper + react-native-paper-dates for DatePickerModal/TimePickerModal. Web: Material UI + @mui/x-date-pickers for DatePicker/TimePicker. Install dependencies: react-native-paper-dates, @mui/x-date-pickers, @date-io/date-fns, date-fns. NO custom date/time input implementations.</constraint>
+    <constraint type="deposit-removal">Deposit section completely REMOVED per research (refundable_deposit_strategies.md - 90%+ refund rate triggers Stripe risk flags, unsustainable economics). Cost per person replaces deposit with conditional payment method collection (Venmo @username, Cash App $cashtag, PayPal email/link).</constraint>
   </constraints>
 
   <interfaces>

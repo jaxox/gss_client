@@ -16,11 +16,12 @@ import RegistrationScreen from './src/screens/auth/RegistrationScreen';
 import ForgotPasswordScreen from './src/screens/auth/ForgotPasswordScreen';
 import ResetPasswordScreen from './src/screens/auth/ResetPasswordScreen';
 import ProfileScreen from './src/screens/profile/ProfileScreen';
-import CreateEventScreen from './src/screens/events/CreateEventScreen';
+import CreateEventWizard from './src/screens/events/wizard/CreateEventWizard';
 import MyEventsScreen from './src/screens/events/MyEventsScreen';
 import ErrorBoundary from './src/components/ErrorBoundary';
 import { logJsError } from './src/utils/jsLogger';
 import { NativeModules } from 'react-native';
+import 'react-native-vector-icons/MaterialCommunityIcons';
 
 type Screen =
   | 'menu'
@@ -224,7 +225,7 @@ function App() {
         )}
         {currentScreen === 'createEvent' && (
           <ErrorBoundary>
-            <CreateEventScreen />
+            <CreateEventWizard />
           </ErrorBoundary>
         )}
         {currentScreen === 'myEvents' && (
