@@ -8,6 +8,8 @@ module.exports = {
   moduleNameMapper: {
     '^@shared/(.*)$': '<rootDir>/../shared/src/$1',
     '^@shared$': '<rootDir>/../shared/src/index',
+    // Mock image/asset imports
+    '\\.(jpg|jpeg|png|gif|svg|webp)$': '<rootDir>/__mocks__/fileMock.js',
   },
 
   // Transform configuration
@@ -27,9 +29,10 @@ module.exports = {
   testMatch: [
     '<rootDir>/src/**/__tests__/**/*.{js,jsx,ts,tsx}',
     '<rootDir>/src/**/*.{test,spec}.{js,jsx,ts,tsx}',
-    '<rootDir>/__tests__/**/*.{js,jsx,ts,tsx}',
-    '!<rootDir>/__tests__/e2e/**',
   ],
+
+  // Exclude E2E tests that require Detox
+  testPathIgnorePatterns: ['/node_modules/', '/__tests__/e2e/'],
 
   // Coverage configuration
   collectCoverageFrom: [

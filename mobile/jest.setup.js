@@ -39,6 +39,7 @@ jest.mock('@react-native-google-signin/google-signin', () => ({
 // Mock React Native modules
 jest.mock('react-native', () => {
   const RN = jest.requireActual('react-native');
+  const React = require('react');
 
   // Mock Alert
   RN.Alert.alert = jest.fn();
@@ -47,7 +48,40 @@ jest.mock('react-native', () => {
   RN.Linking.openURL = jest.fn(() => Promise.resolve());
   RN.Linking.canOpenURL = jest.fn(() => Promise.resolve(true));
 
+  // Ensure Switch is available
+  if (!RN.Switch) {
+    RN.Switch = 'Switch';
+  }
+
+  // Mock SafeAreaView
+  RN.SafeAreaView = ({ children, ...props }) =>
+    React.createElement(RN.View, props, children);
+
   return RN;
+});
+
+// Mock react-native-safe-area-context
+jest.mock('react-native-safe-area-context', () => {
+  const insets = { top: 0, right: 0, bottom: 0, left: 0 };
+  return {
+    SafeAreaProvider: ({ children }) => children,
+    SafeAreaView: ({ children }) => children,
+    useSafeAreaInsets: () => insets,
+    useSafeAreaFrame: () => ({ x: 0, y: 0, width: 390, height: 844 }),
+    SafeAreaInsetsContext: {
+      Consumer: ({ children }) => children(insets),
+    },
+  };
+});
+
+// Mock react-native-paper
+jest.mock('react-native-paper', () => {
+  const RNPaper = jest.requireActual('react-native-paper');
+  return {
+    ...RNPaper,
+    Portal: ({ children }) => children,
+    Provider: ({ children }) => children,
+  };
 });
 
 // Mock console methods to reduce noise in tests

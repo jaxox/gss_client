@@ -5,8 +5,17 @@
  */
 
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView } from 'react-native';
-import { Text, Button, Card, useTheme } from 'react-native-paper';
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  Pressable,
+  Linking,
+  Alert,
+  Platform,
+  Share,
+} from 'react-native';
+import { Text, Button, Card, Divider, Chip } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { WizardData } from './CreateEventWizard';
 
@@ -17,7 +26,6 @@ interface Props {
 }
 
 export default function Step4Review({ data, onBack, onPublish }: Props) {
-  const theme = useTheme();
   const [publishing, setPublishing] = useState(false);
 
   const handlePublish = async () => {
@@ -29,13 +37,14 @@ export default function Step4Review({ data, onBack, onPublish }: Props) {
     }
   };
 
+  // Format date in short form: Wed, Nov 12, 2025
   const formatDate = (d: Date | null) => {
     if (!d) return 'Not set';
     return d.toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
+      weekday: 'short',
+      month: 'short',
       day: 'numeric',
+      year: 'numeric',
     });
   };
 
@@ -51,8 +60,47 @@ export default function Step4Review({ data, onBack, onPublish }: Props) {
   const getDurationLabel = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
-    if (mins === 0) return `${hours} hour${hours !== 1 ? 's' : ''}`;
+    if (mins === 0) return `${hours}h`;
+    if (hours === 0) return `${mins}m`;
     return `${hours}h ${mins}m`;
+  };
+
+  // Handle address actions
+  const handleAddressPress = () => {
+    Alert.alert('Location', data.location, [
+      {
+        text: 'Copy Address',
+        onPress: async () => {
+          try {
+            await Share.share({ message: data.location });
+          } catch (error) {
+            Alert.alert('Error', 'Could not copy address');
+          }
+        },
+      },
+      {
+        text: 'Open in Maps',
+        onPress: () => {
+          const url = Platform.select({
+            ios: `maps://app?address=${encodeURIComponent(data.location)}`,
+            android: `geo:0,0?q=${encodeURIComponent(data.location)}`,
+          });
+          if (url) {
+            Linking.openURL(url).catch(() =>
+              Alert.alert('Error', 'Could not open maps'),
+            );
+          }
+        },
+      },
+      { text: 'Cancel', style: 'cancel' },
+    ]);
+  };
+
+  // Handle link press
+  const handleLinkPress = (url: string) => {
+    Linking.openURL(url).catch(() =>
+      Alert.alert('Error', 'Could not open link'),
+    );
   };
 
   const getPaymentMethodsList = () => {
@@ -65,7 +113,6 @@ export default function Step4Review({ data, onBack, onPublish }: Props) {
       methods.push(`CashApp: ${data.paymentMethods.cashapp}`);
     if (data.paymentMethods.zelle)
       methods.push(`Zelle: ${data.paymentMethods.zelle}`);
-    if (data.paymentMethods.cash) methods.push('Cash (at event)');
     return methods.length > 0 ? methods : ['None specified'];
   };
 
@@ -102,130 +149,212 @@ export default function Step4Review({ data, onBack, onPublish }: Props) {
         </View>
 
         {/* Section Header */}
-        <Text variant="titleLarge" style={styles.sectionHeader}>
-          Review & Publish
-        </Text>
+        <View style={styles.headerSection}>
+          <Text variant="headlineMedium" style={styles.sectionHeader}>
+            Review & Publish
+          </Text>
+          <Text variant="bodyMedium" style={styles.subtitle}>
+            Review your event details before publishing
+          </Text>
+        </View>
 
-        {/* Event Preview Card */}
-        <Card mode="elevated" style={styles.previewCard} elevation={2}>
-          <Card.Content>
-            {/* Title */}
+        {/* Event Preview Card - Modern Design */}
+        <Card mode="elevated" style={styles.previewCard} elevation={3}>
+          {/* Hero Section with Title and Sport */}
+          <View style={styles.heroSection}>
+            <Chip
+              mode="flat"
+              icon="badminton"
+              style={styles.sportChip}
+              textStyle={styles.sportChipText}
+            >
+              {data.sportId.toUpperCase()}
+            </Chip>
             <Text variant="headlineSmall" style={styles.eventTitle}>
               {data.title}
             </Text>
+            {data.description && (
+              <Text variant="bodyMedium" style={styles.description}>
+                {data.description}
+              </Text>
+            )}
+          </View>
 
-            {/* Sport Badge */}
-            <View style={styles.sportBadge}>
-              <Icon name="badminton" size={16} color={theme.colors.primary} />
-              <Text
-                variant="labelMedium"
-                style={[styles.sportText, { color: theme.colors.primary }]}
-              >
-                {data.sportId.toUpperCase()}
+          <Divider style={styles.divider} />
+
+          {/* Date & Time Section */}
+          <View style={styles.cardSection}>
+            <View style={styles.sectionTitleRow}>
+              <Icon name="calendar-clock" size={20} color="#3B82F6" />
+              <Text variant="titleSmall" style={styles.sectionTitle}>
+                When
               </Text>
             </View>
-
-            {/* Description */}
-            <Text variant="bodyMedium" style={styles.description}>
-              {data.description}
-            </Text>
-
-            {/* Location & Time Section */}
-            <View style={styles.section}>
-              <View style={styles.infoRow}>
-                <Icon name="map-marker" size={20} color="#666" />
-                <Text variant="bodyMedium" style={styles.infoText}>
-                  {data.location || 'Not set'}
-                </Text>
-              </View>
-
-              <View style={styles.infoRow}>
-                <Icon name="calendar" size={20} color="#666" />
-                <Text variant="bodyMedium" style={styles.infoText}>
+            <View style={styles.detailsRow}>
+              <View style={styles.detailItem}>
+                <Icon name="calendar" size={18} color="#6B7280" />
+                <Text variant="bodyMedium" style={styles.detailText}>
                   {formatDate(data.date)}
                 </Text>
               </View>
-
-              <View style={styles.infoRow}>
-                <Icon name="clock-outline" size={20} color="#666" />
-                <Text variant="bodyMedium" style={styles.infoText}>
-                  {formatTime(data.time)} • {getDurationLabel(data.duration)}
+              <View style={styles.detailItem}>
+                <Icon name="clock-outline" size={18} color="#6B7280" />
+                <Text variant="bodyMedium" style={styles.detailText}>
+                  {formatTime(data.time)} ({getDurationLabel(data.duration)})
                 </Text>
               </View>
             </View>
+          </View>
 
-            {/* Details Section */}
-            <View style={styles.section}>
-              <View style={styles.infoRow}>
-                <Icon name="account-group" size={20} color="#666" />
-                <Text variant="bodyMedium" style={styles.infoText}>
-                  {data.capacity
-                    ? `${data.capacity} spots`
-                    : 'Unlimited capacity'}
-                </Text>
-              </View>
+          <Divider style={styles.divider} />
 
-              <View style={styles.infoRow}>
-                <Icon name="currency-usd" size={20} color="#666" />
-                <Text variant="bodyMedium" style={styles.infoText}>
-                  {data.cost ? `$${data.cost} per person` : 'Free event'}
-                </Text>
-              </View>
-
-              {data.cost && (
-                <View style={[styles.infoRow, styles.indented]}>
-                  <Text variant="bodySmall" style={styles.paymentDueBy}>
-                    Payment due: {getPaymentDueByLabel()}
-                  </Text>
-                </View>
-              )}
-
-              {data.cost && (
-                <View style={[styles.infoRow, styles.indented]}>
-                  <Text variant="bodySmall" style={styles.subInfo}>
-                    {getPaymentMethodsList().join(' • ')}
-                  </Text>
-                </View>
-              )}
+          {/* Location Section - Clickable */}
+          <View style={styles.cardSection}>
+            <View style={styles.sectionTitleRow}>
+              <Icon name="map-marker" size={20} color="#EF4444" />
+              <Text variant="titleSmall" style={styles.sectionTitle}>
+                Where
+              </Text>
             </View>
+            <Pressable
+              onPress={handleAddressPress}
+              style={styles.locationPressable}
+            >
+              <Icon name="map-marker-outline" size={18} color="#6B7280" />
+              <Text variant="bodyMedium" style={styles.locationText}>
+                {data.location || 'Not set'}
+              </Text>
+              <Icon name="chevron-right" size={18} color="#9CA3AF" />
+            </Pressable>
+          </View>
 
-            {/* Optional Details */}
-            {data.cohosts.length > 0 && (
-              <View style={styles.section}>
-                <View style={styles.infoRow}>
-                  <Icon name="account-multiple" size={20} color="#666" />
-                  <Text variant="bodyMedium" style={styles.infoText}>
-                    Co-hosts: {data.cohosts.join(', ')}
-                  </Text>
-                </View>
+          <Divider style={styles.divider} />
+
+          {/* Capacity & Cost Section */}
+          <View style={styles.cardSection}>
+            <View style={styles.sectionTitleRow}>
+              <Icon name="ticket" size={20} color="#10B981" />
+              <Text variant="titleSmall" style={styles.sectionTitle}>
+                Details
+              </Text>
+            </View>
+            <View style={styles.detailsRow}>
+              <View style={styles.detailItem}>
+                <Icon name="account-group" size={18} color="#6B7280" />
+                <Text variant="bodyMedium" style={styles.detailText}>
+                  {data.capacity ? `${data.capacity} spots` : 'Unlimited'}
+                </Text>
               </View>
-            )}
-
-            {data.links.length > 0 && (
-              <View style={styles.section}>
-                <View style={styles.infoRow}>
-                  <Icon name="link" size={20} color="#666" />
-                  <Text variant="bodyMedium" style={styles.infoText}>
-                    {data.links.length} link{data.links.length !== 1 ? 's' : ''}{' '}
-                    attached
-                  </Text>
-                </View>
-              </View>
-            )}
-
-            <View style={styles.section}>
-              <View style={styles.infoRow}>
+              <View style={styles.detailItem}>
                 <Icon
-                  name={data.guestInvite ? 'check-circle' : 'close-circle'}
-                  size={20}
-                  color={data.guestInvite ? '#10B981' : '#666'}
+                  name={data.cost ? 'currency-usd' : 'tag-outline'}
+                  size={18}
+                  color="#6B7280"
                 />
-                <Text variant="bodyMedium" style={styles.infoText}>
-                  Guest invites: {data.guestInvite ? 'Enabled' : 'Disabled'}
+                <Text variant="bodyMedium" style={styles.detailText}>
+                  {data.cost ? `$${data.cost} per person` : 'Free'}
                 </Text>
               </View>
             </View>
-          </Card.Content>
+
+            {/* Payment Details */}
+            {data.cost && (
+              <View style={styles.paymentDetails}>
+                <Text variant="bodySmall" style={styles.paymentLabel}>
+                  💳 Payment: {getPaymentDueByLabel()}
+                </Text>
+                {getPaymentMethodsList()[0] !== 'None specified' && (
+                  <View style={styles.paymentMethods}>
+                    {getPaymentMethodsList().map((method, index) => (
+                      <Chip
+                        key={index}
+                        mode="outlined"
+                        compact
+                        style={styles.paymentChip}
+                        textStyle={styles.paymentChipText}
+                      >
+                        {method}
+                      </Chip>
+                    ))}
+                  </View>
+                )}
+              </View>
+            )}
+          </View>
+
+          {/* Co-hosts Section */}
+          {data.cohosts.length > 0 && (
+            <>
+              <Divider style={styles.divider} />
+              <View style={styles.cardSection}>
+                <View style={styles.sectionTitleRow}>
+                  <Icon name="account-multiple" size={20} color="#8B5CF6" />
+                  <Text variant="titleSmall" style={styles.sectionTitle}>
+                    Co-hosts
+                  </Text>
+                </View>
+                <View style={styles.cohostsList}>
+                  {data.cohosts.map((cohost, index) => (
+                    <Chip
+                      key={index}
+                      mode="flat"
+                      avatar={
+                        <Icon name="account-circle" size={24} color="#8B5CF6" />
+                      }
+                      style={styles.cohostChip}
+                    >
+                      {cohost}
+                    </Chip>
+                  ))}
+                </View>
+              </View>
+            </>
+          )}
+
+          {/* Links Section - Clickable */}
+          {data.links.length > 0 && (
+            <>
+              <Divider style={styles.divider} />
+              <View style={styles.cardSection}>
+                <View style={styles.sectionTitleRow}>
+                  <Icon name="link-variant" size={20} color="#F59E0B" />
+                  <Text variant="titleSmall" style={styles.sectionTitle}>
+                    Links
+                  </Text>
+                </View>
+                <View style={styles.linksList}>
+                  {data.links.map((link, index) => (
+                    <Pressable
+                      key={index}
+                      onPress={() => handleLinkPress(link.url)}
+                      style={styles.linkItem}
+                    >
+                      <Icon name={link.icon} size={20} color="#3B82F6" />
+                      <Text variant="bodyMedium" style={styles.linkTitle}>
+                        {link.title}
+                      </Text>
+                      <Icon name="open-in-new" size={16} color="#9CA3AF" />
+                    </Pressable>
+                  ))}
+                </View>
+              </View>
+            </>
+          )}
+
+          {/* Guest Invite Section */}
+          <Divider style={styles.divider} />
+          <View style={[styles.cardSection, styles.lastSection]}>
+            <View style={styles.guestInviteRow}>
+              <Icon
+                name={data.guestInvite ? 'account-plus' : 'account-off'}
+                size={20}
+                color={data.guestInvite ? '#10B981' : '#6B7280'}
+              />
+              <Text variant="bodyMedium" style={styles.detailText}>
+                Guest invites {data.guestInvite ? 'enabled' : 'disabled'}
+              </Text>
+            </View>
+          </View>
         </Card>
 
         {/* Edit Button */}
@@ -268,13 +397,14 @@ export default function Step4Review({ data, onBack, onPublish }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#F9FAFB',
   },
   scrollContent: {
     padding: 16,
     paddingBottom: 32,
   },
   progressSection: {
-    marginBottom: 24,
+    marginBottom: 20,
     alignItems: 'center',
   },
   progressDots: {
@@ -283,72 +413,177 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   dot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
-    backgroundColor: '#9CA3AF',
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#D1D5DB',
   },
   dotActive: {
     backgroundColor: '#3B82F6',
+    width: 12,
+    height: 12,
+    borderRadius: 6,
   },
   dotLine: {
-    width: 24,
+    width: 20,
     height: 2,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: '#3B82F6',
     marginHorizontal: 4,
   },
   progressText: {
-    color: '#6B7280',
+    color: '#3B82F6',
+    fontWeight: '600',
+  },
+  headerSection: {
+    marginBottom: 20,
   },
   sectionHeader: {
-    marginBottom: 20,
     fontWeight: 'bold',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  subtitle: {
+    color: '#6B7280',
   },
   previewCard: {
     marginBottom: 16,
+    backgroundColor: 'white',
+    borderRadius: 16,
+    overflow: 'hidden',
+  },
+  heroSection: {
+    padding: 20,
+    backgroundColor: '#F0F9FF',
+  },
+  sportChip: {
+    alignSelf: 'flex-start',
+    backgroundColor: '#3B82F6',
+    marginBottom: 12,
+  },
+  sportChipText: {
+    color: 'white',
+    fontWeight: '700',
+    fontSize: 12,
   },
   eventTitle: {
-    marginBottom: 8,
     fontWeight: 'bold',
-  },
-  sportBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-    gap: 4,
-  },
-  sportText: {
-    fontWeight: '600',
+    color: '#111827',
+    marginBottom: 8,
   },
   description: {
-    marginBottom: 16,
-    color: '#374151',
+    color: '#4B5563',
+    lineHeight: 22,
   },
-  section: {
-    marginBottom: 16,
+  divider: {
+    backgroundColor: '#E5E7EB',
   },
-  infoRow: {
+  cardSection: {
+    padding: 20,
+  },
+  lastSection: {
+    paddingBottom: 16,
+  },
+  sectionTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
     gap: 8,
+    marginBottom: 12,
   },
-  infoText: {
+  sectionTitle: {
+    fontWeight: '700',
+    color: '#111827',
+  },
+  detailsRow: {
+    gap: 12,
+  },
+  detailItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 4,
+  },
+  detailText: {
+    color: '#374151',
+    flex: 1,
+  },
+  locationPressable: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  locationText: {
     flex: 1,
     color: '#374151',
+    fontWeight: '500',
   },
-  indented: {
-    marginLeft: 28,
+  paymentDetails: {
+    marginTop: 12,
+    padding: 12,
+    backgroundColor: '#FEF3C7',
+    borderRadius: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: '#F59E0B',
   },
-  paymentDueBy: {
-    color: '#6B7280',
-    fontStyle: 'italic',
+  paymentLabel: {
+    color: '#92400E',
+    fontWeight: '600',
+    marginBottom: 8,
   },
-  subInfo: {
-    color: '#6B7280',
+  paymentMethods: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 6,
+  },
+  paymentChip: {
+    backgroundColor: 'white',
+    borderColor: '#F59E0B',
+  },
+  paymentChipText: {
+    fontSize: 11,
+    color: '#92400E',
+  },
+  cohostsList: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  cohostChip: {
+    backgroundColor: '#F5F3FF',
+  },
+  linksList: {
+    gap: 8,
+  },
+  linkItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 12,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  linkTitle: {
+    flex: 1,
+    color: '#3B82F6',
+    fontWeight: '500',
+  },
+  guestInviteRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
   },
   editButton: {
-    marginBottom: 24,
+    marginBottom: 16,
+    borderRadius: 8,
+    borderWidth: 2,
+    borderColor: '#3B82F6',
   },
   buttonContainer: {
     flexDirection: 'row',
@@ -357,11 +592,15 @@ const styles = StyleSheet.create({
   },
   backButton: {
     flex: 1,
+    borderRadius: 8,
   },
   publishButton: {
     flex: 2,
+    borderRadius: 8,
+    backgroundColor: '#10B981',
   },
   publishButtonContent: {
     flexDirection: 'row-reverse',
+    paddingVertical: 6,
   },
 });

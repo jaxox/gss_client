@@ -62,28 +62,28 @@ const ICONS = [
     titleSuggestion: 'YouTube Channel',
   },
   {
-    name: 'telegram',
-    mdiName: 'telegram',
-    label: 'Telegram',
-    titleSuggestion: 'Telegram Group',
+    name: 'link',
+    mdiName: 'link-variant',
+    label: 'Link',
+    titleSuggestion: 'Custom Link',
   },
   {
-    name: 'email',
+    name: 'emailing-group',
     mdiName: 'email-multiple',
     label: 'Email Group',
-    titleSuggestion: 'Email List',
+    titleSuggestion: 'Emailing Group',
   },
 ];
 
 const URL_VALIDATIONS: Record<string, RegExp> = {
-  discord: /^https:\/\/(discord\.com|discord\.gg)\//,
-  whatsapp: /^https:\/\/(chat\.whatsapp\.com|wa\.me)\//,
-  facebook: /^https:\/\/(facebook\.com|fb\.com)\//,
-  instagram: /^https:\/\/(instagram\.com|instagr\.am)\//,
-  maps: /^https:\/\/(maps\.google\.com|goo\.gl\/maps)\//,
-  youtube: /^https:\/\/(youtube\.com|youtu\.be)\//,
-  telegram: /^https:\/\/t\.me\//,
-  email: /^(mailto:|https:\/\/groups\.google\.com\/)/,
+  discord: /^https?:\/\/(www\.)?(discord\.com|discord\.gg)\//i,
+  whatsapp: /^https?:\/\/(www\.)?(chat\.whatsapp\.com|wa\.me)\//i,
+  facebook: /^https?:\/\/(www\.)?(facebook\.com|fb\.com)\//i,
+  instagram: /^https?:\/\/(www\.)?(instagram\.com|instagr\.am)\//i,
+  maps: /^https?:\/\/(www\.)?(maps\.google\.com|goo\.gl\/maps)\//i,
+  youtube: /^https?:\/\/(www\.)?(youtube\.com|youtu\.be)\//i,
+  link: /^https?:\/\//i, // Generic link - any URL
+  'emailing-group': /^https?:\/\//i, // Generic emailing group link - any URL
 };
 
 export default function AddLinkModal({
@@ -108,18 +108,17 @@ export default function AddLinkModal({
 
   // Auto-suggest title when icon selected
   useEffect(() => {
-    if (selectedIcon && !title) {
+    if (selectedIcon) {
       const icon = ICONS.find(i => i.name === selectedIcon);
       if (icon) {
         setTitle(icon.titleSuggestion);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedIcon]);
 
   // Validation
   const titleError =
-    title.length < 3 || title.length > 50
+    touched.title && (title.length < 3 || title.length > 50)
       ? 'Title must be 3-50 characters'
       : null;
 
@@ -152,7 +151,12 @@ export default function AddLinkModal({
   };
 
   const urlValidation = getUrlValidation();
-  const isValid = selectedIcon && !titleError && urlValidation.isValid;
+  // Valid if icon selected, title is 3-50 chars, and URL is valid
+  const isValid =
+    selectedIcon &&
+    title.length >= 3 &&
+    title.length <= 50 &&
+    urlValidation.isValid;
 
   const handleSelectIcon = (iconName: string) => {
     setSelectedIcon(iconName);
@@ -351,7 +355,7 @@ const styles = StyleSheet.create({
     margin: 16,
     borderRadius: 8,
     maxHeight: '90%',
-    padding: 16,
+    padding: 12,
   },
   header: {
     flexDirection: 'row',

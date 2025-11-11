@@ -1,20 +1,18 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import {
   View,
-  ScrollView,
   StyleSheet,
   FlatList,
   Pressable,
+  Modal,
+  SafeAreaView,
 } from 'react-native';
 import {
-  Modal,
-  Portal,
+  Appbar,
   Text,
   TextInput,
-  Chip,
   Button,
   Avatar,
-  IconButton,
   Divider,
 } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
@@ -24,7 +22,9 @@ const MOCK_USERS = [
   {
     id: '1',
     name: 'Sarah Johnson',
-    reliabilityScore: 92,
+    level: 12,
+    xp: 2450,
+    reliability: 92, // % of events they actually showed up to
     eventsHosted: 15,
     sports: ['Tennis', 'Pickleball'],
     type: 'friend' as const,
@@ -32,7 +32,9 @@ const MOCK_USERS = [
   {
     id: '2',
     name: 'Mike Chen',
-    reliabilityScore: 88,
+    level: 10,
+    xp: 1880,
+    reliability: 88,
     eventsHosted: 12,
     sports: ['Badminton', 'Table Tennis'],
     type: 'friend' as const,
@@ -40,7 +42,9 @@ const MOCK_USERS = [
   {
     id: '3',
     name: 'Emily Rodriguez',
-    reliabilityScore: 95,
+    level: 15,
+    xp: 3250,
+    reliability: 95,
     eventsHosted: 23,
     sports: ['Tennis', 'Padel'],
     type: 'friend' as const,
@@ -48,7 +52,9 @@ const MOCK_USERS = [
   {
     id: '4',
     name: 'James Wilson',
-    reliabilityScore: 78,
+    level: 8,
+    xp: 1200,
+    reliability: 78,
     eventsHosted: 8,
     sports: ['Pickleball'],
     type: 'friend' as const,
@@ -56,26 +62,32 @@ const MOCK_USERS = [
   {
     id: '5',
     name: 'Lisa Park',
-    reliabilityScore: 65,
+    level: 6,
+    xp: 850,
+    reliability: 65,
     eventsHosted: 5,
     sports: ['Table Tennis', 'Badminton'],
     type: 'friend' as const,
   },
   {
     id: '6',
-    name: 'Bay Area Tennis Club',
-    reliabilityScore: 0,
-    members: 45,
-    sports: ['Tennis'],
-    type: 'group' as const,
+    name: 'Jay U',
+    level: 99,
+    xp: 8580,
+    reliability: 100,
+    eventsHosted: 85,
+    sports: ['Table Tennis', 'Badminton'],
+    type: 'friend' as const,
   },
   {
     id: '7',
-    name: 'Pickleball Enthusiasts',
-    reliabilityScore: 0,
-    members: 32,
-    sports: ['Pickleball'],
-    type: 'group' as const,
+    name: 'John T',
+    level: 98,
+    xp: 858,
+    reliability: 90,
+    eventsHosted: 1,
+    sports: ['Table Tennis', 'Badminton'],
+    type: 'friend' as const,
   },
 ];
 
@@ -88,8 +100,6 @@ interface AddCohostsModalProps {
   initialSelected?: User[];
 }
 
-type FilterType = 'all' | 'friends' | 'groups';
-
 export default function AddCohostsModal({
   visible,
   onDismiss,
@@ -97,7 +107,6 @@ export default function AddCohostsModal({
   initialSelected = [],
 }: AddCohostsModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedFilter, setSelectedFilter] = useState<FilterType>('all');
   const [selectedCohosts, setSelectedCohosts] =
     useState<User[]>(initialSelected);
   const [loading, setLoading] = useState(false);
@@ -107,7 +116,6 @@ export default function AddCohostsModal({
   useEffect(() => {
     if (visible) {
       setSearchQuery('');
-      setSelectedFilter('all');
       setSelectedCohosts(initialSelected);
       setAddedUsers(new Set());
       // Simulate loading
@@ -116,40 +124,41 @@ export default function AddCohostsModal({
     }
   }, [visible, initialSelected]);
 
-  // Filter and search users with debounce simulation
+  // Filter and search users
   const filteredUsers = useMemo(() => {
-    let users = MOCK_USERS;
+    // Only show friends (users), not groups
+    let users = MOCK_USERS.filter(u => u.type === 'friend');
 
-    // Filter by type
-    if (selectedFilter === 'friends') {
-      users = users.filter(u => u.type === 'friend');
-    } else if (selectedFilter === 'groups') {
-      users = users.filter(u => u.type === 'group');
-    }
-
-    // Filter by search query
+    // Search by name or sport
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase();
-      users = users.filter(u => u.name.toLowerCase().includes(query));
+      users = users.filter(
+        u =>
+          u.name.toLowerCase().includes(query) ||
+          u.sports.some(sport => sport.toLowerCase().includes(query)),
+      );
     }
 
     // Remove already selected users
     const selectedIds = new Set(selectedCohosts.map(c => c.id));
     users = users.filter(u => !selectedIds.has(u.id));
 
-    // Sort by reliability (friends only, groups have 0)
+    // Sort by level (highest first), then by show rate
     return users.sort((a, b) => {
       if (a.type === 'friend' && b.type === 'friend') {
-        return b.reliabilityScore - a.reliabilityScore;
+        if (a.level !== b.level) {
+          return b.level - a.level;
+        }
+        return b.reliability - a.reliability;
       }
       return 0;
     });
-  }, [searchQuery, selectedFilter, selectedCohosts]);
+  }, [searchQuery, selectedCohosts]);
 
-  const getReliabilityColor = (score: number) => {
-    if (score >= 85) return '#10B981'; // Green
-    if (score >= 70) return '#F59E0B'; // Yellow
-    return '#EF4444'; // Red
+  const getReliabilityColor = (rate: number) => {
+    if (rate >= 85) return '#10B981'; // Green - Reliable
+    if (rate >= 70) return '#F59E0B'; // Yellow - Decent
+    return '#EF4444'; // Red - Unreliable
   };
 
   const getInitials = (name: string) => {
@@ -201,41 +210,45 @@ export default function AddCohostsModal({
         onPress={() => handleAddCohost(item)}
         disabled={maxReached || isAdded}
         accessibilityRole="button"
-        accessibilityLabel={
-          item.type === 'friend'
-            ? `${item.name}, ${item.reliabilityScore} percent reliable, ${item.eventsHosted} events hosted, add as cohost button`
-            : `${item.name}, group with ${item.members} members, add as cohost button`
-        }
+        accessibilityLabel={`${item.name}, Level ${item.level}, ${item.xp} XP, ${item.reliability} percent reliability, add as cohost button`}
       >
         <Avatar.Text
           size={48}
-          label={item.type === 'friend' ? getInitials(item.name) : ''}
-          style={[styles.avatar, item.type === 'group' && styles.groupAvatar]}
+          label={getInitials(item.name)}
+          style={styles.avatar}
           labelStyle={styles.avatarLabel}
         />
 
         <View style={styles.userInfo}>
-          <View style={styles.userHeader}>
-            <Text variant="bodyLarge" style={styles.userName}>
-              {item.name}
-            </Text>
-            {item.type === 'friend' && (
-              <Text
-                variant="bodyMedium"
-                style={[
-                  styles.reliability,
-                  { color: getReliabilityColor(item.reliabilityScore) },
-                ]}
-              >
-                {item.reliabilityScore}%
+          {/* Name */}
+          <Text variant="bodyLarge" style={styles.userName}>
+            {item.name}
+          </Text>
+
+          {/* Gamification: Level & XP */}
+          <View style={styles.statsRow}>
+            <View style={styles.levelBadge}>
+              <Text variant="labelSmall" style={styles.levelText}>
+                Level {item.level}
               </Text>
-            )}
+            </View>
+            <Text variant="bodySmall" style={styles.xpText}>
+              •
+            </Text>
+            <Text variant="bodySmall" style={styles.xpText}>
+              {item.xp.toLocaleString()} XP
+            </Text>
           </View>
 
-          <Text variant="bodySmall" style={styles.userMeta}>
-            {item.type === 'friend'
-              ? `${item.eventsHosted} events hosted • ${item.sports.join(', ')}`
-              : `${item.members} members • ${item.sports.join(', ')}`}
+          {/* Reliability */}
+          <Text
+            variant="bodySmall"
+            style={[
+              styles.reliabilityText,
+              { color: getReliabilityColor(item.reliability) },
+            ]}
+          >
+            {item.reliability}% Reliability
           </Text>
         </View>
 
@@ -266,7 +279,7 @@ export default function AddCohostsModal({
         No users found
       </Text>
       <Text variant="bodyMedium" style={styles.emptySubtitle}>
-        Try different keywords or filters
+        Try searching by name or sport
       </Text>
     </View>
   );
@@ -285,200 +298,171 @@ export default function AddCohostsModal({
     </View>
   );
 
+  if (!visible) return null;
+
   return (
-    <Portal>
-      <Modal
-        visible={visible}
-        onDismiss={handleCancel}
-        contentContainerStyle={styles.modalContainer}
-      >
-        {/* Header */}
-        <View style={styles.header}>
-          <Text variant="titleLarge" style={styles.title}>
-            Add Cohosts
-          </Text>
-          <IconButton
-            icon="close"
-            size={24}
-            onPress={handleCancel}
-            accessibilityLabel="Close dialog"
-          />
-        </View>
-
-        {/* Search Input */}
-        <TextInput
-          mode="outlined"
-          placeholder="Search by name, location, or sport"
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-          left={<TextInput.Icon icon="magnify" />}
-          style={styles.searchInput}
-          accessibilityLabel="Search for cohosts"
-        />
-
-        {/* Filter Chips */}
-        <View style={styles.filterRow}>
-          <Chip
-            selected={selectedFilter === 'all'}
-            onPress={() => setSelectedFilter('all')}
-            style={styles.filterChip}
-            accessibilityRole="radio"
-            accessibilityState={{ selected: selectedFilter === 'all' }}
-          >
-            All
-          </Chip>
-          <Chip
-            selected={selectedFilter === 'friends'}
-            onPress={() => setSelectedFilter('friends')}
-            style={styles.filterChip}
-            accessibilityRole="radio"
-            accessibilityState={{ selected: selectedFilter === 'friends' }}
-          >
-            Friends
-          </Chip>
-          <Chip
-            selected={selectedFilter === 'groups'}
-            onPress={() => setSelectedFilter('groups')}
-            style={styles.filterChip}
-            accessibilityRole="radio"
-            accessibilityState={{ selected: selectedFilter === 'groups' }}
-          >
-            Groups
-          </Chip>
-        </View>
-
-        {/* Results Header */}
-        <Text variant="bodyMedium" style={styles.sectionHeader}>
-          Results ({filteredUsers.length})
-        </Text>
-
-        {/* Results List */}
-        <View style={styles.resultsContainer}>
-          {loading ? (
-            renderLoadingSkeleton()
-          ) : filteredUsers.length === 0 ? (
-            renderEmptyState()
-          ) : (
-            <FlatList
-              data={filteredUsers}
-              renderItem={renderUserItem}
-              keyExtractor={item => item.id}
-              showsVerticalScrollIndicator={false}
-            />
-          )}
-        </View>
-
-        {/* Selected Cohosts Section */}
-        {selectedCohosts.length > 0 && (
-          <>
-            <Divider style={styles.divider} />
-            <Text variant="bodyMedium" style={styles.sectionHeader}>
-              Selected Cohosts ({selectedCohosts.length}/5)
-            </Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={styles.selectedScroll}
-              contentContainerStyle={styles.selectedContent}
-            >
-              {selectedCohosts.map(cohost => (
-                <Chip
-                  key={cohost.id}
-                  onClose={() => handleRemoveCohost(cohost.id)}
-                  style={styles.selectedChip}
-                  accessibilityLabel={`${cohost.name}, ${
-                    cohost.type === 'friend'
-                      ? `${cohost.reliabilityScore} percent reliable`
-                      : 'group'
-                  }, remove button`}
-                >
-                  {cohost.name}
-                  {cohost.type === 'friend' && (
-                    <Text
-                      style={[
-                        styles.cohostReliability,
-                        { color: getReliabilityColor(cohost.reliabilityScore) },
-                      ]}
-                    >
-                      {' '}
-                      {cohost.reliabilityScore}%
-                    </Text>
-                  )}
-                </Chip>
-              ))}
-            </ScrollView>
-          </>
-        )}
-
-        {/* Helper Text */}
-        <Text
-          variant="bodySmall"
-          style={[styles.helperText, maxReached && styles.helperTextError]}
-        >
-          {maxReached ? 'Maximum cohosts reached' : 'Max 5 cohosts'}
-        </Text>
-
-        {/* Action Buttons */}
-        <View style={styles.actions}>
-          <Button
-            mode="outlined"
-            onPress={handleCancel}
-            style={styles.cancelButton}
-          >
-            Cancel
-          </Button>
-          <Button
-            mode="contained"
+    <Modal
+      visible={visible}
+      animationType="slide"
+      presentationStyle="fullScreen"
+      onRequestClose={handleCancel}
+    >
+      <SafeAreaView style={styles.container}>
+        {/* App Bar */}
+        <Appbar.Header statusBarHeight={0}>
+          <Appbar.BackAction onPress={handleCancel} />
+          <Appbar.Content title="Add Cohosts" />
+          <Appbar.Action
+            icon="check"
             onPress={handleDone}
             disabled={selectedCohosts.length === 0}
-            style={styles.doneButton}
-            accessibilityLabel={`Done, ${selectedCohosts.length} cohosts selected`}
-          >
-            Done {selectedCohosts.length > 0 && `(${selectedCohosts.length})`}
-          </Button>
+          />
+        </Appbar.Header>
+
+        <View style={styles.content}>
+          {/* Search Input */}
+          <View style={styles.searchContainer}>
+            <TextInput
+              mode="outlined"
+              placeholder="Search by name or sport"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              left={<TextInput.Icon icon="magnify" />}
+              style={styles.searchInput}
+              accessibilityLabel="Search for cohosts by name or sport"
+            />
+          </View>
+
+          {/* Results Header */}
+          <Text variant="bodyMedium" style={styles.sectionHeader}>
+            Results ({filteredUsers.length})
+          </Text>
+
+          {/* Results List */}
+          <View style={styles.resultsContainer}>
+            {loading ? (
+              renderLoadingSkeleton()
+            ) : filteredUsers.length === 0 ? (
+              renderEmptyState()
+            ) : (
+              <FlatList
+                data={filteredUsers}
+                renderItem={renderUserItem}
+                keyExtractor={item => item.id}
+                showsVerticalScrollIndicator={false}
+              />
+            )}
+          </View>
+
+          {/* Selected Cohosts Section */}
+          {selectedCohosts.length > 0 && (
+            <>
+              <Divider style={styles.divider} />
+              <Text variant="bodyMedium" style={styles.sectionHeader}>
+                Selected Cohosts ({selectedCohosts.length}/5)
+              </Text>
+              <View style={styles.selectedContainer}>
+                {selectedCohosts.map(cohost => (
+                  <Pressable
+                    key={cohost.id}
+                    style={styles.selectedUserItem}
+                    onPress={() => handleRemoveCohost(cohost.id)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${cohost.name}, Level ${cohost.level}, ${cohost.xp} XP, ${cohost.reliability} percent reliability, remove button`}
+                  >
+                    <Avatar.Text
+                      size={48}
+                      label={getInitials(cohost.name)}
+                      style={styles.avatar}
+                      labelStyle={styles.avatarLabel}
+                    />
+
+                    <View style={styles.userInfo}>
+                      {/* Name */}
+                      <Text variant="bodyLarge" style={styles.userName}>
+                        {cohost.name}
+                      </Text>
+
+                      {/* Gamification: Level & XP */}
+                      <View style={styles.statsRow}>
+                        <View style={styles.levelBadge}>
+                          <Text variant="labelSmall" style={styles.levelText}>
+                            Level {cohost.level}
+                          </Text>
+                        </View>
+                        <Text variant="bodySmall" style={styles.xpText}>
+                          •
+                        </Text>
+                        <Text variant="bodySmall" style={styles.xpText}>
+                          {cohost.xp.toLocaleString()} XP
+                        </Text>
+                      </View>
+
+                      {/* Reliability */}
+                      <Text
+                        variant="bodySmall"
+                        style={[
+                          styles.reliabilityText,
+                          { color: getReliabilityColor(cohost.reliability) },
+                        ]}
+                      >
+                        {cohost.reliability}% Reliability
+                      </Text>
+                    </View>
+
+                    <Button
+                      mode="outlined"
+                      compact
+                      onPress={() => handleRemoveCohost(cohost.id)}
+                      style={styles.removeButton}
+                      labelStyle={styles.removeButtonLabel}
+                      textColor="#EF4444"
+                    >
+                      Remove
+                    </Button>
+                  </Pressable>
+                ))}
+              </View>
+            </>
+          )}
+
+          {/* Helper Text */}
+          <View style={styles.footer}>
+            <Text
+              variant="bodySmall"
+              style={[styles.helperText, maxReached && styles.helperTextError]}
+            >
+              {maxReached ? 'Maximum cohosts reached' : 'Max 5 cohosts'}
+            </Text>
+          </View>
         </View>
-      </Modal>
-    </Portal>
+      </SafeAreaView>
+    </Modal>
   );
 }
-
 const styles = StyleSheet.create({
-  modalContainer: {
+  container: {
+    flex: 1,
     backgroundColor: 'white',
-    margin: 16,
-    borderRadius: 8,
-    maxHeight: '90%',
+  },
+  content: {
+    flex: 1,
+  },
+  searchContainer: {
     padding: 16,
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 16,
-  },
-  title: {
-    fontWeight: 'bold',
+    paddingBottom: 8,
   },
   searchInput: {
-    marginBottom: 16,
-  },
-  filterRow: {
-    flexDirection: 'row',
-    gap: 8,
-    marginBottom: 12,
-    flexWrap: 'wrap',
-  },
-  filterChip: {
-    marginRight: 8,
+    backgroundColor: 'white',
   },
   sectionHeader: {
+    paddingHorizontal: 16,
     color: '#6B7280',
     marginBottom: 8,
     fontWeight: '600',
   },
   resultsContainer: {
     flex: 1,
-    minHeight: 200,
   },
   userItem: {
     flexDirection: 'row',
@@ -491,9 +475,6 @@ const styles = StyleSheet.create({
   avatar: {
     backgroundColor: '#3B82F6',
   },
-  groupAvatar: {
-    backgroundColor: '#10B981',
-  },
   avatarLabel: {
     color: 'white',
     fontWeight: 'bold',
@@ -501,23 +482,39 @@ const styles = StyleSheet.create({
   userInfo: {
     flex: 1,
     marginLeft: 12,
-  },
-  userHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 4,
+    justifyContent: 'center',
   },
   userName: {
     fontWeight: '600',
-    flex: 1,
+    fontSize: 16,
+    marginBottom: 4,
+    color: '#111827',
   },
-  reliability: {
-    fontWeight: 'bold',
-    marginLeft: 8,
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+    gap: 6,
   },
-  userMeta: {
+  levelBadge: {
+    backgroundColor: '#3B82F6',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  levelText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 11,
+  },
+  xpText: {
     color: '#6B7280',
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  reliabilityText: {
+    fontSize: 13,
+    fontWeight: '600',
   },
   addButton: {
     minWidth: 60,
@@ -570,41 +567,40 @@ const styles = StyleSheet.create({
     width: '60%',
   },
   divider: {
-    marginVertical: 16,
+    marginVertical: 8,
+    marginHorizontal: 16,
   },
-  selectedScroll: {
-    maxHeight: 80,
-    marginBottom: 12,
-  },
-  selectedContent: {
-    flexDirection: 'row',
-    gap: 8,
+  selectedContainer: {
     paddingBottom: 8,
   },
-  selectedChip: {
-    marginRight: 8,
+  selectedUserItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    minHeight: 72,
+    backgroundColor: '#F9FAFB',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
   },
-  cohostReliability: {
+  removeButton: {
+    minWidth: 80,
+    height: 36,
+    borderColor: '#EF4444',
+  },
+  removeButtonLabel: {
     fontSize: 12,
-    marginLeft: 4,
+    lineHeight: 14,
+  },
+  footer: {
+    padding: 16,
+    alignItems: 'center',
   },
   helperText: {
     textAlign: 'center',
     color: '#6B7280',
-    marginBottom: 16,
   },
   helperTextError: {
     color: '#EF4444',
-  },
-  actions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 16,
-  },
-  cancelButton: {
-    flex: 1,
-  },
-  doneButton: {
-    flex: 1,
   },
 });

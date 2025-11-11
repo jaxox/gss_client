@@ -13,14 +13,7 @@ import {
   Platform,
   Pressable,
 } from 'react-native';
-import {
-  Text,
-  TextInput,
-  Button,
-  HelperText,
-  useTheme,
-  Menu,
-} from 'react-native-paper';
+import { Text, TextInput, Button, HelperText } from 'react-native-paper';
 import { DatePickerModal, TimePickerModal } from 'react-native-paper-dates';
 import type { WizardData } from './CreateEventWizard';
 
@@ -90,38 +83,31 @@ const MOCK_LOCATIONS = [
   },
 ];
 
-// Duration options: 30-min increments from 0.5h to 6h (12 options)
-const DURATION_OPTIONS = [
-  { label: '30 minutes', value: 30 },
-  { label: '1 hour', value: 60 },
-  { label: '1.5 hours', value: 90 },
-  { label: '2 hours', value: 120 },
-  { label: '2.5 hours', value: 150 },
-  { label: '3 hours', value: 180 },
-  { label: '3.5 hours', value: 210 },
-  { label: '4 hours', value: 240 },
-  { label: '4.5 hours', value: 270 },
-  { label: '5 hours', value: 300 },
-  { label: '5.5 hours', value: 330 },
-  { label: '6 hours', value: 360 },
-];
-
 export default function Step2LocationTime({ data, onNext, onBack }: Props) {
-  const theme = useTheme();
   const [location, setLocation] = useState(data.location);
   const [date, setDate] = useState<Date | null>(data.date);
   const [time, setTime] = useState<Date | null>(data.time);
-  const [duration, setDuration] = useState(data.duration);
+
+  // Calculate end time from duration or use stored value
+  const calculateEndTime = () => {
+    if (!time) return null;
+    const endTime = new Date(time);
+    endTime.setMinutes(endTime.getMinutes() + data.duration);
+    return endTime;
+  };
+
+  const [endTime, setEndTime] = useState<Date | null>(calculateEndTime());
 
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
-  const [showDurationMenu, setShowDurationMenu] = useState(false);
+  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
   const [locationQuery, setLocationQuery] = useState('');
   const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
   const [touched, setTouched] = useState({
     location: false,
     date: false,
     time: false,
+    endTime: false,
   });
 
   // Filter locations based on search query
@@ -131,6 +117,13 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
       loc.address.toLowerCase().includes(locationQuery.toLowerCase()) ||
       loc.city.toLowerCase().includes(locationQuery.toLowerCase()),
   ).slice(0, 5); // Show max 5 suggestions
+
+  // Calculate duration in minutes
+  const calculateDuration = () => {
+    if (!time || !endTime) return 0;
+    const diff = endTime.getTime() - time.getTime();
+    return Math.round(diff / (1000 * 60)); // Convert to minutes
+  };
 
   // Validation - check BOTH location and locationQuery
   const locationError =
@@ -145,19 +138,32 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
         ? 'Date must be in the future'
         : null;
 
-  const timeError = touched.time && !time ? 'Time is required' : null;
+  const timeError = touched.time && !time ? 'Start time is required' : null;
+
+  const endTimeError =
+    touched.endTime && !endTime
+      ? 'End time is required'
+      : endTime && time && endTime <= time
+        ? 'End time must be after start time'
+        : null;
 
   // Valid if either location OR locationQuery has content
   const hasLocation = location.trim() !== '' || locationQuery.trim() !== '';
-  const isValid = hasLocation && date !== null && time !== null;
+  const isValid =
+    hasLocation &&
+    date !== null &&
+    time !== null &&
+    endTime !== null &&
+    !endTimeError;
 
   const handleNext = () => {
     if (!isValid) {
-      setTouched({ location: true, date: true, time: true });
+      setTouched({ location: true, date: true, time: true, endTime: true });
       return;
     }
     // Use locationQuery if location is empty
     const finalLocation = location || locationQuery;
+    const duration = calculateDuration();
     onNext({ location: finalLocation, date, time, duration });
   };
 
@@ -180,9 +186,16 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
     });
   };
 
-  const getDurationLabel = (minutes: number) => {
-    const option = DURATION_OPTIONS.find(opt => opt.value === minutes);
-    return option ? option.label : `${minutes} minutes`;
+  const formatDuration = (minutes: number) => {
+    if (minutes < 60) {
+      return `${minutes} minutes`;
+    }
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (mins === 0) {
+      return `${hours} hour${hours > 1 ? 's' : ''}`;
+    }
+    return `${hours}h ${mins}m`;
   };
 
   return (
@@ -346,55 +359,59 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
             const newTime = new Date();
             newTime.setHours(params.hours, params.minutes);
             setTime(newTime);
+
+            // Auto-set end time to 2 hours later if not set
+            if (!endTime) {
+              const autoEndTime = new Date(newTime);
+              autoEndTime.setHours(autoEndTime.getHours() + 2);
+              setEndTime(autoEndTime);
+            }
+
             setTouched(prev => ({ ...prev, time: true }));
           }}
           hours={time?.getHours() || 12}
           minutes={time?.getMinutes() || 0}
         />
 
-        {/* Duration Dropdown */}
-        <Menu
-          visible={showDurationMenu}
-          onDismiss={() => setShowDurationMenu(false)}
-          anchor={
-            <TextInput
-              label="Duration *"
-              value={getDurationLabel(duration)}
-              mode="outlined"
-              editable={false}
-              onPressIn={() => setShowDurationMenu(true)}
-              style={styles.input}
-              right={
-                <TextInput.Icon
-                  icon="chevron-down"
-                  onPress={() => setShowDurationMenu(true)}
-                />
-              }
+        {/* End Time Picker */}
+        <TextInput
+          label="End Time *"
+          value={formatTime(endTime)}
+          mode="outlined"
+          error={!!endTimeError}
+          editable={false}
+          onPressIn={() => setShowEndTimePicker(true)}
+          style={styles.input}
+          right={
+            <TextInput.Icon
+              icon="clock-outline"
+              onPress={() => setShowEndTimePicker(true)}
             />
           }
-          anchorPosition="bottom"
-        >
-          <ScrollView style={styles.menuScroll}>
-            {DURATION_OPTIONS.map(option => (
-              <Menu.Item
-                key={option.value}
-                onPress={() => {
-                  setDuration(option.value);
-                  setShowDurationMenu(false);
-                }}
-                title={option.label}
-                titleStyle={
-                  duration === option.value
-                    ? { color: theme.colors.primary }
-                    : undefined
-                }
-              />
-            ))}
-          </ScrollView>
-        </Menu>
-        <HelperText type="info">
-          Event duration (30-minute increments)
+        />
+        <HelperText type="error" visible={!!endTimeError}>
+          {endTimeError}
         </HelperText>
+        {!endTimeError && time && endTime && (
+          <HelperText type="info">
+            Duration: {formatDuration(calculateDuration())}
+          </HelperText>
+        )}
+
+        <TimePickerModal
+          locale="en"
+          visible={showEndTimePicker}
+          onDismiss={() => setShowEndTimePicker(false)}
+          onConfirm={params => {
+            setShowEndTimePicker(false);
+            const newEndTime = new Date();
+            newEndTime.setHours(params.hours, params.minutes);
+            setEndTime(newEndTime);
+            setTouched(prev => ({ ...prev, endTime: true }));
+          }}
+          hours={endTime?.getHours() || 14}
+          minutes={endTime?.getMinutes() || 0}
+        />
 
         {/* Action Buttons */}
         <View style={styles.buttonContainer}>

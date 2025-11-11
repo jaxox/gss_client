@@ -10,7 +10,6 @@ import Step1BasicInfo from './Step1BasicInfo';
 import Step2LocationTime from './Step2LocationTime';
 import Step3Details from './Step3Details';
 import Step4Review from './Step4Review';
-import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 
 export interface WizardData {
   // Step 1: Basic Info
@@ -33,10 +32,9 @@ export interface WizardData {
     paypal: string;
     cashapp: string;
     zelle: string;
-    cash: boolean;
   };
   cohosts: string[];
-  links: Array<{ icon: string; url: string }>;
+  links: Array<{ icon: string; title: string; url: string }>;
   guestInvite: boolean;
 }
 
@@ -56,7 +54,6 @@ const initialData: WizardData = {
     paypal: '',
     cashapp: '',
     zelle: '',
-    cash: false,
   },
   cohosts: [],
   links: [],
@@ -134,7 +131,6 @@ export default function CreateEventWizard() {
         <Appbar.Content title="Create Event" />
         <Appbar.Action icon="close" onPress={handleCancel} />
       </Appbar.Header>
-      <MaterialCommunityIcons name="close" size={32} color="#000" />
       {renderStep()}
     </View>
   );

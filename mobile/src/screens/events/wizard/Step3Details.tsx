@@ -11,6 +11,7 @@ import {
   ScrollView,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
 } from 'react-native';
 import {
   Text,
@@ -18,14 +19,14 @@ import {
   Button,
   HelperText,
   RadioButton,
-  Checkbox,
   Switch,
-  Chip,
   Divider,
+  Avatar,
 } from 'react-native-paper';
 import type { WizardData } from './CreateEventWizard';
 import AddCohostsModal from './AddCohostsModal';
 import AddLinkModal from './AddLinkModal';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 
 interface Props {
   data: WizardData;
@@ -33,19 +34,38 @@ interface Props {
   onBack: () => void;
 }
 
+// Type for cohost data
+type CohostUser = {
+  id: string;
+  name: string;
+  level: number;
+  xp: number;
+  reliability: number;
+  eventsHosted: number;
+  sports: string[];
+  type: 'friend';
+};
+
 export default function Step3Details({ data, onNext, onBack }: Props) {
   const [capacity, setCapacity] = useState(data.capacity?.toString() || '');
   const [cost, setCost] = useState(data.cost?.toString() || '');
   const [paymentDueBy, setPaymentDueBy] = useState(data.paymentDueBy);
   const [paymentMethods, setPaymentMethods] = useState(data.paymentMethods);
-  const [cohosts, setCohosts] = useState<string[]>(data.cohosts);
-  const [links, setLinks] = useState<Array<{ icon: string; url: string }>>(
-    data.links,
-  );
+  const [cohosts, setCohosts] = useState<CohostUser[]>([]);
+  const [links, setLinks] = useState<
+    Array<{ icon: string; title: string; url: string }>
+  >(data.links);
   const [guestInvite, setGuestInvite] = useState(data.guestInvite);
   const [touched, setTouched] = useState({ capacity: false, cost: false });
   const [showCohostsModal, setShowCohostsModal] = useState(false);
   const [showLinksModal, setShowLinksModal] = useState(false);
+
+  // Helper function for reliability color
+  const getReliabilityColor = (reliability: number) => {
+    if (reliability >= 85) return '#10B981';
+    if (reliability >= 70) return '#F59E0B';
+    return '#EF4444';
+  };
 
   // Validation
   const capacityError =
@@ -72,25 +92,17 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
       cost: cost.trim() !== '' ? Number(cost) : null,
       paymentDueBy,
       paymentMethods,
-      cohosts,
+      cohosts: cohosts.map(c => c.name), // Convert back to names for data storage
       links,
       guestInvite,
     });
-  };
-
-  const togglePaymentMethod = (method: keyof typeof paymentMethods) => {
-    if (method === 'cash') {
-      setPaymentMethods(prev => ({ ...prev, cash: !prev.cash }));
-    }
   };
 
   const updatePaymentMethod = (
     method: keyof typeof paymentMethods,
     value: string,
   ) => {
-    if (method !== 'cash') {
-      setPaymentMethods(prev => ({ ...prev, [method]: value }));
-    }
+    setPaymentMethods(prev => ({ ...prev, [method]: value }));
   };
 
   return (
@@ -198,9 +210,6 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
             <Text variant="labelLarge" style={[styles.label, styles.marginTop]}>
               Payment Methods (Optional)
             </Text>
-            <HelperText type="info">
-              Add at least one payment method or select Cash
-            </HelperText>
 
             <TextInput
               label="Venmo"
@@ -238,16 +247,6 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
               placeholder="email@example.com or phone"
               style={styles.input}
             />
-
-            <View style={styles.checkboxRow}>
-              <Checkbox
-                status={paymentMethods.cash ? 'checked' : 'unchecked'}
-                onPress={() => togglePaymentMethod('cash')}
-              />
-              <Text onPress={() => togglePaymentMethod('cash')}>
-                Cash (pay at event)
-              </Text>
-            </View>
           </>
         )}
 
@@ -266,17 +265,71 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
           Add Co-hosts
         </Button>
         {cohosts.length > 0 && (
-          <View style={styles.chipContainer}>
+          <View style={styles.cohostContainer}>
             {cohosts.map((cohost, index) => (
-              <Chip
-                key={index}
-                onClose={() =>
+              <Pressable
+                key={cohost.id}
+                style={styles.cohostCard}
+                onPress={() =>
                   setCohosts(cohosts.filter((_, i) => i !== index))
                 }
-                style={styles.chip}
+                accessibilityRole="button"
+                accessibilityLabel={`${cohost.name}, Level ${cohost.level}, ${cohost.xp} XP, ${cohost.reliability} percent reliability, remove button`}
               >
-                {cohost}
-              </Chip>
+                <Avatar.Text
+                  size={48}
+                  label={cohost.name
+                    .split(' ')
+                    .map(n => n[0])
+                    .join('')
+                    .toUpperCase()
+                    .slice(0, 2)}
+                  style={styles.avatar}
+                  labelStyle={styles.avatarLabel}
+                />
+
+                <View style={styles.userInfo}>
+                  <Text variant="bodyLarge" style={styles.userName}>
+                    {cohost.name}
+                  </Text>
+
+                  <View style={styles.statsRow}>
+                    <View style={styles.levelBadge}>
+                      <Text variant="labelSmall" style={styles.levelText}>
+                        Level {cohost.level}
+                      </Text>
+                    </View>
+                    <Text variant="bodySmall" style={styles.xpText}>
+                      •
+                    </Text>
+                    <Text variant="bodySmall" style={styles.xpText}>
+                      {cohost.xp.toLocaleString()} XP
+                    </Text>
+                  </View>
+
+                  <Text
+                    variant="bodySmall"
+                    style={[
+                      styles.reliabilityText,
+                      { color: getReliabilityColor(cohost.reliability) },
+                    ]}
+                  >
+                    {cohost.reliability}% Reliability
+                  </Text>
+                </View>
+
+                <Button
+                  mode="outlined"
+                  compact
+                  onPress={() =>
+                    setCohosts(cohosts.filter((_, i) => i !== index))
+                  }
+                  textColor="#EF4444"
+                  style={styles.removeButton}
+                >
+                  Remove
+                </Button>
+              </Pressable>
             ))}
           </View>
         )}
@@ -286,9 +339,9 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
           visible={showCohostsModal}
           onDismiss={() => setShowCohostsModal(false)}
           onSave={selectedCohosts => {
-            setCohosts(selectedCohosts.map(c => c.name));
+            setCohosts(selectedCohosts);
           }}
-          initialSelected={[]}
+          initialSelected={cohosts}
         />
 
         {/* Links Section */}
@@ -310,12 +363,18 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
           <View style={styles.linkContainer}>
             {links.map((link, index) => (
               <View key={index} style={styles.linkCard}>
-                <Text>
-                  {link.icon} {link.url}
-                </Text>
+                <View style={styles.linkInfo}>
+                  <Icon name={link.icon} size={24} color="#3B82F6" />
+                  <Text variant="bodyMedium" style={styles.linkTitle}>
+                    {link.title}
+                  </Text>
+                </View>
                 <Button
-                  onPress={() => setLinks(links.filter((_, i) => i !== index))}
+                  mode="outlined"
                   compact
+                  onPress={() => setLinks(links.filter((_, i) => i !== index))}
+                  textColor="#EF4444"
+                  style={styles.removeButton}
                 >
                   Remove
                 </Button>
@@ -329,7 +388,10 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
           visible={showLinksModal}
           onDismiss={() => setShowLinksModal(false)}
           onSave={link => {
-            setLinks([...links, { icon: link.iconName, url: link.url }]);
+            setLinks([
+              ...links,
+              { icon: link.iconName, title: link.title, url: link.url },
+            ]);
           }}
         />
 
@@ -432,23 +494,65 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 8,
   },
-  checkboxRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginTop: 8,
-  },
   addButton: {
     marginBottom: 12,
   },
-  chipContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
+  cohostContainer: {
     marginTop: 8,
   },
-  chip: {
-    marginRight: 8,
-    marginBottom: 8,
+  cohostCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    minHeight: 72,
+    backgroundColor: '#F9FAFB',
+    borderBottomWidth: 1,
+    borderBottomColor: '#E5E7EB',
+  },
+  avatar: {
+    backgroundColor: '#3B82F6',
+  },
+  avatarLabel: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  userInfo: {
+    flex: 1,
+    marginLeft: 12,
+    justifyContent: 'center',
+  },
+  userName: {
+    fontWeight: '600',
+    fontSize: 16,
+    marginBottom: 4,
+    color: '#111827',
+  },
+  statsRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+    gap: 6,
+  },
+  levelBadge: {
+    backgroundColor: '#3B82F6',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  levelText: {
+    color: '#FFFFFF',
+    fontWeight: '700',
+    fontSize: 11,
+  },
+  xpText: {
+    color: '#6B7280',
+    fontSize: 13,
+    fontWeight: '500',
+  },
+  reliabilityText: {
+    fontSize: 13,
+    fontWeight: '600',
   },
   linkContainer: {
     marginTop: 8,
@@ -462,6 +566,21 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
     borderRadius: 8,
     marginBottom: 8,
+    backgroundColor: '#F9FAFB',
+  },
+  linkInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+    gap: 12,
+  },
+  linkTitle: {
+    flex: 1,
+    fontWeight: '600',
+    color: '#111827',
+  },
+  removeButton: {
+    borderColor: '#EF4444',
   },
   switchRow: {
     flexDirection: 'row',
