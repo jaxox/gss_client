@@ -166,11 +166,13 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
                   <Card.Content style={styles.sportCardContent}>
                     <Icon
                       name={sport.icon}
-                      size={48}
+                      size={32}
                       color={isSelected ? theme.colors.primary : '#666'}
                     />
                     <Text
-                      variant="labelMedium"
+                      variant="labelSmall"
+                      numberOfLines={1}
+                      ellipsizeMode="tail"
                       style={[
                         styles.sportLabel,
                         isSelected && { color: theme.colors.primary },
@@ -262,11 +264,11 @@ const styles = StyleSheet.create({
   sportGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 12,
+    gap: 8,
     marginBottom: 16,
   },
   sportCardWrapper: {
-    width: '48%',
+    width: '23%',
   },
   sportCard: {
     borderWidth: 1,
@@ -278,12 +280,14 @@ const styles = StyleSheet.create({
   },
   sportCardContent: {
     alignItems: 'center',
-    paddingVertical: 16,
+    paddingVertical: 6,
+    paddingHorizontal: 4, // new: keep a bit of side space
   },
   sportLabel: {
-    marginTop: 8,
+    marginTop: 6,
     fontWeight: '500',
     textAlign: 'center',
+    fontSize: 11,
   },
   buttonContainer: {
     flexDirection: 'row',

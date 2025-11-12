@@ -48,6 +48,11 @@ jest.mock('react-native', () => {
   RN.Linking.openURL = jest.fn(() => Promise.resolve());
   RN.Linking.canOpenURL = jest.fn(() => Promise.resolve(true));
 
+  // Mock Share
+  RN.Share = {
+    share: jest.fn(() => Promise.resolve({ action: 'sharedAction' })),
+  };
+
   // Ensure Switch is available
   if (!RN.Switch) {
     RN.Switch = 'Switch';
@@ -74,13 +79,45 @@ jest.mock('react-native-safe-area-context', () => {
   };
 });
 
-// Mock react-native-paper
+// Mock react-native-paper - keep it minimal
 jest.mock('react-native-paper', () => {
+  const React = require('react');
+  const RN = jest.requireActual('react-native');
   const RNPaper = jest.requireActual('react-native-paper');
+
+  // Create simple mock Appbar components that won't break
+  const MockAppbarHeader = ({ children, ...props }) =>
+    React.createElement(
+      RN.View,
+      { ...props, testID: 'appbar-header' },
+      children,
+    );
+  const MockAppbarBackAction = ({ onPress, ...props }) =>
+    React.createElement(RN.TouchableOpacity, {
+      ...props,
+      onPress,
+      testID: 'appbar-back',
+    });
+  const MockAppbarContent = ({ title, ...props }) =>
+    React.createElement(RN.Text, { ...props, testID: 'appbar-content' }, title);
+  const MockAppbarAction = ({ onPress, icon, ...props }) =>
+    React.createElement(RN.TouchableOpacity, {
+      ...props,
+      onPress,
+      testID: 'appbar-action',
+    });
+
   return {
     ...RNPaper,
     Portal: ({ children }) => children,
     Provider: ({ children }) => children,
+    Appbar: {
+      ...(RNPaper.Appbar || {}),
+      Header: MockAppbarHeader,
+      BackAction: MockAppbarBackAction,
+      Content: MockAppbarContent,
+      Action: MockAppbarAction,
+    },
   };
 });
 

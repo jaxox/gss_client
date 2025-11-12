@@ -318,10 +318,14 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
           locale="en"
           mode="single"
           visible={showDatePicker}
-          onDismiss={() => setShowDatePicker(false)}
+          onDismiss={() => {
+            setShowDatePicker(false);
+            setShowLocationSuggestions(false);
+          }}
           date={date || new Date()}
           onConfirm={params => {
             setShowDatePicker(false);
+            setShowLocationSuggestions(false);
             setDate(params.date || null);
             setTouched(prev => ({ ...prev, date: true }));
           }}

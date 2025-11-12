@@ -56,6 +56,7 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
     Array<{ icon: string; title: string; url: string }>
   >(data.links);
   const [guestInvite, setGuestInvite] = useState(data.guestInvite);
+  const [waitlistEnabled, setWaitlistEnabled] = useState(false);
   const [touched, setTouched] = useState({ capacity: false, cost: false });
   const [showCohostsModal, setShowCohostsModal] = useState(false);
   const [showLinksModal, setShowLinksModal] = useState(false);
@@ -69,13 +70,17 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
 
   // Validation
   const capacityError =
-    capacity.trim() !== '' && (isNaN(Number(capacity)) || Number(capacity) < 2)
-      ? 'Capacity must be at least 2'
+    capacity.trim() !== '' &&
+    (isNaN(Number(capacity)) ||
+      Number(capacity) < 2 ||
+      Number(capacity) > 10000)
+      ? 'Capacity must be between 2 and 10,000 (excluding host/cohosts)'
       : null;
 
   const costError =
-    cost.trim() !== '' && (isNaN(Number(cost)) || Number(cost) < 0)
-      ? 'Cost must be a positive number'
+    cost.trim() !== '' &&
+    (isNaN(Number(cost)) || Number(cost) < 0 || Number(cost) > 10000)
+      ? 'Cost must be between $0 and $10,000'
       : null;
 
   const showPaymentSection = cost.trim() !== '';
@@ -148,8 +153,26 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
           style={styles.input}
         />
         <HelperText type={capacityError ? 'error' : 'info'} visible>
-          {capacityError || 'Leave blank for unlimited capacity'}
+          {capacityError || 'Leave blank for unlimited.'}
         </HelperText>
+
+        {/* Waitlist Toggle - Only show if capacity is set */}
+        {capacity.trim() !== '' && !capacityError && (
+          <View style={styles.switchRow}>
+            <View style={styles.switchLabelContainer}>
+              <Text variant="bodyLarge" style={styles.switchLabel}>
+                Enable Waitlist
+              </Text>
+              <Text variant="bodySmall" style={styles.switchHelper}>
+                Allow users to join a waitlist when the event is full.
+              </Text>
+            </View>
+            <Switch
+              value={waitlistEnabled}
+              onValueChange={setWaitlistEnabled}
+            />
+          </View>
+        )}
 
         {/* Cost Input */}
         <TextInput
@@ -402,9 +425,11 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
           Guest Invite Permissions
         </Text>
         <View style={styles.switchRow}>
-          <View style={styles.switchLabel}>
-            <Text variant="labelLarge">Guests can invite others</Text>
-            <Text variant="bodySmall" style={styles.helperText}>
+          <View style={styles.switchLabelContainer}>
+            <Text variant="labelLarge" style={styles.switchLabel}>
+              Guests can invite others
+            </Text>
+            <Text variant="bodySmall" style={styles.switchHelper}>
               When enabled, attendees can invite their friends to join the
               event.
             </Text>
@@ -588,9 +613,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: 8,
   },
-  switchLabel: {
+  switchLabelContainer: {
     flex: 1,
     marginRight: 16,
+  },
+  switchLabel: {
+    fontWeight: '500',
+  },
+  switchHelper: {
+    color: '#6B7280',
+    marginTop: 2,
+    fontSize: 13,
   },
   helperText: {
     color: '#6B7280',

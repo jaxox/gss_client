@@ -3,6 +3,18 @@
  * Tests the complete flow through all 4 steps including Add Cohosts modal
  */
 
+// Mock react-native-paper-dates BEFORE imports
+jest.mock('react-native-paper-dates', () => ({
+  DatePickerModal: jest.fn(),
+  TimePickerModal: jest.fn(),
+}));
+
+// Mock vector icons properly as a React component BEFORE imports
+jest.mock('react-native-vector-icons/MaterialCommunityIcons', () => {
+  const MockedReact = require('react');
+  return (props: any) => MockedReact.createElement('Icon', props);
+});
+
 import React from 'react';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { Provider as ReduxProvider } from 'react-redux';
@@ -11,33 +23,6 @@ import { configureStore } from '@reduxjs/toolkit';
 import CreateEventWizard from '../CreateEventWizard';
 import Step3Details from '../Step3Details';
 import AddCohostsModal from '../AddCohostsModal';
-
-// Mock react-native-paper-dates
-jest.mock('react-native-paper-dates', () => ({
-  DatePickerModal: jest.fn(),
-  TimePickerModal: jest.fn(),
-}));
-
-// Mock vector icons
-jest.mock('react-native-vector-icons/MaterialCommunityIcons', () => 'Icon');
-
-// Mock Appbar components specifically
-jest.mock(
-  'react-native-paper/src/components/Appbar/AppbarHeader',
-  () => 'AppbarHeader',
-);
-jest.mock(
-  'react-native-paper/src/components/Appbar/AppbarBackAction',
-  () => 'AppbarBackAction',
-);
-jest.mock(
-  'react-native-paper/src/components/Appbar/AppbarContent',
-  () => 'AppbarContent',
-);
-jest.mock(
-  'react-native-paper/src/components/Appbar/AppbarAction',
-  () => 'AppbarAction',
-);
 
 // Test wrapper with all providers
 const AllTheProviders = ({ children, store }: any) => {

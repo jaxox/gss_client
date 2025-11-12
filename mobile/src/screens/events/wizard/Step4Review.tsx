@@ -282,34 +282,43 @@ export default function Step4Review({ data, onBack, onPublish }: Props) {
             )}
           </View>
 
-          {/* Co-hosts Section */}
-          {data.cohosts.length > 0 && (
-            <>
-              <Divider style={styles.divider} />
-              <View style={styles.cardSection}>
-                <View style={styles.sectionTitleRow}>
-                  <Icon name="account-multiple" size={20} color="#8B5CF6" />
-                  <Text variant="titleSmall" style={styles.sectionTitle}>
-                    Co-hosts
-                  </Text>
-                </View>
-                <View style={styles.cohostsList}>
-                  {data.cohosts.map((cohost, index) => (
-                    <Chip
-                      key={index}
-                      mode="flat"
-                      avatar={
-                        <Icon name="account-circle" size={24} color="#8B5CF6" />
-                      }
-                      style={styles.cohostChip}
-                    >
-                      {cohost}
-                    </Chip>
-                  ))}
-                </View>
+          {/* Hosts Section */}
+          <>
+            <Divider style={styles.divider} />
+            <View style={styles.cardSection}>
+              <View style={styles.sectionTitleRow}>
+                <Icon name="account-multiple" size={20} color="#8B5CF6" />
+                <Text variant="titleSmall" style={styles.sectionTitle}>
+                  {data.cohosts.length > 0 ? 'Host & Co-hosts' : 'Host'}
+                </Text>
               </View>
-            </>
-          )}
+              <View style={styles.cohostsList}>
+                {/* Main Host - Always shown first */}
+                <Chip
+                  mode="flat"
+                  avatar={
+                    <Icon name="account-star" size={24} color="#F59E0B" />
+                  }
+                  style={styles.hostChip}
+                >
+                  You (Host)
+                </Chip>
+                {/* Co-hosts */}
+                {data.cohosts.map((cohost, index) => (
+                  <Chip
+                    key={index}
+                    mode="flat"
+                    avatar={
+                      <Icon name="account-circle" size={24} color="#8B5CF6" />
+                    }
+                    style={styles.cohostChip}
+                  >
+                    {cohost}
+                  </Chip>
+                ))}
+              </View>
+            </View>
+          </>
 
           {/* Links Section - Clickable */}
           {data.links.length > 0 && (
@@ -552,6 +561,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
+  },
+  hostChip: {
+    backgroundColor: '#FEF3C7',
+    borderWidth: 1,
+    borderColor: '#F59E0B',
   },
   cohostChip: {
     backgroundColor: '#F5F3FF',
