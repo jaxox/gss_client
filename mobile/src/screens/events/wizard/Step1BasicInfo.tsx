@@ -50,8 +50,8 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
   const titleError =
     touched.title && title.trim().length < 3
       ? 'Title must be at least 3 characters'
-      : title.length > 100
-        ? 'Title cannot exceed 100 characters'
+      : title.length > 75
+        ? 'Title cannot exceed 75 characters'
         : null;
 
   const descriptionError =
@@ -61,14 +61,11 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
         ? 'Description cannot exceed 500 characters'
         : null;
 
-  const sportError = !sportId ? 'Please select a sport' : null;
-
   const isValid =
     title.trim().length >= 3 &&
-    title.length <= 100 &&
+    title.length <= 75 &&
     description.trim().length >= 10 &&
-    description.length <= 500 &&
-    sportId !== '';
+    description.length <= 500;
 
   const handleNext = () => {
     if (!isValid) {
@@ -90,22 +87,24 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
       >
         {/* Progress Indicator */}
         <View style={styles.progressSection}>
-          <View style={styles.progressDots}>
-            <View style={[styles.dot, styles.dotActive]} />
-            <View style={styles.dotLine} />
-            <View style={styles.dot} />
-            <View style={styles.dotLine} />
-            <View style={styles.dot} />
-            <View style={styles.dotLine} />
-            <View style={styles.dot} />
+          <View style={styles.progressInline}>
+            <Text variant="labelSmall" style={styles.progressText}>
+              Step 1 of 4
+            </Text>
+            <View style={styles.progressDots}>
+              <View style={[styles.dot, styles.dotActive]} />
+              <View style={styles.dotLine} />
+              <View style={styles.dot} />
+              <View style={styles.dotLine} />
+              <View style={styles.dot} />
+              <View style={styles.dotLine} />
+              <View style={styles.dot} />
+            </View>
           </View>
-          <Text variant="labelMedium" style={styles.progressText}>
-            Step 1 of 4
-          </Text>
         </View>
 
         {/* Section Header */}
-        <Text variant="titleLarge" style={styles.sectionHeader}>
+        <Text variant="titleMedium" style={styles.sectionHeader}>
           Basic Information
         </Text>
 
@@ -118,11 +117,12 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
           onBlur={() => setTouched(prev => ({ ...prev, title: true }))}
           mode="outlined"
           error={!!titleError}
-          maxLength={100}
+          maxLength={75}
+          dense
           style={styles.input}
         />
         <HelperText type={titleError ? 'error' : 'info'} visible>
-          {titleError || `${title.length}/100 characters`}
+          {titleError || `${title.length}/75 characters`}
         </HelperText>
 
         {/* Description Input */}
@@ -134,9 +134,10 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
           onBlur={() => setTouched(prev => ({ ...prev, description: true }))}
           mode="outlined"
           multiline
-          numberOfLines={4}
+          numberOfLines={3}
           error={!!descriptionError}
           maxLength={500}
+          dense
           style={styles.input}
         />
         <HelperText type={descriptionError ? 'error' : 'info'} visible>
@@ -145,7 +146,7 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
 
         {/* Sport Selector */}
         <Text variant="titleMedium" style={styles.sectionTitle}>
-          Select Sport *
+          Select Sport (Optional)
         </Text>
 
         <View style={styles.sportGrid}>
@@ -191,12 +192,6 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
           })}
         </View>
 
-        {sportError && !sportId && (
-          <HelperText type="error" visible>
-            {sportError}
-          </HelperText>
-        )}
-
         {/* Action Buttons */}
         <View style={styles.buttonContainer}>
           <Button
@@ -233,49 +228,58 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   progressSection: {
-    marginBottom: 24,
+    marginBottom: 16,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  progressInline: {
+    flexDirection: 'row', // make dots + text inline
+    alignItems: 'center', // vertically centered
+    justifyContent: 'center', // horizontally centered
+    gap: 16, // spacing between dots and text (RN 0.71+)
   },
   progressDots: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
   },
   dot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: '#9CA3AF',
   },
   dotActive: {
     backgroundColor: '#3B82F6',
   },
   dotLine: {
-    width: 24,
+    width: 16,
     height: 2,
     backgroundColor: '#E5E7EB',
-    marginHorizontal: 4,
+    marginHorizontal: 3,
   },
   progressText: {
     color: '#6B7280',
+    fontSize: 12,
   },
   sectionHeader: {
-    marginBottom: 20,
+    marginBottom: 12,
     fontWeight: 'bold',
   },
   input: {
-    marginBottom: 4,
+    marginBottom: 2,
   },
   sectionTitle: {
-    marginTop: 8,
-    marginBottom: 12,
+    marginTop: 4,
+    marginBottom: 8,
     fontWeight: '600',
   },
   sportGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 16,
+    gap: 6,
+    marginBottom: 12,
   },
   sportCardWrapper: {
     width: '23%',
@@ -290,19 +294,19 @@ const styles = StyleSheet.create({
   },
   sportCardContent: {
     alignItems: 'center',
-    paddingVertical: 6,
-    paddingHorizontal: 4, // new: keep a bit of side space
+    paddingVertical: 4,
+    paddingHorizontal: 2,
   },
   sportLabel: {
-    marginTop: 6,
+    marginTop: 4,
     fontWeight: '500',
     textAlign: 'center',
-    fontSize: 11,
+    fontSize: 10,
   },
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 24,
+    marginTop: 16,
     gap: 12,
   },
   cancelButton: {

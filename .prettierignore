@@ -17,6 +17,9 @@ mobile/Pods/
 **/*.tsbuildinfo
 coverage/
 
+# E2E test setup
+**/e2e/setup.js
+
 # Git
 .git/
 

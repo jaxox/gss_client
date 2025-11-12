@@ -132,11 +132,11 @@ export default function CreateEventWizard({ onCancel }: Props = {}) {
 
   return (
     <View style={styles.container}>
-      <Appbar.Header statusBarHeight={0}>
+      <Appbar.Header statusBarHeight={0} style={styles.header}>
         <Appbar.BackAction
           onPress={currentStep === 1 ? handleCancel : handleBack}
         />
-        <Appbar.Content title="Create Event" />
+        <Appbar.Content title="Create Event" titleStyle={styles.headerTitle} />
         <Appbar.Action icon="close" onPress={handleCancel} />
       </Appbar.Header>
       {renderStep()}
@@ -148,5 +148,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  header: {
+    height: 48,
+  },
+  headerTitle: {
+    fontSize: 16,
   },
 });

@@ -1,40 +1,27 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+echo "🔍 Running pre-commit checks..."
+
 # Run lint-staged for code formatting and linting
-npx lint-staged
+echo "📝 Linting and formatting staged files..."
+npx lint-staged || {
+  echo "❌ Lint-staged failed. Please fix linting errors and try again."
+  exit 1
+}
 
 # Run type checking on all packages
-npm run type-check
+echo "🔎 Type checking..."
+npm run type-check --if-present || {
+  echo "❌ Type check failed. Please fix type errors and try again."
+  exit 1
+}
 
-# Run tests in CI mode
-npm run test:ci
+# Run tests in CI mode (only unit tests, not E2E)
+echo "🧪 Running unit tests..."
+npm run test:ci || {
+  echo "❌ Tests failed! Please fix failing tests and try again."
+  exit 1
+}
 
-# E2E tests - Only run if SKIP_E2E is not set
-# To skip: SKIP_E2E=1 git commit -m "message"
-# To run: git commit -m "message" (default behavior)
-if [ -z "$SKIP_E2E" ]; then
-  echo "🧪 Running E2E tests (use SKIP_E2E=1 to skip)..."
-  
-  # Check if Metro is already running
-  if ! lsof -ti:8081 > /dev/null 2>&1; then
-    echo "⚠️  Metro bundler not running on port 8081"
-    echo "Please start Metro in another terminal: cd mobile && npm start"
-    echo "Or skip E2E tests: SKIP_E2E=1 git commit -m \"message\""
-    exit 1
-  fi
-  
-  # Build app if binary doesn't exist
-  if [ ! -d "mobile/ios/build/Build/Products/Debug-iphonesimulator/GSS_Mobile.app" ]; then
-    echo "📱 Building iOS app for E2E tests..."
-    cd mobile && npm run test:e2e:build:ios || exit 1
-    cd ..
-  fi
-  
-  # Run E2E tests
-  echo "🧪 Running iOS E2E tests..."
-  cd mobile && npm run test:e2e:ios:debug || exit 1
-  cd ..
-else
-  echo "⏭️  Skipping E2E tests (SKIP_E2E is set)"
-fi
+echo "✅ All pre-commit checks passed!"

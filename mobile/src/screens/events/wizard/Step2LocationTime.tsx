@@ -84,6 +84,9 @@ const MOCK_LOCATIONS = [
 ];
 
 export default function Step2LocationTime({ data, onNext, onBack }: Props) {
+  // Detect E2E test environment
+  const isE2E = !!(globalThis as any).__E2E__;
+
   const [location, setLocation] = useState(data.location);
   const [date, setDate] = useState<Date | null>(data.date);
   const [time, setTime] = useState<Date | null>(data.time);
@@ -198,6 +201,26 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
     return `${hours}h ${mins}m`;
   };
 
+  // E2E helper: Parse HH:mm format to Date
+  const parseTimeString = (timeStr: string): Date | null => {
+    const match = timeStr.match(/^(\d{1,2}):(\d{2})$/);
+    if (!match) return null;
+    const hours = parseInt(match[1], 10);
+    const minutes = parseInt(match[2], 10);
+    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+    const newDate = new Date();
+    newDate.setHours(hours, minutes, 0, 0);
+    return newDate;
+  };
+
+  // E2E helper: Format Date to HH:mm
+  const formatTimeE2E = (t: Date | null): string => {
+    if (!t) return '';
+    const hours = t.getHours().toString().padStart(2, '0');
+    const minutes = t.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
+  };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -210,22 +233,24 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
       >
         {/* Progress Indicator */}
         <View style={styles.progressSection}>
-          <View style={styles.progressDots}>
-            <View style={[styles.dot, styles.dotActive]} />
-            <View style={styles.dotLine} />
-            <View style={[styles.dot, styles.dotActive]} />
-            <View style={styles.dotLine} />
-            <View style={styles.dot} />
-            <View style={styles.dotLine} />
-            <View style={styles.dot} />
+          <View style={styles.progressInline}>
+            <Text variant="labelSmall" style={styles.progressText}>
+              Step 2 of 4
+            </Text>
+            <View style={styles.progressDots}>
+              <View style={[styles.dot, styles.dotActive]} />
+              <View style={styles.dotLine} />
+              <View style={[styles.dot, styles.dotActive]} />
+              <View style={styles.dotLine} />
+              <View style={styles.dot} />
+              <View style={styles.dotLine} />
+              <View style={styles.dot} />
+            </View>
           </View>
-          <Text variant="labelMedium" style={styles.progressText}>
-            Step 2 of 4
-          </Text>
         </View>
 
         {/* Section Header */}
-        <Text variant="titleLarge" style={styles.sectionHeader}>
+        <Text variant="titleMedium" style={styles.sectionHeader}>
           Location & Time
         </Text>
 
@@ -254,6 +279,7 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
             mode="outlined"
             error={!!locationError}
             placeholder="Enter address or search venues"
+            dense
             style={styles.input}
             left={<TextInput.Icon icon="map-marker" />}
           />
@@ -293,7 +319,7 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
           type="info"
           visible={!locationError && !showLocationSuggestions}
         >
-          Enter any address or type 2+ characters to search venues
+          {' '}
         </HelperText>
 
         {/* Date Picker */}
@@ -304,6 +330,7 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
           mode="outlined"
           error={!!dateError}
           editable={false}
+          dense
           onPressIn={() => setShowDatePicker(true)}
           style={styles.input}
           right={
@@ -337,67 +364,140 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
           }}
         />
 
-        {/* Time Picker */}
-        <TextInput
-          testID="time-input"
-          label="Start Time *"
-          value={formatTime(time)}
-          mode="outlined"
-          error={!!timeError}
-          editable={false}
-          onPressIn={() => setShowTimePicker(true)}
-          style={styles.input}
-          right={
-            <TextInput.Icon
-              icon="clock-outline"
-              onPress={() => setShowTimePicker(true)}
+        {/* Time Picker - E2E-aware */}
+        {isE2E ? (
+          <TextInput
+            testID="time-input"
+            label="Start Time * (HH:mm)"
+            value={formatTimeE2E(time)}
+            mode="outlined"
+            error={!!timeError}
+            placeholder="14:30"
+            keyboardType="numeric"
+            dense
+            style={styles.input}
+            onChangeText={text => {
+              const parsed = parseTimeString(text);
+              if (parsed) {
+                setTime(parsed);
+                // Auto-set end time to 2 hours later if not set
+                if (!endTime) {
+                  const autoEndTime = new Date(parsed);
+                  autoEndTime.setHours(autoEndTime.getHours() + 2);
+                  setEndTime(autoEndTime);
+                }
+                setTouched(prev => ({ ...prev, time: true }));
+              } else if (text === '') {
+                setTime(null);
+                setTouched(prev => ({ ...prev, time: true }));
+              }
+            }}
+          />
+        ) : (
+          <>
+            <TextInput
+              testID="time-input"
+              label="Start Time *"
+              value={formatTime(time)}
+              mode="outlined"
+              error={!!timeError}
+              editable={false}
+              dense
+              onPressIn={() => setShowTimePicker(true)}
+              style={styles.input}
+              right={
+                <TextInput.Icon
+                  icon="clock-outline"
+                  onPress={() => setShowTimePicker(true)}
+                />
+              }
             />
-          }
-        />
+            <TimePickerModal
+              locale="en"
+              visible={showTimePicker}
+              onDismiss={() => setShowTimePicker(false)}
+              onConfirm={params => {
+                setShowTimePicker(false);
+                const newTime = new Date();
+                newTime.setHours(params.hours, params.minutes);
+                setTime(newTime);
+
+                // Auto-set end time to 2 hours later if not set
+                if (!endTime) {
+                  const autoEndTime = new Date(newTime);
+                  autoEndTime.setHours(autoEndTime.getHours() + 2);
+                  setEndTime(autoEndTime);
+                }
+
+                setTouched(prev => ({ ...prev, time: true }));
+              }}
+              hours={time?.getHours() || 12}
+              minutes={time?.getMinutes() || 0}
+            />
+          </>
+        )}
         <HelperText type="error" visible={!!timeError}>
           {timeError}
         </HelperText>
 
-        <TimePickerModal
-          locale="en"
-          visible={showTimePicker}
-          onDismiss={() => setShowTimePicker(false)}
-          onConfirm={params => {
-            setShowTimePicker(false);
-            const newTime = new Date();
-            newTime.setHours(params.hours, params.minutes);
-            setTime(newTime);
-
-            // Auto-set end time to 2 hours later if not set
-            if (!endTime) {
-              const autoEndTime = new Date(newTime);
-              autoEndTime.setHours(autoEndTime.getHours() + 2);
-              setEndTime(autoEndTime);
-            }
-
-            setTouched(prev => ({ ...prev, time: true }));
-          }}
-          hours={time?.getHours() || 12}
-          minutes={time?.getMinutes() || 0}
-        />
-
-        {/* End Time Picker */}
-        <TextInput
-          testID="end-time-input"
-          label="End Time *"
-          value={formatTime(endTime)}
-          mode="outlined"
-          error={!!endTimeError}
-          editable={false}
-          onPressIn={() => setShowEndTimePicker(true)}
-          style={styles.input}
-          right={
-            <TextInput.Icon
-              icon="clock-outline"
-              onPress={() => setShowEndTimePicker(true)}
+        {/* End Time Picker - E2E-aware */}
+        {isE2E ? (
+          <TextInput
+            testID="end-time-input"
+            label="End Time * (HH:mm)"
+            value={formatTimeE2E(endTime)}
+            mode="outlined"
+            error={!!endTimeError}
+            placeholder="16:30"
+            keyboardType="numeric"
+            dense
+            style={styles.input}
+            onChangeText={text => {
+              const parsed = parseTimeString(text);
+              if (parsed) {
+                setEndTime(parsed);
+                setTouched(prev => ({ ...prev, endTime: true }));
+              } else if (text === '') {
+                setEndTime(null);
+                setTouched(prev => ({ ...prev, endTime: true }));
+              }
+            }}
+          />
+        ) : (
+          <>
+            <TextInput
+              testID="end-time-input"
+              label="End Time *"
+              value={formatTime(endTime)}
+              mode="outlined"
+              error={!!endTimeError}
+              editable={false}
+              dense
+              onPressIn={() => setShowEndTimePicker(true)}
+              style={styles.input}
+              right={
+                <TextInput.Icon
+                  icon="clock-outline"
+                  onPress={() => setShowEndTimePicker(true)}
+                />
+              }
             />
-          }
-        />
+            <TimePickerModal
+              locale="en"
+              visible={showEndTimePicker}
+              onDismiss={() => setShowEndTimePicker(false)}
+              onConfirm={params => {
+                setShowEndTimePicker(false);
+                const newEndTime = new Date();
+                newEndTime.setHours(params.hours, params.minutes);
+                setEndTime(newEndTime);
+                setTouched(prev => ({ ...prev, endTime: true }));
+              }}
+              hours={endTime?.getHours() || 14}
+              minutes={endTime?.getMinutes() || 0}
+            />
+          </>
+        )}
         <HelperText type="error" visible={!!endTimeError}>
           {endTimeError}
         </HelperText>
@@ -406,21 +506,6 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
             Duration: {formatDuration(calculateDuration())}
           </HelperText>
         )}
-
-        <TimePickerModal
-          locale="en"
-          visible={showEndTimePicker}
-          onDismiss={() => setShowEndTimePicker(false)}
-          onConfirm={params => {
-            setShowEndTimePicker(false);
-            const newEndTime = new Date();
-            newEndTime.setHours(params.hours, params.minutes);
-            setEndTime(newEndTime);
-            setTouched(prev => ({ ...prev, endTime: true }));
-          }}
-          hours={endTime?.getHours() || 14}
-          minutes={endTime?.getMinutes() || 0}
-        />
 
         {/* Action Buttons */}
         <View style={styles.buttonContainer}>
@@ -458,42 +543,51 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   progressSection: {
-    marginBottom: 24,
+    marginBottom: 16,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  progressInline: {
+    flexDirection: 'row', // make dots + text inline
+    alignItems: 'center', // vertically centered
+    justifyContent: 'center', // horizontally centered
+    gap: 16, // spacing between dots and text (RN 0.71+)
   },
   progressDots: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
   },
   dot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: '#9CA3AF',
   },
   dotActive: {
     backgroundColor: '#3B82F6',
   },
   dotLine: {
-    width: 24,
+    width: 16,
     height: 2,
     backgroundColor: '#E5E7EB',
-    marginHorizontal: 4,
+    marginHorizontal: 3,
   },
   progressText: {
     color: '#6B7280',
+    fontSize: 12,
   },
   sectionHeader: {
-    marginBottom: 20,
+    marginBottom: 12,
     fontWeight: 'bold',
   },
   input: {
-    marginBottom: 4,
+    marginBottom: 2,
   },
   suggestionsList: {
     position: 'absolute',
-    top: 60,
+    top: 50,
     left: 0,
     right: 0,
     backgroundColor: 'white',
@@ -504,19 +598,21 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     zIndex: 1000,
-    maxHeight: 200,
+    maxHeight: 180,
   },
   suggestionItem: {
-    padding: 12,
+    padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
   },
   locationName: {
     fontWeight: '600',
     marginBottom: 2,
+    fontSize: 14,
   },
   locationAddress: {
     color: '#6B7280',
+    fontSize: 12,
   },
   menuScroll: {
     maxHeight: 300,
@@ -524,7 +620,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 24,
+    marginTop: 16,
     gap: 12,
   },
   backButton: {

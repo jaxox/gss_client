@@ -122,22 +122,24 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
       >
         {/* Progress Indicator */}
         <View style={styles.progressSection}>
-          <View style={styles.progressDots}>
-            <View style={[styles.dot, styles.dotActive]} />
-            <View style={styles.dotLine} />
-            <View style={[styles.dot, styles.dotActive]} />
-            <View style={styles.dotLine} />
-            <View style={[styles.dot, styles.dotActive]} />
-            <View style={styles.dotLine} />
-            <View style={styles.dot} />
+          <View style={styles.progressInline}>
+            <Text variant="labelSmall" style={styles.progressText}>
+              Step 3 of 4
+            </Text>
+            <View style={styles.progressDots}>
+              <View style={[styles.dot, styles.dotActive]} />
+              <View style={styles.dotLine} />
+              <View style={[styles.dot, styles.dotActive]} />
+              <View style={styles.dotLine} />
+              <View style={[styles.dot, styles.dotActive]} />
+              <View style={styles.dotLine} />
+              <View style={styles.dot} />
+            </View>
           </View>
-          <Text variant="labelMedium" style={styles.progressText}>
-            Step 3 of 4
-          </Text>
         </View>
 
         {/* Section Header */}
-        <Text variant="titleLarge" style={styles.sectionHeader}>
+        <Text variant="titleMedium" style={styles.sectionHeader}>
           Event Details
         </Text>
 
@@ -152,6 +154,7 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
           keyboardType="number-pad"
           error={touched.capacity && !!capacityError}
           placeholder="Leave blank for unlimited"
+          dense
           style={styles.input}
         />
         <HelperText type={capacityError ? 'error' : 'info'} visible>
@@ -187,6 +190,7 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
           keyboardType="decimal-pad"
           error={touched.cost && !!costError}
           placeholder="0.00"
+          dense
           left={<TextInput.Affix text="$" />}
           style={styles.input}
         />
@@ -243,6 +247,7 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
               onChangeText={value => updatePaymentMethod('venmo', value)}
               mode="outlined"
               placeholder="@username"
+              dense
               style={styles.input}
             />
 
@@ -253,6 +258,7 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
               mode="outlined"
               placeholder="email@example.com"
               keyboardType="email-address"
+              dense
               style={styles.input}
             />
 
@@ -262,6 +268,7 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
               onChangeText={value => updatePaymentMethod('cashapp', value)}
               mode="outlined"
               placeholder="$cashtag"
+              dense
               style={styles.input}
             />
 
@@ -271,6 +278,7 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
               onChangeText={value => updatePaymentMethod('zelle', value)}
               mode="outlined"
               placeholder="email@example.com or phone"
+              dense
               style={styles.input}
             />
           </>
@@ -476,70 +484,79 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   progressSection: {
-    marginBottom: 24,
+    marginBottom: 16,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  progressInline: {
+    flexDirection: 'row', // make dots + text inline
+    alignItems: 'center', // vertically centered
+    justifyContent: 'center', // horizontally centered
+    gap: 16, // spacing between dots and text (RN 0.71+)
   },
   progressDots: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
   },
   dot: {
-    width: 12,
-    height: 12,
-    borderRadius: 6,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: '#9CA3AF',
   },
   dotActive: {
     backgroundColor: '#3B82F6',
   },
   dotLine: {
-    width: 24,
+    width: 16,
     height: 2,
     backgroundColor: '#E5E7EB',
-    marginHorizontal: 4,
+    marginHorizontal: 3,
   },
   progressText: {
     color: '#6B7280',
+    fontSize: 12,
   },
   sectionHeader: {
-    marginBottom: 20,
+    marginBottom: 12,
     fontWeight: 'bold',
   },
   sectionTitle: {
-    marginBottom: 12,
+    marginBottom: 8,
     fontWeight: '600',
   },
   input: {
-    marginBottom: 4,
+    marginBottom: 2,
   },
   label: {
-    marginTop: 8,
-    marginBottom: 8,
+    marginTop: 6,
+    marginBottom: 6,
   },
   marginTop: {
-    marginTop: 16,
+    marginTop: 12,
   },
   divider: {
-    marginVertical: 16,
+    marginVertical: 12,
   },
   radioOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   addButton: {
-    marginBottom: 12,
+    marginBottom: 8,
   },
   cohostContainer: {
-    marginTop: 8,
+    marginTop: 6,
   },
   cohostCard: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    minHeight: 72,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    minHeight: 64,
     backgroundColor: '#F9FAFB',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
@@ -550,10 +567,11 @@ const styles = StyleSheet.create({
   avatarLabel: {
     color: 'white',
     fontWeight: 'bold',
+    fontSize: 16,
   },
   userInfo: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 10,
     justifyContent: 'center',
   },
   userName: {
@@ -589,17 +607,17 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   linkContainer: {
-    marginTop: 8,
+    marginTop: 6,
   },
   linkCard: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 12,
+    padding: 10,
     borderWidth: 1,
     borderColor: '#E5E7EB',
     borderRadius: 8,
-    marginBottom: 8,
+    marginBottom: 6,
     backgroundColor: '#F9FAFB',
   },
   linkInfo: {
@@ -620,7 +638,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 6,
   },
   switchLabelContainer: {
     flex: 1,
@@ -641,7 +659,7 @@ const styles = StyleSheet.create({
   buttonContainer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 24,
+    marginTop: 16,
     gap: 12,
   },
   backButton: {

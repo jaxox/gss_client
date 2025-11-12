@@ -137,26 +137,28 @@ export default function Step4Review({ data, onBack, onPublish }: Props) {
       >
         {/* Progress Indicator */}
         <View style={styles.progressSection}>
-          <View style={styles.progressDots}>
-            <View style={[styles.dot, styles.dotActive]} />
-            <View style={styles.dotLine} />
-            <View style={[styles.dot, styles.dotActive]} />
-            <View style={styles.dotLine} />
-            <View style={[styles.dot, styles.dotActive]} />
-            <View style={styles.dotLine} />
-            <View style={[styles.dot, styles.dotActive]} />
+          <View style={styles.progressInline}>
+            <Text variant="labelSmall" style={styles.progressText}>
+              Step 4 of 4
+            </Text>
+            <View style={styles.progressDots}>
+              <View style={[styles.dot, styles.dotActive]} />
+              <View style={styles.dotLine} />
+              <View style={[styles.dot, styles.dotActive]} />
+              <View style={styles.dotLine} />
+              <View style={[styles.dot, styles.dotActive]} />
+              <View style={styles.dotLine} />
+              <View style={[styles.dot, styles.dotActive]} />
+            </View>
           </View>
-          <Text variant="labelMedium" style={styles.progressText}>
-            Step 4 of 4
-          </Text>
         </View>
 
         {/* Section Header */}
         <View style={styles.headerSection}>
-          <Text variant="headlineMedium" style={styles.sectionHeader}>
+          <Text variant="titleLarge" style={styles.sectionHeader}>
             Review & Publish
           </Text>
-          <Text variant="bodyMedium" style={styles.subtitle}>
+          <Text variant="bodySmall" style={styles.subtitle}>
             Review your event details before publishing
           </Text>
         </View>
@@ -418,116 +420,127 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   progressSection: {
-    marginBottom: 20,
+    marginBottom: 12,
+    flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  progressInline: {
+    flexDirection: 'row', // make dots + text inline
+    alignItems: 'center', // vertically centered
+    justifyContent: 'center', // horizontally centered
+    gap: 16, // spacing between dots and text (RN 0.71+)
   },
   progressDots: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 8,
   },
   dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
     backgroundColor: '#D1D5DB',
   },
   dotActive: {
     backgroundColor: '#3B82F6',
-    width: 12,
-    height: 12,
-    borderRadius: 6,
   },
   dotLine: {
-    width: 20,
+    width: 16,
     height: 2,
     backgroundColor: '#3B82F6',
-    marginHorizontal: 4,
+    marginHorizontal: 3,
   },
   progressText: {
     color: '#3B82F6',
     fontWeight: '600',
+    fontSize: 12,
   },
   headerSection: {
-    marginBottom: 20,
+    marginBottom: 12,
   },
   sectionHeader: {
     fontWeight: 'bold',
     color: '#111827',
-    marginBottom: 4,
+    marginBottom: 2,
   },
   subtitle: {
     color: '#6B7280',
+    fontSize: 13,
   },
   previewCard: {
-    marginBottom: 16,
+    marginBottom: 12,
     backgroundColor: 'white',
-    borderRadius: 16,
+    borderRadius: 12,
     overflow: 'hidden',
   },
   heroSection: {
-    padding: 20,
+    padding: 16,
     backgroundColor: '#F0F9FF',
   },
   sportChip: {
     alignSelf: 'flex-start',
     backgroundColor: '#3B82F6',
-    marginBottom: 12,
+    marginBottom: 8,
   },
   sportChipText: {
     color: 'white',
     fontWeight: '700',
-    fontSize: 12,
+    fontSize: 11,
   },
   eventTitle: {
     fontWeight: 'bold',
     color: '#111827',
-    marginBottom: 8,
+    marginBottom: 6,
+    fontSize: 20,
   },
   description: {
     color: '#4B5563',
-    lineHeight: 22,
+    lineHeight: 20,
+    fontSize: 14,
   },
   divider: {
     backgroundColor: '#E5E7EB',
   },
   cardSection: {
-    padding: 20,
+    padding: 14,
   },
   lastSection: {
-    paddingBottom: 16,
+    paddingBottom: 12,
   },
   sectionTitleRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
-    marginBottom: 12,
+    gap: 6,
+    marginBottom: 8,
   },
   sectionTitle: {
     fontWeight: '700',
     color: '#111827',
+    fontSize: 14,
   },
   detailsRow: {
-    gap: 12,
+    gap: 8,
   },
   detailItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    paddingVertical: 4,
+    gap: 8,
+    paddingVertical: 2,
   },
   detailText: {
     color: '#374151',
     flex: 1,
+    fontSize: 14,
   },
   locationPressable: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
+    gap: 8,
+    paddingVertical: 6,
+    paddingHorizontal: 10,
     backgroundColor: '#F9FAFB',
-    borderRadius: 8,
+    borderRadius: 6,
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
@@ -535,24 +548,26 @@ const styles = StyleSheet.create({
     flex: 1,
     color: '#374151',
     fontWeight: '500',
+    fontSize: 14,
   },
   paymentDetails: {
-    marginTop: 12,
-    padding: 12,
+    marginTop: 10,
+    padding: 10,
     backgroundColor: '#FEF3C7',
-    borderRadius: 8,
+    borderRadius: 6,
     borderLeftWidth: 3,
     borderLeftColor: '#F59E0B',
   },
   paymentLabel: {
     color: '#92400E',
     fontWeight: '600',
-    marginBottom: 8,
+    marginBottom: 6,
+    fontSize: 12,
   },
   paymentMethods: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 6,
+    gap: 4,
   },
   paymentChip: {
     backgroundColor: 'white',
@@ -565,7 +580,7 @@ const styles = StyleSheet.create({
   cohostsList: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 8,
+    gap: 6,
   },
   hostChip: {
     backgroundColor: '#FEF3C7',
@@ -576,15 +591,15 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F3FF',
   },
   linksList: {
-    gap: 8,
+    gap: 6,
   },
   linkItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    padding: 12,
+    gap: 10,
+    padding: 10,
     backgroundColor: '#F9FAFB',
-    borderRadius: 8,
+    borderRadius: 6,
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },
@@ -592,14 +607,15 @@ const styles = StyleSheet.create({
     flex: 1,
     color: '#3B82F6',
     fontWeight: '500',
+    fontSize: 14,
   },
   guestInviteRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
   editButton: {
-    marginBottom: 16,
+    marginBottom: 12,
     borderRadius: 8,
     borderWidth: 2,
     borderColor: '#3B82F6',
@@ -620,6 +636,6 @@ const styles = StyleSheet.create({
   },
   publishButtonContent: {
     flexDirection: 'row-reverse',
-    paddingVertical: 6,
+    paddingVertical: 4,
   },
 });
