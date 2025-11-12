@@ -7,7 +7,8 @@ npx lint-staged
 # Run type checking on all packages
 npm run type-check
 
-# Run tests - DISABLED due to integration test mocking issues
-# The CreateEventWizard.integration.test has complex mocking issues with react-native-paper Appbar
-# The actual components work correctly in the app
-# npm run test:ci
+# Run tests in CI mode
+npm run test:ci
+
+# E2E tests for iOS - Disabled for now as they should run separately
+# cd mobile && npm run test:e2e:ios:debug

@@ -107,10 +107,25 @@ jest.mock('react-native-paper', () => {
       testID: 'appbar-action',
     });
 
+  // Create mock TextInput with Icon property
+  const MockTextInputIcon = ({ icon, ...props }) =>
+    React.createElement(RN.View, {
+      ...props,
+      testID: `text-input-icon-${icon}`,
+    });
+
+  // Get the real TextInput and add our mock Icon
+  const RealTextInput = RNPaper.TextInput || RN.TextInput;
+  const MockTextInput = Object.assign(
+    props => React.createElement(RealTextInput, props),
+    { Icon: MockTextInputIcon },
+  );
+
   return {
     ...RNPaper,
     Portal: ({ children }) => children,
     Provider: ({ children }) => children,
+    TextInput: MockTextInput,
     Appbar: {
       ...(RNPaper.Appbar || {}),
       Header: MockAppbarHeader,
@@ -131,6 +146,14 @@ global.console = {
   warn: jest.fn(),
   error: jest.fn(),
 };
+
+// Mock react-native-vector-icons
+jest.mock('react-native-vector-icons/MaterialCommunityIcons', () => {
+  const React = require('react');
+  const MockIcon = props => React.createElement('Icon', props);
+  MockIcon.displayName = 'MockIcon';
+  return MockIcon;
+});
 
 // Setup global test utilities
 global.__DEV__ = true;
