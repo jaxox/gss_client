@@ -84,6 +84,7 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
       style={styles.container}
     >
       <ScrollView
+        testID="step1-scroll-view"
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
@@ -110,6 +111,7 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
 
         {/* Title Input */}
         <TextInput
+          testID="event-title-input"
           label="Event Title *"
           value={title}
           onChangeText={setTitle}
@@ -125,6 +127,7 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
 
         {/* Description Input */}
         <TextInput
+          testID="event-description-input"
           label="Description *"
           value={description}
           onChangeText={setDescription}
@@ -151,6 +154,7 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
             return (
               <Pressable
                 key={sport.id}
+                testID={`sport-card-${sport.label.toLowerCase()}`}
                 onPress={() => setSportId(sport.id)}
                 style={styles.sportCardWrapper}
               >
@@ -195,10 +199,16 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
 
         {/* Action Buttons */}
         <View style={styles.buttonContainer}>
-          <Button mode="text" onPress={onCancel} style={styles.cancelButton}>
+          <Button
+            testID="cancel-button"
+            mode="text"
+            onPress={onCancel}
+            style={styles.cancelButton}
+          >
             Cancel
           </Button>
           <Button
+            testID="next-button"
             mode="contained"
             onPress={handleNext}
             disabled={!isValid}

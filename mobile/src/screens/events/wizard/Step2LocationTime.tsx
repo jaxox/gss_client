@@ -204,6 +204,7 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
       style={styles.container}
     >
       <ScrollView
+        testID="step2-scroll-view"
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
@@ -231,6 +232,7 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
         {/* Location Input with Autocomplete */}
         <View>
           <TextInput
+            testID="location-input"
             label="Location *"
             value={locationQuery || location}
             onChangeText={query => {
@@ -296,6 +298,7 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
 
         {/* Date Picker */}
         <TextInput
+          testID="date-input"
           label="Date *"
           value={formatDate(date)}
           mode="outlined"
@@ -336,6 +339,7 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
 
         {/* Time Picker */}
         <TextInput
+          testID="time-input"
           label="Start Time *"
           value={formatTime(time)}
           mode="outlined"
@@ -379,6 +383,7 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
 
         {/* End Time Picker */}
         <TextInput
+          testID="end-time-input"
           label="End Time *"
           value={formatTime(endTime)}
           mode="outlined"
@@ -419,10 +424,16 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
 
         {/* Action Buttons */}
         <View style={styles.buttonContainer}>
-          <Button mode="outlined" onPress={onBack} style={styles.backButton}>
+          <Button
+            testID="step2-back-button"
+            mode="outlined"
+            onPress={onBack}
+            style={styles.backButton}
+          >
             Back
           </Button>
           <Button
+            testID="step2-next-button"
             mode="contained"
             onPress={handleNext}
             disabled={!isValid}

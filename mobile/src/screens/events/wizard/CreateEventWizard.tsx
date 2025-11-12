@@ -60,7 +60,11 @@ const initialData: WizardData = {
   guestInvite: true,
 };
 
-export default function CreateEventWizard() {
+interface Props {
+  onCancel?: () => void;
+}
+
+export default function CreateEventWizard({ onCancel }: Props = {}) {
   const [currentStep, setCurrentStep] = useState(1);
   const [wizardData, setWizardData] = useState<WizardData>(initialData);
 
@@ -74,8 +78,12 @@ export default function CreateEventWizard() {
   };
 
   const handleCancel = () => {
-    // TODO: Show confirmation dialog, then navigate back
-    console.log('Cancel wizard');
+    if (onCancel) {
+      onCancel();
+    } else {
+      // Fallback: just log if no onCancel prop provided
+      console.log('Cancel wizard - no onCancel handler provided');
+    }
   };
 
   const handlePublish = async () => {

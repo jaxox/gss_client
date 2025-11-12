@@ -116,6 +116,7 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
       style={styles.container}
     >
       <ScrollView
+        testID="step3-scroll-view"
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
@@ -142,6 +143,7 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
 
         {/* Capacity Input */}
         <TextInput
+          testID="capacity-input"
           label="Capacity (Optional)"
           value={capacity}
           onChangeText={setCapacity}
@@ -176,6 +178,7 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
 
         {/* Cost Input */}
         <TextInput
+          testID="cost-input"
           label="Cost Per Person (Optional)"
           value={cost}
           onChangeText={setCost}
@@ -439,10 +442,16 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
 
         {/* Action Buttons */}
         <View style={styles.buttonContainer}>
-          <Button mode="outlined" onPress={onBack} style={styles.backButton}>
+          <Button
+            testID="step3-back-button"
+            mode="outlined"
+            onPress={onBack}
+            style={styles.backButton}
+          >
             Back
           </Button>
           <Button
+            testID="step3-next-button"
             mode="contained"
             onPress={handleNext}
             disabled={!isValid}

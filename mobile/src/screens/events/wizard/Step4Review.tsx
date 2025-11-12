@@ -131,7 +131,10 @@ export default function Step4Review({ data, onBack, onPublish }: Props) {
 
   return (
     <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        testID="step4-scroll-view"
+        contentContainerStyle={styles.scrollContent}
+      >
         {/* Progress Indicator */}
         <View style={styles.progressSection}>
           <View style={styles.progressDots}>
@@ -379,6 +382,7 @@ export default function Step4Review({ data, onBack, onPublish }: Props) {
         {/* Action Buttons */}
         <View style={styles.buttonContainer}>
           <Button
+            testID="step4-back-button"
             mode="outlined"
             onPress={onBack}
             style={styles.backButton}
@@ -387,6 +391,7 @@ export default function Step4Review({ data, onBack, onPublish }: Props) {
             Back
           </Button>
           <Button
+            testID="publish-button"
             mode="contained"
             onPress={handlePublish}
             disabled={publishing}

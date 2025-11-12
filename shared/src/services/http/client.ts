@@ -113,11 +113,15 @@ const isProduction = (): boolean => {
 };
 
 /**
- * Enforce HTTPS in production
+ * Enforce HTTPS in production (except for localhost/127.0.0.1 for E2E testing)
  */
 const enforceHTTPS = (url: string): void => {
   if (isProduction() && url.startsWith('http://')) {
-    throw new Error('HTTPS is required in production. HTTP connections are not allowed.');
+    // Allow localhost for E2E testing and local development
+    const isLocalhost = url.includes('localhost') || url.includes('127.0.0.1');
+    if (!isLocalhost) {
+      throw new Error('HTTPS is required in production. HTTP connections are not allowed.');
+    }
   }
 };
 

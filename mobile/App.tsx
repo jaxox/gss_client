@@ -173,6 +173,7 @@ function App() {
             mode="contained"
             onPress={() => setCurrentScreen('createEvent')}
             style={styles.menuButton}
+            testID="create-event-menu-button"
           >
             Create Event Screen
           </Button>
@@ -225,7 +226,7 @@ function App() {
         )}
         {currentScreen === 'createEvent' && (
           <ErrorBoundary>
-            <CreateEventWizard />
+            <CreateEventWizard onCancel={() => setCurrentScreen('menu')} />
           </ErrorBoundary>
         )}
         {currentScreen === 'myEvents' && (
