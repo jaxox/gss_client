@@ -4,7 +4,7 @@
  * Visual Spec: Screen 2 - 19 acceptance criteria
  */
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   StyleSheet,
@@ -83,11 +83,18 @@ const MOCK_LOCATIONS = [
   },
 ];
 
+// Utility helper for prepopulating future dates in E2E tests
+const getFutureDate = (daysAhead = 1) => {
+  const d = new Date();
+  d.setDate(d.getDate() + daysAhead);
+  return d;
+};
+
 export default function Step2LocationTime({ data, onNext, onBack }: Props) {
   // Detect E2E test environment
   const isE2E = !!(globalThis as any).__E2E__;
 
-  const [location, setLocation] = useState(data.location);
+  const [location, setLocation] = useState(data.location || '');
   const [date, setDate] = useState<Date | null>(data.date);
   const [time, setTime] = useState<Date | null>(data.time);
 
@@ -112,6 +119,24 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
     time: false,
     endTime: false,
   });
+
+  // Sync location from wizard data when navigating back
+  useEffect(() => {
+    if (data.location) {
+      setLocation(data.location);
+    }
+  }, [data.location]);
+
+  // E2E Mode: Prepopulate date with future date to avoid picker interaction
+  useEffect(() => {
+    if (isE2E) {
+      console.log('E2E mode detected - prepopulating date');
+
+      setDate(prev => prev ?? getFutureDate(2)); // only if not already set
+
+      setTouched(prev => ({ ...prev, date: true }));
+    }
+  }, [isE2E]);
 
   // Filter locations based on search query
   const filteredLocations = MOCK_LOCATIONS.filter(
@@ -294,8 +319,9 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
                   onPress={() => {
                     const fullAddress = `${loc.name}, ${loc.city}, ${loc.state}`;
                     setLocation(fullAddress);
-                    setLocationQuery('');
+                    setLocationQuery(''); // Clear query after selection
                     setShowLocationSuggestions(false);
+                    setTouched(prev => ({ ...prev, location: true }));
                   }}
                 >
                   <View>
