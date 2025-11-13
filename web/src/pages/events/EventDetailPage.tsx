@@ -43,6 +43,7 @@ import {
 } from '../../store/events/eventsSlice';
 import type { RootState, AppDispatch } from '../../store/store';
 import RSVPDialog from '../../components/events/RSVPDialog';
+import RSVPPaymentDialog from '../../components/events/RSVPPaymentDialog';
 
 const sportIconMap: Record<string, string> = {
   Basketball: '🏀',
@@ -68,6 +69,7 @@ export default function EventDetailPage() {
   const user = useSelector((state: RootState) => state.auth.user);
 
   const [showRSVPDialog, setShowRSVPDialog] = useState(false);
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false);
   const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false);
 
   useEffect(() => {
@@ -124,6 +126,7 @@ export default function EventDetailPage() {
     if (success.rsvp) {
       setShowSuccessSnackbar(true);
       setShowRSVPDialog(false);
+      setShowPaymentDialog(false);
       // Refresh event details and RSVPs
       if (eventId && user) {
         dispatch(getEvent(eventId));
@@ -139,8 +142,8 @@ export default function EventDetailPage() {
       // Free event - show confirmation dialog
       setShowRSVPDialog(true);
     } else {
-      // Deposit event - TODO: Show payment dialog
-      alert('Deposit payment flow coming soon! For now, this would open Stripe payment dialog.');
+      // Deposit event - show payment dialog
+      setShowPaymentDialog(true);
     }
   };
 
@@ -151,6 +154,17 @@ export default function EventDetailPage() {
       createRSVP({
         eventId,
         paymentMethodId: undefined, // Free event
+      })
+    );
+  };
+
+  const handleConfirmPayment = async (paymentMethodId: string) => {
+    if (!eventId) return;
+
+    await dispatch(
+      createRSVP({
+        eventId,
+        paymentMethodId,
       })
     );
   };
@@ -352,6 +366,15 @@ export default function EventDetailPage() {
         loading={loading.rsvp}
         onConfirm={handleConfirmRSVP}
         onClose={() => setShowRSVPDialog(false)}
+      />
+
+      {/* Payment Dialog for deposit events */}
+      <RSVPPaymentDialog
+        open={showPaymentDialog}
+        event={currentEvent}
+        loading={loading.rsvp}
+        onConfirm={handleConfirmPayment}
+        onClose={() => setShowPaymentDialog(false)}
       />
 
       {/* Success Snackbar */}
