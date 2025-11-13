@@ -1,21 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import {
-  View,
-  StyleSheet,
-  FlatList,
-  Pressable,
-  Modal,
-  SafeAreaView,
-} from 'react-native';
-import {
-  Appbar,
-  Text,
-  TextInput,
-  Button,
-  Avatar,
-  Divider,
-} from 'react-native-paper';
+import { View, StyleSheet, FlatList, Modal, SafeAreaView } from 'react-native';
+import { Appbar, Text, TextInput, Divider } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { CoHostCard, CoHostUser } from '../../../components/cohosts';
 
 // Mock user data for development
 const MOCK_USERS = [
@@ -91,13 +78,11 @@ const MOCK_USERS = [
   },
 ];
 
-type User = (typeof MOCK_USERS)[number];
-
 interface AddCohostsModalProps {
   visible: boolean;
   onDismiss: () => void;
-  onSave: (cohosts: User[]) => void;
-  initialSelected?: User[];
+  onSave: (cohosts: CoHostUser[]) => void;
+  initialSelected?: CoHostUser[];
 }
 
 export default function AddCohostsModal({
@@ -108,7 +93,7 @@ export default function AddCohostsModal({
 }: AddCohostsModalProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCohosts, setSelectedCohosts] =
-    useState<User[]>(initialSelected);
+    useState<CoHostUser[]>(initialSelected);
   const [loading, setLoading] = useState(false);
   const [addedUsers, setAddedUsers] = useState<Set<string>>(new Set());
 
@@ -155,22 +140,7 @@ export default function AddCohostsModal({
     });
   }, [searchQuery, selectedCohosts]);
 
-  const getReliabilityColor = (rate: number) => {
-    if (rate >= 85) return '#10B981'; // Green - Reliable
-    if (rate >= 70) return '#F59E0B'; // Yellow - Decent
-    return '#EF4444'; // Red - Unreliable
-  };
-
-  const getInitials = (name: string) => {
-    return name
-      .split(' ')
-      .map(n => n[0])
-      .join('')
-      .toUpperCase()
-      .slice(0, 2);
-  };
-
-  const handleAddCohost = (user: User) => {
+  const handleAddCohost = (user: CoHostUser) => {
     if (selectedCohosts.length >= 5) return;
 
     setSelectedCohosts(prev => [...prev, user]);
@@ -201,74 +171,27 @@ export default function AddCohostsModal({
 
   const maxReached = selectedCohosts.length >= 5;
 
-  const renderUserItem = ({ item }: { item: User }) => {
+  const renderUserItem = ({ item }: { item: CoHostUser }) => {
     const isAdded = addedUsers.has(item.id);
 
     return (
-      <Pressable
-        style={styles.userItem}
+      <CoHostCard
+        user={item}
         onPress={() => handleAddCohost(item)}
         disabled={maxReached || isAdded}
-        accessibilityRole="button"
-        accessibilityLabel={`${item.name}, Level ${item.level}, ${item.xp} XP, ${item.reliability} percent reliability, add as cohost button`}
-      >
-        <Avatar.Text
-          size={48}
-          label={getInitials(item.name)}
-          style={styles.avatar}
-          labelStyle={styles.avatarLabel}
-        />
-
-        <View style={styles.userInfo}>
-          {/* Name */}
-          <Text variant="bodyLarge" style={styles.userName}>
-            {item.name}
-          </Text>
-
-          {/* Gamification: Level & XP */}
-          <View style={styles.statsRow}>
-            <View style={styles.levelBadge}>
-              <Text variant="labelSmall" style={styles.levelText}>
-                Level {item.level}
-              </Text>
-            </View>
-            <Text variant="bodySmall" style={styles.xpText}>
-              •
-            </Text>
-            <Text variant="bodySmall" style={styles.xpText}>
-              {item.xp.toLocaleString()} XP
-            </Text>
-          </View>
-
-          {/* Reliability */}
-          <Text
-            variant="bodySmall"
-            style={[
-              styles.reliabilityText,
-              { color: getReliabilityColor(item.reliability) },
-            ]}
-          >
-            {item.reliability}% Reliability
-          </Text>
-        </View>
-
-        <Button
-          mode="contained"
-          compact
-          onPress={() => handleAddCohost(item)}
-          disabled={maxReached || isAdded}
-          style={[styles.addButton, isAdded && styles.addedButton]}
-          labelStyle={styles.addButtonLabel}
-        >
-          {isAdded ? (
-            <>
-              <Icon name="check" size={14} color="#fff" /> Added
-            </>
+        actionButton={{
+          label: isAdded ? (
+            <Icon name="account-minus" size={16} color="#fff" />
           ) : (
-            'Add'
-          )}
-        </Button>
-      </Pressable>
+            <Icon name="account-plus" size={16} color="#fff" />
+          ),
+          mode: 'contained',
+          onPress: () => handleAddCohost(item),
+          disabled: maxReached || isAdded,
+          style: [styles.addButton, isAdded && styles.addedButton],
+        }}
+        accessibilityLabel={`${item.name}, Level ${item.level}, ${item.xp} XP, ${item.reliability} percent reliability, add as cohost button`}
+      />
     );
   };
 
@@ -324,12 +247,12 @@ export default function AddCohostsModal({
           <View style={styles.searchContainer}>
             <TextInput
               mode="outlined"
-              placeholder="Search by name or sport"
+              placeholder="Search for co-hosts"
               value={searchQuery}
               onChangeText={setSearchQuery}
               left={<TextInput.Icon icon="magnify" />}
               style={styles.searchInput}
-              accessibilityLabel="Search for cohosts by name or sport"
+              accessibilityLabel="Search for cohosts"
             />
           </View>
 
@@ -363,64 +286,13 @@ export default function AddCohostsModal({
               </Text>
               <View style={styles.selectedContainer}>
                 {selectedCohosts.map(cohost => (
-                  <Pressable
+                  <CoHostCard
                     key={cohost.id}
-                    style={styles.selectedUserItem}
-                    onPress={() => handleRemoveCohost(cohost.id)}
-                    accessibilityRole="button"
+                    user={cohost}
+                    backgroundColor="#F9FAFB"
+                    onRemove={() => handleRemoveCohost(cohost.id)}
                     accessibilityLabel={`${cohost.name}, Level ${cohost.level}, ${cohost.xp} XP, ${cohost.reliability} percent reliability, remove button`}
-                  >
-                    <Avatar.Text
-                      size={48}
-                      label={getInitials(cohost.name)}
-                      style={styles.avatar}
-                      labelStyle={styles.avatarLabel}
-                    />
-
-                    <View style={styles.userInfo}>
-                      {/* Name */}
-                      <Text variant="bodyLarge" style={styles.userName}>
-                        {cohost.name}
-                      </Text>
-
-                      {/* Gamification: Level & XP */}
-                      <View style={styles.statsRow}>
-                        <View style={styles.levelBadge}>
-                          <Text variant="labelSmall" style={styles.levelText}>
-                            Level {cohost.level}
-                          </Text>
-                        </View>
-                        <Text variant="bodySmall" style={styles.xpText}>
-                          •
-                        </Text>
-                        <Text variant="bodySmall" style={styles.xpText}>
-                          {cohost.xp.toLocaleString()} XP
-                        </Text>
-                      </View>
-
-                      {/* Reliability */}
-                      <Text
-                        variant="bodySmall"
-                        style={[
-                          styles.reliabilityText,
-                          { color: getReliabilityColor(cohost.reliability) },
-                        ]}
-                      >
-                        {cohost.reliability}% Reliability
-                      </Text>
-                    </View>
-
-                    <Button
-                      mode="outlined"
-                      compact
-                      onPress={() => handleRemoveCohost(cohost.id)}
-                      style={styles.removeButton}
-                      labelStyle={styles.removeButtonLabel}
-                      textColor="#EF4444"
-                    >
-                      Remove
-                    </Button>
-                  </Pressable>
+                  />
                 ))}
               </View>
             </>
@@ -464,68 +336,13 @@ const styles = StyleSheet.create({
   resultsContainer: {
     flex: 1,
   },
-  userItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    minHeight: 72,
-    backgroundColor: 'white',
-  },
-  avatar: {
-    backgroundColor: '#3B82F6',
-  },
-  avatarLabel: {
-    color: 'white',
-    fontWeight: 'bold',
-  },
-  userInfo: {
-    flex: 1,
-    marginLeft: 12,
-    justifyContent: 'center',
-  },
-  userName: {
-    fontWeight: '600',
-    fontSize: 16,
-    marginBottom: 4,
-    color: '#111827',
-  },
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-    gap: 6,
-  },
-  levelBadge: {
-    backgroundColor: '#3B82F6',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  levelText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: 11,
-  },
-  xpText: {
-    color: '#6B7280',
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  reliabilityText: {
-    fontSize: 13,
-    fontWeight: '600',
-  },
   addButton: {
-    minWidth: 60,
+    minWidth: 48,
+    width: 48,
     height: 36,
   },
   addedButton: {
     backgroundColor: '#10B981',
-  },
-  addButtonLabel: {
-    fontSize: 12,
-    lineHeight: 14,
   },
   emptyState: {
     alignItems: 'center',
@@ -572,25 +389,6 @@ const styles = StyleSheet.create({
   },
   selectedContainer: {
     paddingBottom: 8,
-  },
-  selectedUserItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    minHeight: 72,
-    backgroundColor: '#F9FAFB',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  removeButton: {
-    minWidth: 80,
-    height: 36,
-    borderColor: '#EF4444',
-  },
-  removeButtonLabel: {
-    fontSize: 12,
-    lineHeight: 14,
   },
   footer: {
     padding: 16,

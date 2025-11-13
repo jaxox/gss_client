@@ -8,29 +8,29 @@ These scripts help you run iOS E2E tests for the GSS Mobile app with proper setu
 
 ```bash
 # step2 will auto-launch step1 in new terminal if needed!
-./scripts/simulator/iOS/step2-RunE2E.sh
+./scripts/simulator/iOS/run-e2e.sh
 ```
 
 **Manual Two-Step:**
 
 ```bash
 # Step 1: Setup prerequisites (Metro bundler + build app)
-./scripts/simulator/iOS/step1-E2E-Preq.sh
+./scripts/simulator/iOS/run-metro-bundler.sh
 
 # Step 2: Run E2E tests
-./scripts/simulator/iOS/step2-RunE2E.sh
+./scripts/simulator/iOS/run-e2e.sh
 ```
 
 **CI/CD Mode:**
 
 ```bash
 # Non-interactive auto-setup
-./scripts/simulator/iOS/step2-RunE2E.sh --auto-setup
+./scripts/simulator/iOS/run-e2e.sh --auto-setup
 ```
 
 ## Scripts Overview
 
-### 1. step1-E2E-Preq.sh - Prerequisites Setup
+### 1. run-metro-bundler.sh - Prerequisites Setup
 
 Checks and starts Metro bundler, builds the iOS app if needed, and verifies the simulator.
 
@@ -40,7 +40,7 @@ Checks and starts Metro bundler, builds the iOS app if needed, and verifies the 
 - Checks build freshness
 - Color-coded output
 
-### 2. step2-RunE2E.sh - Run E2E Tests
+### 2. run-e2e.sh - Run E2E Tests
 
 Runs all E2E tests or specific tests with proper validation.
 **Auto-launches step1 in new terminal if Metro isn't running!**
@@ -49,16 +49,16 @@ Runs all E2E tests or specific tests with proper validation.
 
 ```bash
 # Run all tests (will prompt to launch step1 if needed)
-./scripts/simulator/iOS/step2-RunE2E.sh
+./scripts/simulator/iOS/run-e2e.sh
 
 # Run all tests with auto-setup (no prompt)
-./scripts/simulator/iOS/step2-RunE2E.sh --auto-setup
+./scripts/simulator/iOS/run-e2e.sh --auto-setup
 
 # Run specific test
-./scripts/simulator/iOS/step2-RunE2E.sh "should reach Step 3"
+./scripts/simulator/iOS/run-e2e.sh "should reach Step 3"
 
 # Auto-setup + specific test
-./scripts/simulator/iOS/step2-RunE2E.sh --auto-setup "should reach Step 3"
+./scripts/simulator/iOS/run-e2e.sh --auto-setup "should reach Step 3"
 ```
 
 **New Feature:** If Metro isn't running, step2 will:

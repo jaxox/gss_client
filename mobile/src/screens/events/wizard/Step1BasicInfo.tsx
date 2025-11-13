@@ -50,22 +50,22 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
   const titleError =
     touched.title && title.trim().length < 3
       ? 'Title must be at least 3 characters'
-      : title.length > 75
-        ? 'Title cannot exceed 75 characters'
+      : title.length > 50
+        ? 'Title cannot exceed 50 characters'
         : null;
 
   const descriptionError =
     touched.description && description.trim().length < 10
       ? 'Description must be at least 10 characters'
-      : description.length > 500
-        ? 'Description cannot exceed 500 characters'
+      : description.length > 1000
+        ? 'Description cannot exceed 1000 characters'
         : null;
 
   const isValid =
     title.trim().length >= 3 &&
-    title.length <= 75 &&
+    title.length <= 50 &&
     description.trim().length >= 10 &&
-    description.length <= 500;
+    description.length <= 1000;
 
   const handleNext = () => {
     if (!isValid) {
@@ -104,7 +104,7 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
         </View>
 
         {/* Section Header */}
-        <Text variant="titleMedium" style={styles.sectionHeader}>
+        <Text variant="labelLarge" style={styles.sectionHeader}>
           Basic Information
         </Text>
 
@@ -117,12 +117,12 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
           onBlur={() => setTouched(prev => ({ ...prev, title: true }))}
           mode="outlined"
           error={!!titleError}
-          maxLength={75}
+          maxLength={50}
           dense
           style={styles.input}
         />
         <HelperText type={titleError ? 'error' : 'info'} visible>
-          {titleError || `${title.length}/75 characters`}
+          {titleError || `${title.length}/50 characters`}
         </HelperText>
 
         {/* Description Input */}
@@ -134,22 +134,27 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
           onBlur={() => setTouched(prev => ({ ...prev, description: true }))}
           mode="outlined"
           multiline
-          numberOfLines={3}
+          numberOfLines={4}
           error={!!descriptionError}
-          maxLength={500}
+          maxLength={1000}
           dense
-          style={styles.input}
+          style={[styles.input, styles.descriptionInput]}
         />
         <HelperText type={descriptionError ? 'error' : 'info'} visible>
-          {descriptionError || `${description.length}/500 characters`}
+          {descriptionError || `${description.length}/1000 characters`}
         </HelperText>
 
         {/* Sport Selector */}
-        <Text variant="titleMedium" style={styles.sectionTitle}>
-          Select Sport (Optional)
+        <Text variant="labelLarge" style={styles.sectionTitle}>
+          Select Sport
         </Text>
 
-        <View style={styles.sportGrid}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={styles.sportScrollView}
+          contentContainerStyle={styles.sportScrollContent}
+        >
           {SPORTS.map(sport => {
             const isSelected = sportId === sport.id;
             return (
@@ -157,7 +162,6 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
                 key={sport.id}
                 testID={`sport-card-${sport.label.toLowerCase()}`}
                 onPress={() => setSportId(sport.id)}
-                style={styles.sportCardWrapper}
               >
                 <Card
                   mode="elevated"
@@ -190,7 +194,7 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
               </Pressable>
             );
           })}
-        </View>
+        </ScrollView>
 
         {/* Action Buttons */}
         <View style={styles.buttonContainer}>
@@ -265,26 +269,34 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     marginBottom: 12,
-    fontWeight: 'bold',
+    fontWeight: '600',
+    fontSize: 15,
+    color: '#111827',
   },
   input: {
     marginBottom: 2,
   },
+  descriptionInput: {
+    minHeight: 100,
+    textAlignVertical: 'top',
+  },
   sectionTitle: {
     marginTop: 4,
     marginBottom: 8,
-    fontWeight: '600',
+    fontWeight: '500',
+    fontSize: 14,
+    color: '#374151',
   },
-  sportGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
+  sportScrollView: {
     marginBottom: 12,
   },
-  sportCardWrapper: {
-    width: '23%',
+  sportScrollContent: {
+    gap: 8,
+    paddingHorizontal: 2,
+    paddingVertical: 4,
   },
   sportCard: {
+    width: 90,
     borderWidth: 1,
     borderColor: '#E5E7EB',
   },

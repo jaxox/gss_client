@@ -4,7 +4,7 @@
 
 ```
 ┌─────────────────────────────────────────────┐
-│  ./step2-RunE2E.sh                          │
+│  ./run-e2e.sh                          │
 │  (One command to rule them all!)            │
 └──────────────────┬──────────────────────────┘
                    │
@@ -42,11 +42,11 @@
 ### 1. Simplest Way (Interactive)
 
 ```bash
-./scripts/simulator/iOS/step2-RunE2E.sh
+./scripts/simulator/iOS/run-e2e.sh
 ```
 
 - Checks if Metro is running
-- If not, asks: "Run step1-E2E-Preq.sh in new terminal? (Y/n)"
+- If not, asks: "Run run-metro-bundler.sh in new terminal? (Y/n)"
 - Opens new terminal with step1
 - Waits for Metro to be ready
 - Runs tests
@@ -54,7 +54,7 @@
 ### 2. Fully Automated (CI/CD)
 
 ```bash
-./scripts/simulator/iOS/step2-RunE2E.sh --auto-setup
+./scripts/simulator/iOS/run-e2e.sh --auto-setup
 ```
 
 - No prompts, fully automated
@@ -64,7 +64,7 @@
 ### 3. Specific Test
 
 ```bash
-./scripts/simulator/iOS/step2-RunE2E.sh "should reach Step 3"
+./scripts/simulator/iOS/run-e2e.sh "should reach Step 3"
 ```
 
 - Runs only matching tests
@@ -73,7 +73,7 @@
 ### 4. Auto + Specific Test
 
 ```bash
-./scripts/simulator/iOS/step2-RunE2E.sh --auto-setup "should reach Step 3"
+./scripts/simulator/iOS/run-e2e.sh --auto-setup "should reach Step 3"
 ```
 
 - Combines both features
@@ -87,7 +87,7 @@ Uses AppleScript to open new Terminal.app window:
 
 ```applescript
 tell application "Terminal"
-    do script "cd project && ./step1-E2E-Preq.sh"
+    do script "cd project && ./run-metro-bundler.sh"
 end tell
 ```
 

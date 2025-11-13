@@ -21,12 +21,12 @@ import {
   RadioButton,
   Switch,
   Divider,
-  Avatar,
 } from 'react-native-paper';
 import type { WizardData } from './CreateEventWizard';
 import AddCohostsModal from './AddCohostsModal';
 import AddLinkModal from './AddLinkModal';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { CoHostCard, CoHostUser } from '../../../components/cohosts';
 
 interface Props {
   data: WizardData;
@@ -35,23 +35,12 @@ interface Props {
 }
 
 // Type for cohost data
-type CohostUser = {
-  id: string;
-  name: string;
-  level: number;
-  xp: number;
-  reliability: number;
-  eventsHosted: number;
-  sports: string[];
-  type: 'friend';
-};
-
 export default function Step3Details({ data, onNext, onBack }: Props) {
   const [capacity, setCapacity] = useState(data.capacity?.toString() || '');
   const [cost, setCost] = useState(data.cost?.toString() || '');
   const [paymentDueBy, setPaymentDueBy] = useState(data.paymentDueBy);
   const [paymentMethods, setPaymentMethods] = useState(data.paymentMethods);
-  const [cohosts, setCohosts] = useState<CohostUser[]>([]);
+  const [cohosts, setCohosts] = useState<CoHostUser[]>([]);
   const [links, setLinks] = useState<
     Array<{ icon: string; title: string; url: string }>
   >(data.links);
@@ -61,29 +50,31 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
   const [showCohostsModal, setShowCohostsModal] = useState(false);
   const [showLinksModal, setShowLinksModal] = useState(false);
 
-  // Helper function for reliability color
-  const getReliabilityColor = (reliability: number) => {
-    if (reliability >= 85) return '#10B981';
-    if (reliability >= 70) return '#F59E0B';
-    return '#EF4444';
-  };
+  // Sync state with data when navigating back to this step
+  React.useEffect(() => {
+    if (data.capacity !== undefined && data.capacity !== null) {
+      setCapacity(data.capacity.toString());
+    }
+    if (data.cost !== undefined && data.cost !== null) {
+      setCost(data.cost.toString());
+    }
+  }, [data.capacity, data.cost]);
 
   // Validation
   const capacityError =
     capacity.trim() !== '' &&
-    (isNaN(Number(capacity)) ||
-      Number(capacity) < 2 ||
-      Number(capacity) > 10000)
-      ? 'Capacity must be between 2 and 10,000 (excluding host/cohosts)'
+    (isNaN(Number(capacity)) || Number(capacity) < 2 || Number(capacity) > 1000)
+      ? 'Must be between 2 and 1,000 (excluding co/hosts)'
       : null;
 
   const costError =
     cost.trim() !== '' &&
-    (isNaN(Number(cost)) || Number(cost) < 0 || Number(cost) > 10000)
-      ? 'Cost must be between $0 and $10,000'
+    (isNaN(Number(cost)) || Number(cost) < 0 || Number(cost) > 1000)
+      ? 'Must be between $0 and $1,000'
       : null;
 
-  const showPaymentSection = cost.trim() !== '';
+  const showPaymentSection =
+    cost.trim() !== '' && !costError && Number(cost) > 0;
 
   const isValid = !capacityError && !costError;
 
@@ -139,231 +130,199 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
         </View>
 
         {/* Section Header */}
-        <Text variant="titleMedium" style={styles.sectionHeader}>
+        <Text variant="labelLarge" style={styles.sectionHeader}>
           Event Details
         </Text>
 
-        {/* Capacity Input */}
-        <TextInput
-          testID="capacity-input"
-          label="Capacity (Optional)"
-          value={capacity}
-          onChangeText={setCapacity}
-          onBlur={() => setTouched(prev => ({ ...prev, capacity: true }))}
-          mode="outlined"
-          keyboardType="number-pad"
-          error={touched.capacity && !!capacityError}
-          placeholder="Leave blank for unlimited"
-          dense
-          style={styles.input}
-        />
-        <HelperText type={capacityError ? 'error' : 'info'} visible>
-          {capacityError || 'Leave blank for unlimited.'}
-        </HelperText>
-
-        {/* Waitlist Toggle - Only show if capacity is set */}
-        {capacity.trim() !== '' && !capacityError && (
-          <View style={styles.switchRow}>
-            <View style={styles.switchLabelContainer}>
-              <Text variant="bodyLarge" style={styles.switchLabel}>
-                Enable Waitlist
-              </Text>
-              <Text variant="bodySmall" style={styles.switchHelper}>
-                Allow users to join a waitlist when the event is full.
-              </Text>
-            </View>
-            <Switch
-              value={waitlistEnabled}
-              onValueChange={setWaitlistEnabled}
+        {/* Capacity Input with Waitlist Toggle */}
+        <View style={styles.capacityRow}>
+          <View style={styles.capacityInputContainer}>
+            <TextInput
+              testID="capacity-input"
+              label="Capacity"
+              value={capacity}
+              onChangeText={setCapacity}
+              onBlur={() => setTouched(prev => ({ ...prev, capacity: true }))}
+              mode="outlined"
+              keyboardType="number-pad"
+              error={touched.capacity && !!capacityError}
+              placeholder="Leave blank for unlimited"
+              dense
+              style={styles.input}
             />
           </View>
-        )}
+
+          {/* Waitlist Toggle - Only show if capacity is set */}
+          {capacity.trim() !== '' && !capacityError && (
+            <View style={styles.waitlistToggle}>
+              <Text variant="labelMedium" style={styles.waitlistLabel}>
+                Waitlist
+              </Text>
+              <Switch
+                value={waitlistEnabled}
+                onValueChange={setWaitlistEnabled}
+              />
+            </View>
+          )}
+        </View>
+
+        <HelperText type="error" visible={touched.capacity && !!capacityError}>
+          {capacityError}
+        </HelperText>
 
         {/* Cost Input */}
         <TextInput
           testID="cost-input"
-          label="Cost Per Person (Optional)"
+          label="Cost Per Person"
           value={cost}
           onChangeText={setCost}
           onBlur={() => setTouched(prev => ({ ...prev, cost: true }))}
           mode="outlined"
           keyboardType="decimal-pad"
           error={touched.cost && !!costError}
-          placeholder="0.00"
+          placeholder="Leave blank for free event"
           dense
           left={<TextInput.Affix text="$" />}
           style={styles.input}
         />
-        <HelperText type={costError ? 'error' : 'info'} visible>
-          {costError || 'Leave blank for free event'}
+        <HelperText type="error" visible={touched.cost && !!costError}>
+          {costError}
         </HelperText>
 
         {/* Payment Section - Only shows if cost is not empty */}
         {showPaymentSection && (
           <>
             <Divider style={styles.divider} />
-            <Text variant="titleMedium" style={styles.sectionTitle}>
-              Payment Details
-            </Text>
 
-            {/* Payment Due By */}
-            <Text variant="labelLarge" style={styles.label}>
-              Payment Due By *
-            </Text>
-            <RadioButton.Group
-              onValueChange={value =>
-                setPaymentDueBy(value as typeof paymentDueBy)
-              }
-              value={paymentDueBy}
-            >
-              <View style={styles.radioOption}>
-                <RadioButton value="immediate" />
-                <Text onPress={() => setPaymentDueBy('immediate')}>
-                  Immediately after RSVP
-                </Text>
+            {/* Payment Details Card */}
+            <View style={styles.paymentCard}>
+              <Text variant="labelLarge" style={styles.sectionTitle}>
+                Payment Details
+              </Text>
+
+              {/* Payment Due By */}
+              <Text variant="labelMedium" style={styles.paymentLabel}>
+                Payment Due By *
+              </Text>
+              <RadioButton.Group
+                onValueChange={value =>
+                  setPaymentDueBy(value as typeof paymentDueBy)
+                }
+                value={paymentDueBy}
+              >
+                <Pressable
+                  style={[
+                    styles.radioCard,
+                    paymentDueBy === '1h_after' && styles.radioCardSelected,
+                  ]}
+                  onPress={() => setPaymentDueBy('1h_after')}
+                >
+                  <RadioButton value="1h_after" />
+                  <Text style={styles.radioText}>1 hour after RSVP</Text>
+                </Pressable>
+                <Pressable
+                  style={[
+                    styles.radioCard,
+                    paymentDueBy === '24h_before' && styles.radioCardSelected,
+                  ]}
+                  onPress={() => setPaymentDueBy('24h_before')}
+                >
+                  <RadioButton value="24h_before" />
+                  <Text style={styles.radioText}>24 hours before event</Text>
+                </Pressable>
+                <Pressable
+                  style={[
+                    styles.radioCard,
+                    paymentDueBy === 'at_event' && styles.radioCardSelected,
+                  ]}
+                  onPress={() => setPaymentDueBy('at_event')}
+                >
+                  <RadioButton value="at_event" />
+                  <Text style={styles.radioText}>At the event</Text>
+                </Pressable>
+              </RadioButton.Group>
+
+              {/* Payment Methods */}
+              <Text variant="labelMedium" style={styles.paymentMethodsLabel}>
+                Payment Methods
+              </Text>
+
+              <View style={styles.paymentMethodsGrid}>
+                <TextInput
+                  label="Venmo"
+                  value={paymentMethods.venmo}
+                  onChangeText={value => updatePaymentMethod('venmo', value)}
+                  mode="outlined"
+                  placeholder="@username"
+                  dense
+                  style={styles.paymentInput}
+                />
+
+                <TextInput
+                  label="PayPal"
+                  value={paymentMethods.paypal}
+                  onChangeText={value => updatePaymentMethod('paypal', value)}
+                  mode="outlined"
+                  placeholder="email@example.com"
+                  keyboardType="email-address"
+                  dense
+                  style={styles.paymentInput}
+                />
+
+                <TextInput
+                  label="CashApp"
+                  value={paymentMethods.cashapp}
+                  onChangeText={value => updatePaymentMethod('cashapp', value)}
+                  mode="outlined"
+                  placeholder="$cashtag"
+                  dense
+                  style={styles.paymentInput}
+                />
+
+                <TextInput
+                  label="Zelle"
+                  value={paymentMethods.zelle}
+                  onChangeText={value => updatePaymentMethod('zelle', value)}
+                  mode="outlined"
+                  placeholder="email@example.com or phone"
+                  dense
+                  style={styles.paymentInput}
+                />
               </View>
-              <View style={styles.radioOption}>
-                <RadioButton value="24h_before" />
-                <Text onPress={() => setPaymentDueBy('24h_before')}>
-                  24 hours before event
-                </Text>
-              </View>
-              <View style={styles.radioOption}>
-                <RadioButton value="at_event" />
-                <Text onPress={() => setPaymentDueBy('at_event')}>
-                  At the event
-                </Text>
-              </View>
-            </RadioButton.Group>
-
-            {/* Payment Methods */}
-            <Text variant="labelLarge" style={[styles.label, styles.marginTop]}>
-              Payment Methods (Optional)
-            </Text>
-
-            <TextInput
-              label="Venmo"
-              value={paymentMethods.venmo}
-              onChangeText={value => updatePaymentMethod('venmo', value)}
-              mode="outlined"
-              placeholder="@username"
-              dense
-              style={styles.input}
-            />
-
-            <TextInput
-              label="PayPal"
-              value={paymentMethods.paypal}
-              onChangeText={value => updatePaymentMethod('paypal', value)}
-              mode="outlined"
-              placeholder="email@example.com"
-              keyboardType="email-address"
-              dense
-              style={styles.input}
-            />
-
-            <TextInput
-              label="CashApp"
-              value={paymentMethods.cashapp}
-              onChangeText={value => updatePaymentMethod('cashapp', value)}
-              mode="outlined"
-              placeholder="$cashtag"
-              dense
-              style={styles.input}
-            />
-
-            <TextInput
-              label="Zelle"
-              value={paymentMethods.zelle}
-              onChangeText={value => updatePaymentMethod('zelle', value)}
-              mode="outlined"
-              placeholder="email@example.com or phone"
-              dense
-              style={styles.input}
-            />
+            </View>
           </>
         )}
 
         <Divider style={styles.divider} />
 
         {/* Cohosts Section */}
-        <Text variant="titleMedium" style={styles.sectionTitle}>
-          Co-hosts (Optional)
-        </Text>
-        <Button
-          mode="outlined"
-          onPress={() => setShowCohostsModal(true)}
-          icon="account-multiple-plus"
-          style={styles.addButton}
-        >
-          Add Co-hosts
-        </Button>
+        <View style={styles.sectionHeaderRow}>
+          <Text variant="labelLarge" style={styles.sectionTitle}>
+            Co-hosts
+          </Text>
+          <Button
+            mode="outlined"
+            onPress={() => setShowCohostsModal(true)}
+            icon="account-multiple-plus"
+            compact
+            style={styles.inlineButton}
+            contentStyle={styles.inlineButtonContent}
+          >
+            {''}
+          </Button>
+        </View>
         {cohosts.length > 0 && (
           <View style={styles.cohostContainer}>
             {cohosts.map((cohost, index) => (
-              <Pressable
+              <CoHostCard
                 key={cohost.id}
-                style={styles.cohostCard}
-                onPress={() =>
+                user={cohost}
+                backgroundColor="#F9FAFB"
+                onRemove={() =>
                   setCohosts(cohosts.filter((_, i) => i !== index))
                 }
-                accessibilityRole="button"
                 accessibilityLabel={`${cohost.name}, Level ${cohost.level}, ${cohost.xp} XP, ${cohost.reliability} percent reliability, remove button`}
-              >
-                <Avatar.Text
-                  size={48}
-                  label={cohost.name
-                    .split(' ')
-                    .map(n => n[0])
-                    .join('')
-                    .toUpperCase()
-                    .slice(0, 2)}
-                  style={styles.avatar}
-                  labelStyle={styles.avatarLabel}
-                />
-
-                <View style={styles.userInfo}>
-                  <Text variant="bodyLarge" style={styles.userName}>
-                    {cohost.name}
-                  </Text>
-
-                  <View style={styles.statsRow}>
-                    <View style={styles.levelBadge}>
-                      <Text variant="labelSmall" style={styles.levelText}>
-                        Level {cohost.level}
-                      </Text>
-                    </View>
-                    <Text variant="bodySmall" style={styles.xpText}>
-                      •
-                    </Text>
-                    <Text variant="bodySmall" style={styles.xpText}>
-                      {cohost.xp.toLocaleString()} XP
-                    </Text>
-                  </View>
-
-                  <Text
-                    variant="bodySmall"
-                    style={[
-                      styles.reliabilityText,
-                      { color: getReliabilityColor(cohost.reliability) },
-                    ]}
-                  >
-                    {cohost.reliability}% Reliability
-                  </Text>
-                </View>
-
-                <Button
-                  mode="outlined"
-                  compact
-                  onPress={() =>
-                    setCohosts(cohosts.filter((_, i) => i !== index))
-                  }
-                  textColor="#EF4444"
-                  style={styles.removeButton}
-                >
-                  Remove
-                </Button>
-              </Pressable>
+              />
             ))}
           </View>
         )}
@@ -379,20 +338,21 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
         />
 
         {/* Links Section */}
-        <Text
-          variant="titleMedium"
-          style={[styles.sectionTitle, styles.marginTop]}
-        >
-          Links (Optional)
-        </Text>
-        <Button
-          mode="outlined"
-          onPress={() => setShowLinksModal(true)}
-          icon="link-plus"
-          style={styles.addButton}
-        >
-          Add Link
-        </Button>
+        <View style={[styles.sectionHeaderRow, styles.marginTop]}>
+          <Text variant="labelLarge" style={styles.sectionTitle}>
+            Links
+          </Text>
+          <Button
+            mode="outlined"
+            onPress={() => setShowLinksModal(true)}
+            icon="link-plus"
+            compact
+            style={styles.inlineButton}
+            contentStyle={styles.inlineButtonContent}
+          >
+            {''}
+          </Button>
+        </View>
         {links.length > 0 && (
           <View style={styles.linkContainer}>
             {links.map((link, index) => (
@@ -408,7 +368,6 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
                   compact
                   onPress={() => setLinks(links.filter((_, i) => i !== index))}
                   textColor="#EF4444"
-                  style={styles.removeButton}
                 >
                   Remove
                 </Button>
@@ -432,19 +391,13 @@ export default function Step3Details({ data, onNext, onBack }: Props) {
         <Divider style={styles.divider} />
 
         {/* Guest Invite Toggle */}
-        <Text variant="titleMedium" style={styles.sectionTitle}>
+        <Text variant="labelLarge" style={styles.sectionTitle}>
           Guest Invite Permissions
         </Text>
         <View style={styles.switchRow}>
-          <View style={styles.switchLabelContainer}>
-            <Text variant="labelLarge" style={styles.switchLabel}>
-              Guests can invite others
-            </Text>
-            <Text variant="bodySmall" style={styles.switchHelper}>
-              When enabled, attendees can invite their friends to join the
-              event.
-            </Text>
-          </View>
+          <Text variant="labelLarge" style={styles.switchLabel}>
+            Guests can invite others
+          </Text>
           <Switch value={guestInvite} onValueChange={setGuestInvite} />
         </View>
 
@@ -521,14 +474,47 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     marginBottom: 12,
-    fontWeight: 'bold',
+    fontWeight: '600',
+    fontSize: 15,
+    color: '#111827',
+  },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
   },
   sectionTitle: {
-    marginBottom: 8,
-    fontWeight: '600',
+    marginBottom: 0,
+    fontWeight: '500',
+    fontSize: 14,
+    color: '#374151',
+  },
+  inlineButton: {
+    marginLeft: 1,
+  },
+  inlineButtonContent: {
+    height: 30,
   },
   input: {
     marginBottom: 2,
+  },
+  capacityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  capacityInputContainer: {
+    flex: 2,
+  },
+  waitlistToggle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  waitlistLabel: {
+    fontSize: 14,
   },
   label: {
     marginTop: 6,
@@ -540,6 +526,53 @@ const styles = StyleSheet.create({
   divider: {
     marginVertical: 12,
   },
+  paymentCard: {
+    backgroundColor: '#F9FAFB',
+    borderRadius: 12,
+    padding: 8,
+    marginBottom: 4,
+  },
+  paymentLabel: {
+    marginTop: 12,
+    marginBottom: 8,
+    color: '#374151',
+    fontWeight: '500',
+  },
+  radioCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 1,
+    marginBottom: 4,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+  },
+  radioCardSelected: {
+    borderColor: '#3B82F6',
+    borderWidth: 2,
+    backgroundColor: '#EFF6FF',
+  },
+  radioText: {
+    flex: 1,
+    marginLeft: 8,
+    fontSize: 14,
+    color: '#111827',
+  },
+  paymentMethodsLabel: {
+    marginTop: 16,
+    marginBottom: 12,
+    color: '#374151',
+    fontWeight: '500',
+  },
+  paymentMethodsGrid: {
+    gap: 2,
+  },
+  paymentInput: {
+    marginBottom: 2,
+    backgroundColor: '#FFFFFF',
+    height: 38,
+  },
   radioOption: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -550,61 +583,6 @@ const styles = StyleSheet.create({
   },
   cohostContainer: {
     marginTop: 6,
-  },
-  cohostCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    minHeight: 64,
-    backgroundColor: '#F9FAFB',
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  avatar: {
-    backgroundColor: '#3B82F6',
-  },
-  avatarLabel: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  userInfo: {
-    flex: 1,
-    marginLeft: 10,
-    justifyContent: 'center',
-  },
-  userName: {
-    fontWeight: '600',
-    fontSize: 16,
-    marginBottom: 4,
-    color: '#111827',
-  },
-  statsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-    gap: 6,
-  },
-  levelBadge: {
-    backgroundColor: '#3B82F6',
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  levelText: {
-    color: '#FFFFFF',
-    fontWeight: '700',
-    fontSize: 11,
-  },
-  xpText: {
-    color: '#6B7280',
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  reliabilityText: {
-    fontSize: 13,
-    fontWeight: '600',
   },
   linkContainer: {
     marginTop: 6,
@@ -631,26 +609,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#111827',
   },
-  removeButton: {
-    borderColor: '#EF4444',
-  },
   switchRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: 6,
   },
-  switchLabelContainer: {
-    flex: 1,
-    marginRight: 16,
-  },
   switchLabel: {
     fontWeight: '500',
-  },
-  switchHelper: {
-    color: '#6B7280',
-    marginTop: 2,
-    fontSize: 13,
+    flex: 1,
   },
   helperText: {
     color: '#6B7280',

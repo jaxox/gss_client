@@ -15,7 +15,7 @@ module.exports = {
       binaryPath:
         'ios/build/Build/Products/Debug-iphonesimulator/GSS_Mobile.app',
       build:
-        'xcodebuild -workspace ios/GSS_Mobile.xcworkspace -scheme GSS_Mobile -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build',
+        'E2E_MODE=true xcodebuild -workspace ios/GSS_Mobile.xcworkspace -scheme GSS_Mobile -configuration Debug -sdk iphonesimulator -derivedDataPath ios/build',
     },
     'ios.release': {
       type: 'ios.app',
@@ -28,7 +28,7 @@ module.exports = {
       type: 'android.apk',
       binaryPath: 'android/app/build/outputs/apk/debug/app-debug.apk',
       build:
-        'cd android && ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug',
+        'cd android && E2E_MODE=true ./gradlew assembleDebug assembleAndroidTest -DtestBuildType=debug',
       reversePorts: [8081],
     },
     'android.release': {

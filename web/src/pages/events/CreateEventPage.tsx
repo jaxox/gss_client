@@ -55,7 +55,11 @@ interface FormErrors {
 
 export default function CreateEventPage() {
   const dispatch = useAppDispatch();
-  const { loading, error, success } = useAppSelector(state => state.events.create);
+  const { loading, error, success } = useAppSelector(state => ({
+    loading: state.events.loading.create,
+    error: state.events.error.create,
+    success: state.events.success.create,
+  }));
 
   // Form state
   const [title, setTitle] = useState('');
@@ -268,14 +272,16 @@ export default function CreateEventPage() {
             {/* Title Input */}
             <TextField
               fullWidth
-              label="Event Title"
+              label="Event Title *"
               value={title}
               onChange={handleTitleChange}
               onBlur={() => handleBlur('title')}
               error={touched.title && !!errors.title}
-              helperText={touched.title && errors.title}
+              helperText={
+                touched.title && errors.title ? errors.title : `${title.length}/50 characters`
+              }
               required
-              inputProps={{ maxLength: 100 }}
+              inputProps={{ maxLength: 50 }}
               disabled={loading}
               sx={{ mb: 2 }}
             />
@@ -283,7 +289,7 @@ export default function CreateEventPage() {
             {/* Description Input */}
             <TextField
               fullWidth
-              label="Description"
+              label="Description *"
               value={description}
               onChange={handleDescriptionChange}
               onBlur={() => handleBlur('description')}
@@ -291,12 +297,12 @@ export default function CreateEventPage() {
               helperText={
                 touched.description && errors.description
                   ? errors.description
-                  : `${description.length}/500 characters`
+                  : `${description.length}/1000 characters`
               }
               required
               multiline
               rows={4}
-              inputProps={{ maxLength: 500 }}
+              inputProps={{ maxLength: 1000 }}
               disabled={loading}
               sx={{ mb: 2 }}
             />

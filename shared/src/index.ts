@@ -8,6 +8,7 @@ export * from './types/auth.types';
 export * from './types/api.types';
 export * from './types/event.types';
 export * from './types/location.types';
+export * from './types/payment.types';
 
 // Services - Authentication
 export * from './services/api/auth.service';
@@ -24,6 +25,11 @@ export * from './services/api/location.service';
 export * from './services/api/locationServiceImpl';
 export * from './services/mock/mockEvents.service';
 export * from './services/mock/mockLocation.service';
+
+// Services - Payment
+export * from './services/api/payment.service';
+export * from './services/api/paymentServiceImpl';
+export * from './services/mock/mockPayment.service';
 
 // Services - Infrastructure
 export * from './services/http/client';

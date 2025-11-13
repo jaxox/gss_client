@@ -13,6 +13,8 @@ import {
   type UpdateEventRequest,
   type EventDetailView,
   type EventFilterRequest,
+  type RSVPRequest,
+  type RSVP,
 } from '@gss/shared';
 
 // Use mock service for development, switch to real service when backend is ready
@@ -43,6 +45,8 @@ interface EventsState {
     delete: boolean;
     fetch: boolean;
     search: boolean;
+    rsvp: boolean; // RSVP creation loading
+    cancelRsvp: boolean; // RSVP cancellation loading
   };
 
   // Error states
@@ -52,6 +56,8 @@ interface EventsState {
     delete: string | null;
     fetch: string | null;
     search: string | null;
+    rsvp: string | null; // RSVP creation error
+    cancelRsvp: string | null; // RSVP cancellation error
   };
 
   // Success flags for UI feedback
@@ -59,7 +65,12 @@ interface EventsState {
     create: boolean;
     update: boolean;
     delete: boolean;
+    rsvp: boolean; // RSVP creation success
+    cancelRsvp: boolean; // RSVP cancellation success
   };
+
+  // Current RSVP data (for confirmation screens)
+  currentRSVP: RSVP | null;
 }
 
 const initialState: EventsState = {
@@ -79,6 +90,8 @@ const initialState: EventsState = {
     delete: false,
     fetch: false,
     search: false,
+    rsvp: false,
+    cancelRsvp: false,
   },
   error: {
     create: null,
@@ -86,12 +99,17 @@ const initialState: EventsState = {
     delete: null,
     fetch: null,
     search: null,
+    rsvp: null,
+    cancelRsvp: null,
   },
   success: {
     create: false,
     update: false,
     delete: false,
+    rsvp: false,
+    cancelRsvp: false,
   },
+  currentRSVP: null,
 };
 
 // Async thunks
@@ -182,6 +200,33 @@ export const searchEvents = createAsyncThunk(
     try {
       const result = await eventService.searchEvents(filters);
       return result;
+    } catch (error) {
+      const apiError = getApiError(error);
+      return rejectWithValue(apiError.message);
+    }
+  }
+);
+
+// RSVP Operations
+export const createRSVP = createAsyncThunk(
+  'events/createRSVP',
+  async (request: RSVPRequest, { rejectWithValue }) => {
+    try {
+      const rsvp = await eventService.createRSVP(request);
+      return rsvp;
+    } catch (error) {
+      const apiError = getApiError(error);
+      return rejectWithValue(apiError.message);
+    }
+  }
+);
+
+export const cancelRSVP = createAsyncThunk(
+  'events/cancelRSVP',
+  async ({ eventId, reason }: { eventId: string; reason?: string }, { rejectWithValue }) => {
+    try {
+      await eventService.cancelRSVP(eventId, reason);
+      return eventId;
     } catch (error) {
       const apiError = getApiError(error);
       return rejectWithValue(apiError.message);
@@ -348,6 +393,46 @@ const eventsSlice = createSlice({
       .addCase(searchEvents.rejected, (state, action) => {
         state.loading.search = false;
         state.error.search = action.payload as string;
+      });
+
+    // Create RSVP
+    builder
+      .addCase(createRSVP.pending, state => {
+        state.loading.rsvp = true;
+        state.error.rsvp = null;
+        state.success.rsvp = false;
+      })
+      .addCase(createRSVP.fulfilled, (state, action) => {
+        state.loading.rsvp = false;
+        state.success.rsvp = true;
+        state.currentRSVP = action.payload;
+        // Note: myRSVPs will be refreshed by calling getMyRSVPs after successful RSVP
+      })
+      .addCase(createRSVP.rejected, (state, action) => {
+        state.loading.rsvp = false;
+        state.error.rsvp = action.payload as string;
+      });
+
+    // Cancel RSVP
+    builder
+      .addCase(cancelRSVP.pending, state => {
+        state.loading.cancelRsvp = true;
+        state.error.cancelRsvp = null;
+        state.success.cancelRsvp = false;
+      })
+      .addCase(cancelRSVP.fulfilled, (state, action) => {
+        state.loading.cancelRsvp = false;
+        state.success.cancelRsvp = true;
+        // Remove from myRSVPs list
+        state.myRSVPs = state.myRSVPs.filter(event => event.id !== action.payload);
+        // Clear currentRSVP if it matches
+        if (state.currentRSVP?.eventId === action.payload) {
+          state.currentRSVP = null;
+        }
+      })
+      .addCase(cancelRSVP.rejected, (state, action) => {
+        state.loading.cancelRsvp = false;
+        state.error.cancelRsvp = action.payload as string;
       });
   },
 });

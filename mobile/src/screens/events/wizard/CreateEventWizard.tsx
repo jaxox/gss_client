@@ -26,7 +26,7 @@ export interface WizardData {
   // Step 3: Details
   capacity: number | null;
   cost: number | null;
-  paymentDueBy: 'immediate' | '24h_before' | 'at_event';
+  paymentDueBy: '1h_after' | '24h_before' | 'at_event';
   paymentMethods: {
     venmo: string;
     paypal: string;
@@ -48,7 +48,7 @@ const initialData: WizardData = {
   duration: 120, // default 2 hours
   capacity: null,
   cost: null,
-  paymentDueBy: 'immediate',
+  paymentDueBy: '1h_after',
   paymentMethods: {
     venmo: '',
     paypal: '',
@@ -153,6 +153,7 @@ const styles = StyleSheet.create({
     height: 48,
   },
   headerTitle: {
-    fontSize: 16,
+    fontSize: 18,
+    fontWeight: '600',
   },
 });

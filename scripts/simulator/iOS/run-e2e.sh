@@ -2,12 +2,12 @@
 
 # E2E Test Runner Script
 # Runs iOS E2E tests after verifying prerequisites
-# Can automatically run step1-E2E-Preq.sh if needed
+# Can automatically run run-metro-bundler.sh if needed
 #
 # Usage:
-#   ./step2-RunE2E.sh              # Run all tests (interactive)
-#   ./step2-RunE2E.sh --auto-setup # Auto-run step1 if needed (no prompt)
-#   ./step2-RunE2E.sh "test name"  # Run specific test
+#   ./run-e2e.sh              # Run all tests (interactive)
+#   ./run-e2e.sh --auto-setup # Auto-run step1 if needed (no prompt)
+#   ./run-e2e.sh "test name"  # Run specific test
 
 set -e  # Exit on error
 
@@ -34,7 +34,7 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "$SCRIPT_DIR/../../.." && pwd)"
 MOBILE_DIR="$PROJECT_ROOT/mobile"
-STEP1_SCRIPT="$SCRIPT_DIR/step1-E2E-Preq.sh"
+STEP1_SCRIPT="$SCRIPT_DIR/run-metro-bundler.sh"
 
 echo -e "${BLUE}🧪 Running iOS E2E Tests${NC}"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -88,12 +88,12 @@ if ! lsof -ti:8081 > /dev/null 2>&1; then
   
   # Ask if user wants to run step1 automatically (unless auto-setup is enabled)
   if [ "$AUTO_SETUP" = false ]; then
-    read -p "Run step1-E2E-Preq.sh in new terminal? (Y/n): " -n 1 -r
+    read -p "Run run-metro-bundler.sh in new terminal? (Y/n): " -n 1 -r
     echo
     
     if [[ $REPLY =~ ^[Nn]$ ]]; then
-      echo -e "${BLUE}Please run step1-E2E-Preq.sh manually:${NC}"
-      echo -e "  ${YELLOW}./scripts/simulator/iOS/step1-E2E-Preq.sh${NC}"
+      echo -e "${BLUE}Please run run-metro-bundler.sh manually:${NC}"
+      echo -e "  ${YELLOW}./scripts/simulator/iOS/run-metro-bundler.sh${NC}"
       exit 1
     fi
   else
@@ -129,7 +129,7 @@ if ! lsof -ti:8081 > /dev/null 2>&1; then
   else
     echo -e "${RED}❌ Could not open new terminal automatically${NC}"
     echo -e "${YELLOW}Please run step1 manually:${NC}"
-    echo -e "  ${BLUE}./scripts/simulator/iOS/step1-E2E-Preq.sh${NC}"
+    echo -e "  ${BLUE}./scripts/simulator/iOS/run-metro-bundler.sh${NC}"
     exit 1
   fi
 else

@@ -118,8 +118,8 @@ export default function Step4Review({ data, onBack, onPublish }: Props) {
 
   const getPaymentDueByLabel = () => {
     switch (data.paymentDueBy) {
-      case 'immediate':
-        return 'Immediately after RSVP';
+      case '1h_after':
+        return 'Within 1 hour after RSVP';
       case '24h_before':
         return '24 hours before event';
       case 'at_event':

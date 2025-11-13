@@ -16,6 +16,7 @@ import {
 import { Text, TextInput, Button, HelperText } from 'react-native-paper';
 import { DatePickerModal, TimePickerModal } from 'react-native-paper-dates';
 import type { WizardData } from './CreateEventWizard';
+import LocationInputModal from '../../../components/LocationInputModal';
 
 interface Props {
   data: WizardData;
@@ -111,8 +112,7 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [showEndTimePicker, setShowEndTimePicker] = useState(false);
-  const [locationQuery, setLocationQuery] = useState('');
-  const [showLocationSuggestions, setShowLocationSuggestions] = useState(false);
+  const [showLocationModal, setShowLocationModal] = useState(false);
   const [touched, setTouched] = useState({
     location: false,
     date: false,
@@ -138,14 +138,6 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
     }
   }, [isE2E]);
 
-  // Filter locations based on search query
-  const filteredLocations = MOCK_LOCATIONS.filter(
-    loc =>
-      loc.name.toLowerCase().includes(locationQuery.toLowerCase()) ||
-      loc.address.toLowerCase().includes(locationQuery.toLowerCase()) ||
-      loc.city.toLowerCase().includes(locationQuery.toLowerCase()),
-  ).slice(0, 5); // Show max 5 suggestions
-
   // Calculate duration in minutes
   const calculateDuration = () => {
     if (!time || !endTime) return 0;
@@ -153,11 +145,9 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
     return Math.round(diff / (1000 * 60)); // Convert to minutes
   };
 
-  // Validation - check BOTH location and locationQuery
+  // Validation
   const locationError =
-    touched.location && !location.trim() && !locationQuery.trim()
-      ? 'Location is required'
-      : null;
+    touched.location && !location.trim() ? 'Location is required' : null;
 
   const dateError =
     touched.date && !date
@@ -175,10 +165,8 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
         ? 'End time must be after start time'
         : null;
 
-  // Valid if either location OR locationQuery has content
-  const hasLocation = location.trim() !== '' || locationQuery.trim() !== '';
   const isValid =
-    hasLocation &&
+    location.trim() !== '' &&
     date !== null &&
     time !== null &&
     endTime !== null &&
@@ -189,10 +177,8 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
       setTouched({ location: true, date: true, time: true, endTime: true });
       return;
     }
-    // Use locationQuery if location is empty
-    const finalLocation = location || locationQuery;
     const duration = calculateDuration();
-    onNext({ location: finalLocation, date, time, duration });
+    onNext({ location, date, time, duration });
   };
 
   const formatDate = (d: Date | null) => {
@@ -275,78 +261,48 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
         </View>
 
         {/* Section Header */}
-        <Text variant="titleMedium" style={styles.sectionHeader}>
+        <Text variant="labelLarge" style={styles.sectionHeader}>
           Location & Time
         </Text>
 
-        {/* Location Input with Autocomplete */}
-        <View>
-          <TextInput
-            testID="location-input"
-            label="Location *"
-            value={locationQuery || location}
-            onChangeText={query => {
-              setLocationQuery(query);
-              setLocation(query); // Update location as user types
-              setShowLocationSuggestions(query.length >= 2);
-            }}
-            onFocus={() => {
-              if ((locationQuery || location).length >= 2) {
-                setShowLocationSuggestions(true);
-              }
-            }}
-            onBlur={() => {
-              setTimeout(() => {
-                setShowLocationSuggestions(false);
-                setTouched(prev => ({ ...prev, location: true }));
-              }, 200);
-            }}
-            mode="outlined"
-            error={!!locationError}
-            placeholder="Enter address or search venues"
-            dense
-            style={styles.input}
-            left={<TextInput.Icon icon="map-marker" />}
-          />
-
-          {/* Location Suggestions */}
-          {showLocationSuggestions && filteredLocations.length > 0 && (
-            <View style={styles.suggestionsList}>
-              {filteredLocations.map(loc => (
-                <Pressable
-                  key={loc.id}
-                  style={styles.suggestionItem}
-                  onPress={() => {
-                    const fullAddress = `${loc.name}, ${loc.city}, ${loc.state}`;
-                    setLocation(fullAddress);
-                    setLocationQuery(''); // Clear query after selection
-                    setShowLocationSuggestions(false);
-                    setTouched(prev => ({ ...prev, location: true }));
-                  }}
-                >
-                  <View>
-                    <Text variant="bodyMedium" style={styles.locationName}>
-                      {loc.name}
-                    </Text>
-                    <Text variant="bodySmall" style={styles.locationAddress}>
-                      {loc.address}, {loc.city}, {loc.state}
-                    </Text>
-                  </View>
-                </Pressable>
-              ))}
-            </View>
-          )}
-        </View>
+        {/* Location Display - Tap to Edit */}
+        <Pressable
+          testID="location-input"
+          onPress={() => setShowLocationModal(true)}
+        >
+          <View pointerEvents="none">
+            <TextInput
+              label="Location *"
+              value={location}
+              mode="outlined"
+              error={!!locationError}
+              placeholder="Enter address or search venues"
+              dense
+              editable={false}
+              multiline
+              numberOfLines={2}
+              style={[styles.input, styles.locationInput]}
+              left={<TextInput.Icon icon="map-marker" />}
+              right={<TextInput.Icon icon="pencil" />}
+            />
+          </View>
+        </Pressable>
 
         <HelperText type="error" visible={!!locationError}>
           {locationError}
         </HelperText>
-        <HelperText
-          type="info"
-          visible={!locationError && !showLocationSuggestions}
-        >
-          {' '}
-        </HelperText>
+
+        {/* Location Input Modal */}
+        <LocationInputModal
+          visible={showLocationModal}
+          value={location}
+          locations={MOCK_LOCATIONS}
+          onSave={newLocation => {
+            setLocation(newLocation);
+            setTouched(prev => ({ ...prev, location: true }));
+          }}
+          onDismiss={() => setShowLocationModal(false)}
+        />
 
         {/* Date Picker */}
         <TextInput
@@ -374,14 +330,10 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
           locale="en"
           mode="single"
           visible={showDatePicker}
-          onDismiss={() => {
-            setShowDatePicker(false);
-            setShowLocationSuggestions(false);
-          }}
+          onDismiss={() => setShowDatePicker(false)}
           date={date || new Date()}
           onConfirm={params => {
             setShowDatePicker(false);
-            setShowLocationSuggestions(false);
             setDate(params.date || null);
             setTouched(prev => ({ ...prev, date: true }));
           }}
@@ -390,148 +342,160 @@ export default function Step2LocationTime({ data, onNext, onBack }: Props) {
           }}
         />
 
-        {/* Time Picker - E2E-aware */}
-        {isE2E ? (
-          <TextInput
-            testID="time-input"
-            label="Start Time * (HH:mm)"
-            value={formatTimeE2E(time)}
-            mode="outlined"
-            error={!!timeError}
-            placeholder="14:30"
-            keyboardType="numeric"
-            dense
-            style={styles.input}
-            onChangeText={text => {
-              const parsed = parseTimeString(text);
-              if (parsed) {
-                setTime(parsed);
-                // Auto-set end time to 2 hours later if not set
-                if (!endTime) {
-                  const autoEndTime = new Date(parsed);
-                  autoEndTime.setHours(autoEndTime.getHours() + 2);
-                  setEndTime(autoEndTime);
-                }
-                setTouched(prev => ({ ...prev, time: true }));
-              } else if (text === '') {
-                setTime(null);
-                setTouched(prev => ({ ...prev, time: true }));
-              }
-            }}
-          />
-        ) : (
-          <>
-            <TextInput
-              testID="time-input"
-              label="Start Time *"
-              value={formatTime(time)}
-              mode="outlined"
-              error={!!timeError}
-              editable={false}
-              dense
-              onPressIn={() => setShowTimePicker(true)}
-              style={styles.input}
-              right={
-                <TextInput.Icon
-                  icon="clock-outline"
-                  onPress={() => setShowTimePicker(true)}
+        {/* Time Pickers - Inline Layout */}
+        <View style={styles.timeRow}>
+          {/* Start Time */}
+          <View style={styles.timeInputContainer}>
+            {isE2E ? (
+              <TextInput
+                testID="time-input"
+                label="Start Time * (HH:mm)"
+                value={formatTimeE2E(time)}
+                mode="outlined"
+                error={!!timeError}
+                placeholder="14:30"
+                keyboardType="numeric"
+                dense
+                style={styles.timeInput}
+                onChangeText={text => {
+                  const parsed = parseTimeString(text);
+                  if (parsed) {
+                    setTime(parsed);
+                    // Auto-set end time to 2 hours later if not set
+                    if (!endTime) {
+                      const autoEndTime = new Date(parsed);
+                      autoEndTime.setHours(autoEndTime.getHours() + 2);
+                      setEndTime(autoEndTime);
+                    }
+                    setTouched(prev => ({ ...prev, time: true }));
+                  } else if (text === '') {
+                    setTime(null);
+                    setTouched(prev => ({ ...prev, time: true }));
+                  }
+                }}
+              />
+            ) : (
+              <>
+                <TextInput
+                  testID="time-input"
+                  label="Start Time *"
+                  value={formatTime(time)}
+                  mode="outlined"
+                  error={!!timeError}
+                  editable={false}
+                  dense
+                  onPressIn={() => setShowTimePicker(true)}
+                  style={styles.timeInput}
+                  right={
+                    <TextInput.Icon
+                      icon="clock-outline"
+                      onPress={() => setShowTimePicker(true)}
+                    />
+                  }
                 />
-              }
-            />
-            <TimePickerModal
-              locale="en"
-              visible={showTimePicker}
-              onDismiss={() => setShowTimePicker(false)}
-              onConfirm={params => {
-                setShowTimePicker(false);
-                const newTime = new Date();
-                newTime.setHours(params.hours, params.minutes);
-                setTime(newTime);
+                <TimePickerModal
+                  locale="en"
+                  visible={showTimePicker}
+                  onDismiss={() => setShowTimePicker(false)}
+                  onConfirm={params => {
+                    setShowTimePicker(false);
+                    const newTime = new Date();
+                    newTime.setHours(params.hours, params.minutes);
+                    setTime(newTime);
 
-                // Auto-set end time to 2 hours later if not set
-                if (!endTime) {
-                  const autoEndTime = new Date(newTime);
-                  autoEndTime.setHours(autoEndTime.getHours() + 2);
-                  setEndTime(autoEndTime);
-                }
+                    // Auto-set end time to 2 hours later if not set
+                    if (!endTime) {
+                      const autoEndTime = new Date(newTime);
+                      autoEndTime.setHours(autoEndTime.getHours() + 2);
+                      setEndTime(autoEndTime);
+                    }
 
-                setTouched(prev => ({ ...prev, time: true }));
-              }}
-              hours={time?.getHours() || 12}
-              minutes={time?.getMinutes() || 0}
-            />
-          </>
-        )}
-        <HelperText type="error" visible={!!timeError}>
-          {timeError}
-        </HelperText>
-
-        {/* End Time Picker - E2E-aware */}
-        {isE2E ? (
-          <TextInput
-            testID="end-time-input"
-            label="End Time * (HH:mm)"
-            value={formatTimeE2E(endTime)}
-            mode="outlined"
-            error={!!endTimeError}
-            placeholder="16:30"
-            keyboardType="numeric"
-            dense
-            style={styles.input}
-            onChangeText={text => {
-              const parsed = parseTimeString(text);
-              if (parsed) {
-                setEndTime(parsed);
-                setTouched(prev => ({ ...prev, endTime: true }));
-              } else if (text === '') {
-                setEndTime(null);
-                setTouched(prev => ({ ...prev, endTime: true }));
-              }
-            }}
-          />
-        ) : (
-          <>
-            <TextInput
-              testID="end-time-input"
-              label="End Time *"
-              value={formatTime(endTime)}
-              mode="outlined"
-              error={!!endTimeError}
-              editable={false}
-              dense
-              onPressIn={() => setShowEndTimePicker(true)}
-              style={styles.input}
-              right={
-                <TextInput.Icon
-                  icon="clock-outline"
-                  onPress={() => setShowEndTimePicker(true)}
+                    setTouched(prev => ({ ...prev, time: true }));
+                  }}
+                  hours={time?.getHours() || 12}
+                  minutes={time?.getMinutes() || 0}
                 />
-              }
-            />
-            <TimePickerModal
-              locale="en"
-              visible={showEndTimePicker}
-              onDismiss={() => setShowEndTimePicker(false)}
-              onConfirm={params => {
-                setShowEndTimePicker(false);
-                const newEndTime = new Date();
-                newEndTime.setHours(params.hours, params.minutes);
-                setEndTime(newEndTime);
-                setTouched(prev => ({ ...prev, endTime: true }));
-              }}
-              hours={endTime?.getHours() || 14}
-              minutes={endTime?.getMinutes() || 0}
-            />
-          </>
-        )}
-        <HelperText type="error" visible={!!endTimeError}>
-          {endTimeError}
+              </>
+            )}
+            {/* Duration Display - Under Start Time */}
+            {!timeError && !endTimeError && time && endTime && (
+              <HelperText type="info" style={styles.durationHelper}>
+                Duration: {formatDuration(calculateDuration())}
+              </HelperText>
+            )}
+          </View>
+
+          {/* Arrow Icon */}
+          <Text variant="labelLarge" style={styles.timeArrow}>
+            →
+          </Text>
+
+          {/* End Time */}
+          <View style={styles.timeInputContainer}>
+            {isE2E ? (
+              <TextInput
+                testID="end-time-input"
+                label="End Time * (HH:mm)"
+                value={formatTimeE2E(endTime)}
+                mode="outlined"
+                error={!!endTimeError}
+                placeholder="16:30"
+                keyboardType="numeric"
+                dense
+                style={styles.timeInput}
+                onChangeText={text => {
+                  const parsed = parseTimeString(text);
+                  if (parsed) {
+                    setEndTime(parsed);
+                    setTouched(prev => ({ ...prev, endTime: true }));
+                  } else if (text === '') {
+                    setEndTime(null);
+                    setTouched(prev => ({ ...prev, endTime: true }));
+                  }
+                }}
+              />
+            ) : (
+              <>
+                <TextInput
+                  testID="end-time-input"
+                  label="End Time *"
+                  value={formatTime(endTime)}
+                  mode="outlined"
+                  error={!!endTimeError}
+                  editable={false}
+                  dense
+                  onPressIn={() => setShowEndTimePicker(true)}
+                  style={styles.timeInput}
+                  right={
+                    <TextInput.Icon
+                      icon="clock-outline"
+                      onPress={() => setShowEndTimePicker(true)}
+                    />
+                  }
+                />
+                <TimePickerModal
+                  locale="en"
+                  visible={showEndTimePicker}
+                  onDismiss={() => setShowEndTimePicker(false)}
+                  onConfirm={params => {
+                    setShowEndTimePicker(false);
+                    const newEndTime = new Date();
+                    newEndTime.setHours(params.hours, params.minutes);
+                    setEndTime(newEndTime);
+                    setTouched(prev => ({ ...prev, endTime: true }));
+                  }}
+                  hours={endTime?.getHours() || 14}
+                  minutes={endTime?.getMinutes() || 0}
+                />
+              </>
+            )}
+          </View>
+        </View>
+
+        {/* Error Helpers */}
+        <HelperText type="error" visible={!!timeError || !!endTimeError}>
+          {timeError || endTimeError}
         </HelperText>
-        {!endTimeError && time && endTime && (
-          <HelperText type="info">
-            Duration: {formatDuration(calculateDuration())}
-          </HelperText>
-        )}
 
         {/* Action Buttons */}
         <View style={styles.buttonContainer}>
@@ -606,42 +570,39 @@ const styles = StyleSheet.create({
   },
   sectionHeader: {
     marginBottom: 12,
-    fontWeight: 'bold',
+    fontWeight: '600',
+    fontSize: 15,
+    color: '#111827',
   },
   input: {
     marginBottom: 2,
+    maxHeight: 56,
   },
-  suggestionsList: {
-    position: 'absolute',
-    top: 50,
-    left: 0,
-    right: 0,
-    backgroundColor: 'white',
-    borderRadius: 8,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    zIndex: 1000,
-    maxHeight: 180,
-  },
-  suggestionItem: {
-    padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
-  },
-  locationName: {
-    fontWeight: '600',
-    marginBottom: 2,
+  locationInput: {
+    minHeight: 64,
+    maxHeight: 80,
     fontSize: 14,
   },
-  locationAddress: {
-    color: '#6B7280',
-    fontSize: 12,
+  timeRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 8,
+    marginBottom: 2,
   },
-  menuScroll: {
-    maxHeight: 300,
+  durationHelper: {
+    marginTop: 0,
+    marginBottom: 0,
+  },
+  timeInputContainer: {
+    flex: 1,
+  },
+  timeInput: {
+    marginBottom: 0,
+  },
+  timeArrow: {
+    paddingTop: 18,
+    color: '#6B7280',
+    fontSize: 18,
   },
   buttonContainer: {
     flexDirection: 'row',
