@@ -8,6 +8,7 @@ import CreateEventPage from './pages/events/CreateEventPage';
 import MyEventsPage from './pages/events/MyEventsPage';
 import EventsPage from './pages/events/EventsPage';
 import EventDetailPage from './pages/events/EventDetailPage';
+import MyRSVPsPage from './pages/events/MyRSVPsPage';
 
 const theme = createTheme({
   palette: {
@@ -49,6 +50,7 @@ function App() {
             <Route path="/events/:eventId" element={<EventDetailPage />} />
             <Route path="/events/create" element={<CreateEventPage />} />
             <Route path="/events/my-events" element={<MyEventsPage />} />
+            <Route path="/events/my-rsvps" element={<MyRSVPsPage />} />
           </Routes>
         </BrowserRouter>
       </ThemeProvider>

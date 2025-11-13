@@ -20,6 +20,7 @@ import {
   Alert,
   Card,
   CardContent,
+  Snackbar,
 } from '@mui/material';
 import {
   ArrowBack,
@@ -29,11 +30,19 @@ import {
   EmojiEvents,
   Person,
   Info,
+  CheckCircle,
 } from '@mui/icons-material';
 import { Loader } from '@googlemaps/js-api-loader';
 import { format } from 'date-fns';
-import { getEvent, clearCurrentEvent, clearError } from '../../store/events/eventsSlice';
+import {
+  getEvent,
+  clearCurrentEvent,
+  clearError,
+  createRSVP,
+  getMyRSVPs,
+} from '../../store/events/eventsSlice';
 import type { RootState, AppDispatch } from '../../store/store';
+import RSVPDialog from '../../components/events/RSVPDialog';
 
 const sportIconMap: Record<string, string> = {
   Basketball: '🏀',
@@ -53,17 +62,23 @@ export default function EventDetailPage() {
   const mapRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
 
-  const { currentEvent, loading, error } = useSelector((state: RootState) => state.events);
+  const { currentEvent, loading, error, myRSVPs, success } = useSelector(
+    (state: RootState) => state.events
+  );
   const user = useSelector((state: RootState) => state.auth.user);
 
+  const [showRSVPDialog, setShowRSVPDialog] = useState(false);
+  const [showSuccessSnackbar, setShowSuccessSnackbar] = useState(false);
+
   useEffect(() => {
-    if (eventId) {
+    if (eventId && user) {
       dispatch(getEvent(eventId));
+      dispatch(getMyRSVPs(user.id));
     }
     return () => {
       dispatch(clearCurrentEvent());
     };
-  }, [eventId, dispatch]);
+  }, [eventId, user, dispatch]);
 
   useEffect(() => {
     if (!currentEvent || !mapRef.current || mapLoaded) return;
@@ -104,8 +119,43 @@ export default function EventDetailPage() {
       .catch((err: Error) => console.error('Error loading Google Maps:', err));
   }, [currentEvent, mapLoaded]);
 
+  // Show success snackbar when RSVP succeeds
+  useEffect(() => {
+    if (success.rsvp) {
+      setShowSuccessSnackbar(true);
+      setShowRSVPDialog(false);
+      // Refresh event details and RSVPs
+      if (eventId && user) {
+        dispatch(getEvent(eventId));
+        dispatch(getMyRSVPs(user.id));
+      }
+    }
+  }, [success.rsvp, eventId, user, dispatch]);
+
   const handleBack = () => navigate('/events');
-  const handleRSVP = () => console.log('RSVP clicked - TODO Task 8');
+
+  const handleRSVP = () => {
+    if (currentEvent?.depositAmount === 0) {
+      // Free event - show confirmation dialog
+      setShowRSVPDialog(true);
+    } else {
+      // Deposit event - TODO: Show payment dialog
+      alert('Deposit payment flow coming soon! For now, this would open Stripe payment dialog.');
+    }
+  };
+
+  const handleConfirmRSVP = async () => {
+    if (!eventId) return;
+
+    await dispatch(
+      createRSVP({
+        eventId,
+        paymentMethodId: undefined, // Free event
+      })
+    );
+  };
+
+  const userHasRSVPd = myRSVPs.some(event => event.id === eventId);
 
   if (loading.fetch) {
     return (
@@ -252,20 +302,27 @@ export default function EventDetailPage() {
                 </Box>
               </CardContent>
             </Card>
-            {!isHost && (
+            {userHasRSVPd && (
+              <Alert severity="success" icon={<CheckCircle />}>
+                You're registered for this event!
+              </Alert>
+            )}
+            {!isHost && !userHasRSVPd && (
               <Button
                 variant="contained"
                 size="large"
                 fullWidth
                 onClick={handleRSVP}
-                disabled={isFull}
+                disabled={isFull || loading.rsvp}
                 sx={{ py: 1.5 }}
               >
-                {isFull
-                  ? 'Event Full'
-                  : currentEvent.depositAmount > 0
-                    ? `RSVP (${depositAmount})`
-                    : 'RSVP (Free)'}
+                {loading.rsvp
+                  ? 'Processing...'
+                  : isFull
+                    ? 'Event Full'
+                    : currentEvent.depositAmount > 0
+                      ? `RSVP (${depositAmount})`
+                      : 'RSVP (Free)'}
               </Button>
             )}
             {isHost && (
@@ -287,6 +344,50 @@ export default function EventDetailPage() {
           </Stack>
         </Box>
       </Box>
+
+      {/* RSVP Dialog for free events */}
+      <RSVPDialog
+        open={showRSVPDialog}
+        event={currentEvent}
+        loading={loading.rsvp}
+        onConfirm={handleConfirmRSVP}
+        onClose={() => setShowRSVPDialog(false)}
+      />
+
+      {/* Success Snackbar */}
+      <Snackbar
+        open={showSuccessSnackbar}
+        autoHideDuration={6000}
+        onClose={() => setShowSuccessSnackbar(false)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert
+          onClose={() => setShowSuccessSnackbar(false)}
+          severity="success"
+          icon={<CheckCircle />}
+          sx={{ width: '100%' }}
+        >
+          Successfully RSVP'd! Check your email for confirmation.
+        </Alert>
+      </Snackbar>
+
+      {/* Error Alert for RSVP */}
+      {error.rsvp && (
+        <Snackbar
+          open={!!error.rsvp}
+          autoHideDuration={6000}
+          onClose={() => dispatch(clearError('rsvp'))}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert
+            onClose={() => dispatch(clearError('rsvp'))}
+            severity="error"
+            sx={{ width: '100%' }}
+          >
+            {error.rsvp}
+          </Alert>
+        </Snackbar>
+      )}
     </Container>
   );
 }
