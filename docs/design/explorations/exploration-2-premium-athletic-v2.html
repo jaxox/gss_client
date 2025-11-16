@@ -1,0 +1,2035 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Premium Athletic v2 - Create Event</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif;
+        background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        color: #ffffff;
+        padding: 20px;
+        min-height: 100vh;
+      }
+      .phone-frame {
+        width: 390px;
+        height: 844px;
+        background: #1e1e1e;
+        border-radius: 40px;
+        box-shadow:
+          0 30px 80px rgba(0, 0, 0, 0.6),
+          inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        position: relative;
+        padding: 40px 16px 16px;
+        display: flex;
+        flex-direction: column;
+      }
+      .notch {
+        position: absolute;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 120px;
+        height: 30px;
+        background: #000;
+        border-radius: 0 0 20px 20px;
+      }
+      .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex: 1;
+      }
+      .header h1 {
+        font-size: 28px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .private-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        padding: 6px 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+      }
+      .private-toggle:hover {
+        background: rgba(255, 255, 255, 0.12);
+      }
+      .private-toggle.active {
+        background: rgba(255, 107, 53, 0.25);
+        border-color: #ff6b35;
+      }
+      .toggle-icon {
+        width: 18px;
+        height: 18px;
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        border-radius: 5px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+      }
+      .private-toggle.active .toggle-icon {
+        background: #ff6b35;
+        border-color: #ff6b35;
+      }
+      .private-toggle.active .toggle-icon::after {
+        content: '✓';
+        color: white;
+        font-size: 11px;
+        font-weight: 700;
+      }
+      .toggle-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.8);
+      }
+      .close-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 16px;
+        background: rgba(255, 107, 53, 0.15);
+        border: 1px solid rgba(255, 107, 53, 0.3);
+        color: #ff6b35;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 18px;
+        flex-shrink: 0;
+      }
+      .progress-bar {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 20px;
+      }
+      .progress-segment {
+        flex: 1;
+        height: 6px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 3px;
+        position: relative;
+        overflow: hidden;
+      }
+      .progress-segment.active {
+        background: linear-gradient(90deg, #ff6b35 0%, #ff8c42 100%);
+        box-shadow: 0 0 16px rgba(255, 107, 53, 0.6);
+      }
+      .progress-segment.active::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+        animation: shimmer 2s infinite;
+      }
+      @keyframes shimmer {
+        100% {
+          left: 100%;
+        }
+      }
+      .section {
+        margin-bottom: 20px;
+      }
+      .section-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #ffffff;
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .input-group {
+        margin-bottom: 12px;
+      }
+      .input-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 8px;
+        display: block;
+      }
+      .input-field {
+        width: 100%;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+        color: #ffffff;
+        font-size: 16px;
+        transition: all 0.3s ease;
+      }
+      .input-field:focus {
+        outline: none;
+        background: rgba(255, 255, 255, 0.12);
+        border-color: #ff6b35;
+        box-shadow: 0 0 0 4px rgba(255, 107, 53, 0.15);
+      }
+      .sport-scroll-container {
+        overflow-x: auto;
+        overflow-y: visible;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        margin: 0 -16px;
+        padding: 16px 16px 20px 16px;
+      }
+      .sport-scroll-container::-webkit-scrollbar {
+        display: none;
+      }
+      .sport-row {
+        display: flex;
+        gap: 12px;
+      }
+      .sport-card {
+        min-width: 100px;
+        height: 100px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        flex-shrink: 0;
+      }
+      .sport-card:active {
+        transform: scale(0.95);
+      }
+      .sport-card.selected {
+        background: linear-gradient(135deg, rgba(255, 107, 53, 0.25), rgba(255, 140, 66, 0.25));
+        border-color: #ff6b35;
+        box-shadow: 0 8px 24px rgba(255, 107, 53, 0.4);
+        transform: scale(1.05);
+      }
+      .sport-icon {
+        font-size: 32px;
+        margin-bottom: 8px;
+      }
+      .sport-name {
+        font-size: 12px;
+        font-weight: 600;
+        color: #ffffff;
+      }
+      .scroll-hint {
+        text-align: center;
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.4);
+        margin-top: 12px;
+      }
+      .time-row {
+        display: flex;
+        gap: 12px;
+      }
+      .time-row .input-group {
+        flex: 1;
+      }
+      .duration-display {
+        font-size: 13px;
+        color: rgba(255, 107, 53, 0.9);
+        font-weight: 600;
+        margin-top: 8px;
+        padding: 8px 12px;
+        background: rgba(255, 107, 53, 0.1);
+        border-radius: 8px;
+        text-align: center;
+      }
+      .capacity-row-flex {
+        display: flex;
+        gap: 12px;
+        align-items: flex-end;
+        margin-bottom: 16px;
+      }
+      .waitlist-toggle-inline {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex: 1;
+      }
+      .waitlist-toggle-inline .input-label {
+        margin: 0;
+        font-size: 14px;
+      }
+      .detail-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 20px;
+        margin-bottom: 16px;
+        transition: all 0.3s ease;
+      }
+      .detail-card:hover {
+        background: rgba(255, 255, 255, 0.07);
+        border-color: rgba(255, 107, 53, 0.3);
+      }
+      .detail-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+      .detail-card-icon {
+        font-size: 24px;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .section-header-simple {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 12px;
+      }
+      .section-icon {
+        font-size: 20px;
+      }
+      .section-divider {
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 107, 53, 0.2) 20%,
+          rgba(255, 107, 53, 0.2) 80%,
+          transparent
+        );
+        margin: 20px 0;
+        position: relative;
+      }
+      .section-divider::after {
+        content: '';
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        width: 4px;
+        height: 4px;
+        background: #ff6b35;
+        border-radius: 50%;
+        box-shadow: 0 0 8px rgba(255, 107, 53, 0.6);
+      }
+      .subsection-divider {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.08);
+        margin: 16px 0;
+      }
+      .divider-subtle {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+        margin: 20px 0;
+      }
+      .toggle-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+      .toggle-row:last-child {
+        margin-bottom: 0;
+      }
+      .toggle-row-inline {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .private-toggle.compact {
+        padding: 8px 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        transition: all 0.3s ease;
+      }
+      .private-toggle.compact:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.2);
+      }
+      .private-toggle.compact.active {
+        background: rgba(255, 107, 53, 0.15);
+        border-color: rgba(255, 107, 53, 0.4);
+      }
+      .private-toggle.compact .toggle-label {
+        font-size: 13px;
+      }
+      .select-field {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23ff6b35' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 16px center;
+        padding-right: 44px;
+        cursor: pointer;
+      }
+      .select-field:focus {
+        background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5L6 6.5L11 1.5' stroke='%23ff8c42' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+      }
+      .cost-range-row {
+        display: flex;
+        align-items: flex-end;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+      .range-separator {
+        font-size: 14px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.5);
+        margin-bottom: 16px;
+        padding: 0 4px;
+      }
+      .dollar-sign {
+        position: absolute;
+        left: 16px;
+        top: 40px;
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 16px;
+      }
+      .inline-select-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .payment-methods-grid {
+        display: grid;
+        gap: 12px;
+      }
+      .icon-button-inline {
+        margin-left: auto;
+        background: rgba(255, 107, 53, 0.15);
+        border: 1px solid rgba(255, 107, 53, 0.3);
+        color: #ff6b35;
+        padding: 6px 12px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+      .icon-button-inline:hover {
+        background: rgba(255, 107, 53, 0.25);
+        border-color: #ff6b35;
+      }
+      .item-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .list-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 12px;
+        transition: all 0.3s ease;
+      }
+      .list-item:hover {
+        background: rgba(255, 255, 255, 0.08);
+        border-color: rgba(255, 255, 255, 0.15);
+      }
+      .list-item-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .list-item-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #ffffff;
+        margin-bottom: 4px;
+      }
+      .list-item-subtitle {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.5);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .link-icon-circle {
+        width: 40px;
+        height: 40px;
+        background: rgba(255, 107, 53, 0.15);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+      }
+      .icon-button-remove {
+        width: 28px;
+        height: 28px;
+        background: rgba(255, 59, 48, 0.15);
+        border: 1px solid rgba(255, 59, 48, 0.3);
+        border-radius: 8px;
+        color: #ff3b30;
+        font-size: 20px;
+        font-weight: 300;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        flex-shrink: 0;
+      }
+      .icon-button-remove:hover {
+        background: rgba(255, 59, 48, 0.25);
+        border-color: #ff3b30;
+        transform: scale(1.1);
+      }
+      .payment-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 16px;
+        margin: 16px 0;
+      }
+      .radio-group {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 8px;
+        margin-bottom: 16px;
+      }
+      .radio-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+      .radio-card:hover {
+        background: rgba(255, 255, 255, 0.12);
+      }
+      .radio-card-selected {
+        background: rgba(255, 107, 53, 0.15);
+        border-color: #ff6b35;
+      }
+      .radio-dot {
+        width: 18px;
+        height: 18px;
+        border-radius: 9px;
+        border: 2px solid rgba(255, 255, 255, 0.4);
+        position: relative;
+      }
+      .radio-dot-selected {
+        border-color: #ff6b35;
+      }
+      .radio-dot-selected::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 10px;
+        height: 10px;
+        border-radius: 5px;
+        background: #ff6b35;
+      }
+      .helper-label {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 6px;
+        display: block;
+      }
+      .section-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 16px 0 8px 0;
+      }
+      .icon-button {
+        width: 32px;
+        height: 32px;
+        border-radius: 16px;
+        background: rgba(255, 107, 53, 0.2);
+        border: 1px solid #ff6b35;
+        color: #ff6b35;
+        font-size: 20px;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+      }
+      .icon-button:hover {
+        background: rgba(255, 107, 53, 0.3);
+      }
+      .cohost-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        margin-bottom: 8px;
+      }
+      .cohost-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 20px;
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 16px;
+        color: white;
+        flex-shrink: 0;
+      }
+      .cohost-info {
+        flex: 1;
+      }
+      .cohost-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #ffffff;
+        margin-bottom: 2px;
+      }
+      .cohost-stats {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.6);
+      }
+      .remove-btn {
+        padding: 4px 12px;
+        background: rgba(239, 68, 68, 0.2);
+        border: 1px solid rgba(239, 68, 68, 0.4);
+        border-radius: 6px;
+        color: #ff6b6b;
+        font-size: 12px;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+      .link-card {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        margin-bottom: 8px;
+      }
+      .link-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: rgba(255, 107, 53, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        flex-shrink: 0;
+      }
+      .link-info {
+        flex: 1;
+      }
+      .link-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: #ffffff;
+        margin-bottom: 2px;
+      }
+      .link-url {
+        font-size: 11px;
+        color: rgba(255, 255, 255, 0.5);
+      }
+      .switch-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 0;
+      }
+      .questionnaire-preview {
+        min-height: 100px;
+      }
+      .empty-state {
+        text-align: center;
+        padding: 32px 20px;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px dashed rgba(255, 255, 255, 0.15);
+        border-radius: 12px;
+      }
+      .empty-icon {
+        font-size: 48px;
+        margin-bottom: 12px;
+        opacity: 0.5;
+      }
+      .empty-text {
+        font-size: 15px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.7);
+        margin-bottom: 6px;
+      }
+      .empty-subtext {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.4);
+      }
+      .reminder-section {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .reminder-item {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 16px;
+      }
+      .reminder-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 8px;
+      }
+      .reminder-description {
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.5);
+        margin-bottom: 8px;
+      }
+      .button-row {
+        display: flex;
+        gap: 12px;
+        margin-top: 32px;
+      }
+      .btn {
+        flex: 1;
+        padding: 16px;
+        border-radius: 14px;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        border: none;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .btn-secondary {
+        background: rgba(255, 255, 255, 0.08);
+        color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .btn-primary {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+        color: #ffffff;
+        box-shadow: 0 8px 24px rgba(255, 107, 53, 0.4);
+        position: relative;
+        overflow: hidden;
+      }
+      .btn-primary::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+      }
+      .btn-primary:hover::before {
+        left: 100%;
+      }
+      .step-content {
+        display: none;
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+      .step-content.active {
+        display: flex;
+        flex-direction: column;
+      }
+      .step-content::-webkit-scrollbar {
+        width: 4px;
+      }
+      .step-content::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 2px;
+      }
+      .step-content::-webkit-scrollbar-thumb {
+        background: rgba(255, 107, 53, 0.5);
+        border-radius: 2px;
+      }
+      .step-content::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 107, 53, 0.7);
+      }
+      .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(8px);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+      }
+      .modal-overlay.active {
+        display: flex;
+      }
+      .modal-content {
+        width: 390px;
+        height: 844px;
+        background: #1e1e1e;
+        border-radius: 40px;
+        overflow: hidden;
+        position: relative;
+        padding: 40px 16px 16px;
+        display: flex;
+        flex-direction: column;
+        animation: modalSlideUp 0.3s ease;
+      }
+      @keyframes modalSlideUp {
+        from {
+          opacity: 0;
+          transform: translateY(50px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 12px;
+      }
+      .modal-header h2 {
+        font-size: 24px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .modal-body {
+        flex: 1;
+        overflow-y: auto;
+        overflow-x: hidden;
+      }
+      .modal-body::-webkit-scrollbar {
+        width: 4px;
+      }
+      .modal-body::-webkit-scrollbar-track {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 2px;
+      }
+      .modal-body::-webkit-scrollbar-thumb {
+        background: rgba(255, 107, 53, 0.5);
+        border-radius: 2px;
+      }
+      .question-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
+      }
+      .question-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .question-header .select-field {
+        padding: 8px 12px;
+        font-size: 14px;
+      }
+      .question-header .icon-button-remove {
+        margin: 0;
+      }
+      .add-question-btn {
+        width: 100%;
+        padding: 14px;
+        background: rgba(255, 107, 53, 0.1);
+        border: 2px dashed rgba(255, 107, 53, 0.3);
+        border-radius: 12px;
+        color: #ff6b35;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 12px;
+      }
+      .add-question-btn:hover {
+        background: rgba(255, 107, 53, 0.15);
+        border-color: #ff6b35;
+      }
+      .link-icon-picker {
+        width: 48px;
+        height: 48px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        font-size: 24px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .link-icon-picker:hover {
+        background: rgba(255, 107, 53, 0.15);
+        border-color: #ff6b35;
+        transform: scale(1.1);
+      }
+      .link-icon-picker.selected {
+        background: rgba(255, 107, 53, 0.25);
+        border-color: #ff6b35;
+      }
+      .review-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 20px;
+      }
+      .review-section {
+        margin-bottom: 20px;
+      }
+      .review-section:last-child {
+        margin-bottom: 0;
+      }
+      .review-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: rgba(255, 107, 53, 0.8);
+        font-weight: 700;
+        margin-bottom: 6px;
+      }
+      .review-value {
+        font-size: 16px;
+        color: #ffffff;
+        font-weight: 600;
+      }
+      .divider {
+        height: 1px;
+        background: rgba(255, 255, 255, 0.1);
+        margin: 16px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="phone-frame">
+      <div class="notch"></div>
+
+      <div class="header">
+        <div class="header-left">
+          <h1>Create Event</h1>
+          <div class="private-toggle" onclick="togglePrivate()">
+            <div class="toggle-icon"></div>
+            <span class="toggle-label">Private</span>
+          </div>
+        </div>
+        <div class="close-btn">×</div>
+      </div>
+
+      <div class="progress-bar">
+        <div class="progress-segment active"></div>
+        <div class="progress-segment"></div>
+        <div class="progress-segment"></div>
+        <div class="progress-segment"></div>
+      </div>
+
+      <div class="step-content active" id="step1">
+        <div class="section">
+          <div class="input-group">
+            <label class="input-label">Event Title</label>
+            <input
+              type="text"
+              class="input-field"
+              placeholder="Morning Basketball Pickup"
+              value="Morning Basketball Pickup"
+            />
+          </div>
+          <div class="input-group">
+            <label class="input-label">Description</label>
+            <textarea class="input-field" rows="3" placeholder="Tell everyone what to expect...">
+Casual pickup game at the local court</textarea
+            >
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Choose Sport</div>
+          <div class="sport-scroll-container">
+            <div class="sport-row">
+              <div class="sport-card selected">
+                <div class="sport-icon">🏀</div>
+                <div class="sport-name">Basketball</div>
+              </div>
+              <div class="sport-card">
+                <div class="sport-icon">⚽</div>
+                <div class="sport-name">Soccer</div>
+              </div>
+              <div class="sport-card">
+                <div class="sport-icon">🏐</div>
+                <div class="sport-name">Volleyball</div>
+              </div>
+              <div class="sport-card">
+                <div class="sport-icon">🎾</div>
+                <div class="sport-name">Tennis</div>
+              </div>
+              <div class="sport-card">
+                <div class="sport-icon">🏈</div>
+                <div class="sport-name">Football</div>
+              </div>
+              <div class="sport-card">
+                <div class="sport-icon">⚾</div>
+                <div class="sport-name">Baseball</div>
+              </div>
+              <div class="sport-card">
+                <div class="sport-icon">🏒</div>
+                <div class="sport-name">Hockey</div>
+              </div>
+              <div class="sport-card">
+                <div class="sport-icon">🏊</div>
+                <div class="sport-name">Swimming</div>
+              </div>
+            </div>
+          </div>
+          <div class="scroll-hint">← Scroll for more →</div>
+        </div>
+
+        <div class="section">
+          <div class="input-group">
+            <label class="input-label">Location</label>
+            <input
+              type="text"
+              class="input-field"
+              placeholder="Search for a venue..."
+              value="Downtown Basketball Court"
+            />
+          </div>
+          <div class="input-group">
+            <label class="input-label">Date</label>
+            <input type="text" class="input-field" placeholder="Select date" value="Nov 15, 2025" />
+          </div>
+          <div class="time-row">
+            <div class="input-group">
+              <label class="input-label">Start Time</label>
+              <input type="text" class="input-field" placeholder="Select time" value="10:00 AM" />
+            </div>
+            <div class="input-group">
+              <label class="input-label">End Time</label>
+              <input type="text" class="input-field" placeholder="Select time" value="12:00 PM" />
+            </div>
+          </div>
+          <div class="duration-display">Duration: 2 hours</div>
+        </div>
+
+        <div class="button-row">
+          <button class="btn btn-secondary">Cancel</button>
+          <button class="btn btn-primary" onclick="nextStep(2)">Next</button>
+        </div>
+      </div>
+
+      <div class="step-content" id="step2">
+        <div class="section">
+          <!-- Co-hosts -->
+          <div class="section-header-simple">
+            <span class="section-icon">👥</span>
+            <span class="section-title" style="margin: 0">Co-hosts</span>
+            <button class="icon-button-inline" onclick="openCohostsModal()">+ Add</button>
+          </div>
+
+          <div class="item-list">
+            <div class="list-item">
+              <div class="cohost-avatar">SM</div>
+              <div class="list-item-info">
+                <div class="list-item-title">Sarah Miller</div>
+                <div class="list-item-subtitle">Level 8 • 2,450 XP • 98% Reliable</div>
+              </div>
+              <button class="icon-button-remove">×</button>
+            </div>
+            <div class="list-item">
+              <div
+                class="cohost-avatar"
+                style="background: linear-gradient(135deg, #4facfe, #00f2fe)"
+              >
+                JC
+              </div>
+              <div class="list-item-info">
+                <div class="list-item-title">Jake Chen</div>
+                <div class="list-item-subtitle">Level 5 • 1,280 XP • 95% Reliable</div>
+              </div>
+              <button class="icon-button-remove">×</button>
+            </div>
+          </div>
+
+          <div class="section-divider"></div>
+
+          <!-- Links -->
+          <div class="section-header-simple">
+            <span class="section-icon">🔗</span>
+            <span class="section-title" style="margin: 0">Links</span>
+            <button class="icon-button-inline" onclick="openLinksModal()">+ Add</button>
+          </div>
+
+          <div class="item-list">
+            <div class="list-item">
+              <div class="link-icon-circle">🏀</div>
+              <div class="list-item-info">
+                <div class="list-item-title">Court Rules & Info</div>
+                <div class="list-item-subtitle">courtinfo.com/downtown</div>
+              </div>
+              <button class="icon-button-remove">×</button>
+            </div>
+            <div class="list-item">
+              <div class="link-icon-circle">📍</div>
+              <div class="list-item-info">
+                <div class="list-item-title">Parking Details</div>
+                <div class="list-item-subtitle">maps.google.com/parking</div>
+              </div>
+              <button class="icon-button-remove">×</button>
+            </div>
+          </div>
+
+          <div class="section-divider"></div>
+
+          <!-- Questionnaire -->
+          <div class="section-header-simple">
+            <span class="section-icon">📋</span>
+            <span class="section-title" style="margin: 0">Questionnaire</span>
+            <button class="icon-button-inline" onclick="openQuestionnaireModal()">+ Add</button>
+          </div>
+
+          <div class="item-list" id="questionnaire-list">
+            <div class="list-item">
+              <div class="link-icon-circle">❓</div>
+              <div class="list-item-info">
+                <div class="list-item-title">What's your skill level?</div>
+                <div class="list-item-subtitle">Short Answer • Required</div>
+              </div>
+              <button class="icon-button-remove">×</button>
+            </div>
+            <div class="list-item">
+              <div class="link-icon-circle">🎯</div>
+              <div class="list-item-info">
+                <div class="list-item-title">What position do you prefer?</div>
+                <div class="list-item-subtitle">Multiple Choice • Optional</div>
+              </div>
+              <button class="icon-button-remove">×</button>
+            </div>
+          </div>
+
+          <div class="section-divider"></div>
+
+          <!-- Reminders -->
+          <div class="section-header-simple">
+            <span class="section-icon">🔔</span>
+            <span class="section-title" style="margin: 0">Reminders</span>
+            <button class="icon-button-inline" onclick="openRemindersModal()">+ Add</button>
+          </div>
+
+          <div class="item-list" id="reminders-list">
+            <div class="list-item">
+              <div class="link-icon-circle">📨</div>
+              <div class="list-item-info">
+                <div class="list-item-title">RSVP Reminder</div>
+                <div class="list-item-subtitle">Send 2 days before event</div>
+              </div>
+              <button class="icon-button-remove">×</button>
+            </div>
+            <div class="list-item">
+              <div class="link-icon-circle">⏰</div>
+              <div class="list-item-info">
+                <div class="list-item-title">Event Reminder</div>
+                <div class="list-item-subtitle">Send 2 hours before event</div>
+              </div>
+              <button class="icon-button-remove">×</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button class="btn btn-secondary" onclick="prevStep(1)">Back</button>
+          <button class="btn btn-primary" onclick="nextStep(3)">Next</button>
+        </div>
+      </div>
+
+      <div class="step-content" id="step3">
+        <div class="section">
+          <!-- Event Settings -->
+          <div class="section-header-simple">
+            <span class="section-icon">⚙️</span>
+            <span class="section-title" style="margin: 0">Event Settings</span>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Capacity</label>
+            <input type="number" class="input-field" placeholder="Unlimited" value="10" />
+          </div>
+
+          <div class="toggle-row-inline">
+            <div class="private-toggle compact" onclick="toggleWaitlist()">
+              <div class="toggle-icon"></div>
+              <span class="toggle-label">Waitlist</span>
+            </div>
+            <div class="private-toggle compact active">
+              <div class="toggle-icon"></div>
+              <span class="toggle-label">Guest can invite</span>
+            </div>
+            <div class="private-toggle compact">
+              <div class="toggle-icon"></div>
+              <span class="toggle-label">Guest can +1</span>
+            </div>
+          </div>
+
+          <div class="section-divider"></div>
+
+          <!-- Payment -->
+          <div
+            class="section-header-simple"
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+              margin-bottom: 12px;
+            "
+          >
+            <div style="display: flex; align-items: center; gap: 8px">
+              <span class="section-icon">💳</span>
+              <span class="section-title" style="margin: 0">Payment</span>
+            </div>
+            <div class="private-toggle compact active" onclick="togglePaymentSection()">
+              <div class="toggle-icon"></div>
+              <span class="toggle-label">Paid Event</span>
+            </div>
+          </div>
+
+          <div class="item-list" id="payment-list">
+            <div class="list-item" onclick="openPaymentModal()" style="cursor: pointer">
+              <div class="link-icon-circle">💵</div>
+              <div class="list-item-info">
+                <div class="list-item-title">Flexible: $3-$5</div>
+                <div class="list-item-subtitle">Due 1hr after RSVP • Venmo, PayPal</div>
+              </div>
+              <button
+                class="icon-button-remove"
+                onclick="openPaymentModal(); event.stopPropagation()"
+              >
+                ✎️
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button class="btn btn-secondary" onclick="prevStep(2)">Back</button>
+          <button class="btn btn-primary" onclick="nextStep(4)">Review</button>
+        </div>
+      </div>
+
+      <div class="step-content" id="step4">
+        <div class="review-card">
+          <div class="review-section">
+            <div class="review-label">Event Title</div>
+            <div class="review-value">Morning Basketball Pickup</div>
+          </div>
+          <div class="divider"></div>
+          <div class="review-section">
+            <div class="review-label">Description</div>
+            <div class="review-value">Casual pickup game at the local court</div>
+          </div>
+          <div class="divider"></div>
+          <div class="review-section">
+            <div class="review-label">Privacy</div>
+            <div class="review-value" id="privacy-display">Public Event</div>
+          </div>
+          <div class="divider"></div>
+          <div class="review-section">
+            <div class="review-label">Sport</div>
+            <div class="review-value">🏀 Basketball</div>
+          </div>
+          <div class="divider"></div>
+          <div class="review-section">
+            <div class="review-label">Location</div>
+            <div class="review-value">Downtown Basketball Court</div>
+          </div>
+          <div class="divider"></div>
+          <div class="review-section">
+            <div class="review-label">Date & Time</div>
+            <div class="review-value">Nov 15, 2025<br />10:00 AM - 12:00 PM (2 hours)</div>
+          </div>
+          <div class="divider"></div>
+          <div class="review-section">
+            <div class="review-label">Capacity & Settings</div>
+            <div class="review-value">
+              10 participants<br />
+              <span style="font-size: 13px; color: rgba(255, 255, 255, 0.6)">
+                • Waitlist disabled<br />
+                • Guests can invite others<br />
+                • Guest +1 disabled
+              </span>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="review-section">
+            <div class="review-label">Payment</div>
+            <div class="review-value">
+              Flexible Range: $3.00 - $5.00<br />
+              <span style="font-size: 13px; color: rgba(255, 255, 255, 0.6)">
+                Due: 1 hour after RSVP
+              </span>
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="review-section">
+            <div class="review-label">Payment Methods</div>
+            <div class="review-value">
+              Venmo: @johndoe<br />
+              PayPal: john@example.com
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="review-section">
+            <div class="review-label">Co-hosts</div>
+            <div class="review-value">
+              Sarah Miller (Level 8, 98% Reliable)<br />
+              Jake Chen (Level 5, 95% Reliable)
+            </div>
+          </div>
+          <div class="divider"></div>
+          <div class="review-section">
+            <div class="review-label">Links</div>
+            <div class="review-value">
+              🏀 Court Rules & Info<br />
+              <span style="font-size: 12px; color: rgba(255, 107, 53, 0.8)"
+                >courtinfo.com/downtown</span
+              ><br /><br />
+              📍 Parking Details<br />
+              <span style="font-size: 12px; color: rgba(255, 107, 53, 0.8)"
+                >maps.google.com/parking</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button class="btn btn-secondary" onclick="prevStep(3)">Back</button>
+          <button class="btn btn-primary">Publish Event</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Questionnaire Modal -->
+    <div
+      class="modal-overlay"
+      id="questionnaireModal"
+      onclick="if(event.target === this) closeQuestionnaireModal()"
+    >
+      <div class="modal-content">
+        <div class="notch"></div>
+
+        <div class="modal-header">
+          <h2>Questionnaire</h2>
+          <div class="close-btn" onclick="closeQuestionnaireModal()">×</div>
+        </div>
+
+        <div class="modal-body">
+          <div class="section">
+            <p style="font-size: 14px; color: rgba(255, 255, 255, 0.6); margin-bottom: 20px">
+              Add custom questions for guests to answer when they RSVP. This helps you gather
+              important information.
+            </p>
+
+            <button class="add-question-btn" onclick="addQuestion()">+ Add Question</button>
+
+            <div id="questions-list">
+              <!-- Sample questions -->
+              <div class="question-card">
+                <div class="question-header">
+                  <select class="input-field select-field" style="flex: 1; margin: 0">
+                    <option value="short-answer" selected>Short Answer</option>
+                    <option value="multiple-choice">Multiple Choice</option>
+                    <option value="email">Email</option>
+                  </select>
+                  <div class="private-toggle compact active">
+                    <div class="toggle-icon"></div>
+                    <span class="toggle-label">Required</span>
+                  </div>
+                  <button class="icon-button-remove">×</button>
+                </div>
+                <div class="input-group">
+                  <input
+                    type="text"
+                    class="input-field"
+                    placeholder="Enter your question"
+                    value="What's your skill level?"
+                  />
+                </div>
+              </div>
+
+              <div class="question-card">
+                <div class="question-header">
+                  <select class="input-field select-field" style="flex: 1; margin: 0">
+                    <option value="short-answer">Short Answer</option>
+                    <option value="multiple-choice" selected>Multiple Choice</option>
+                    <option value="email">Email</option>
+                  </select>
+                  <div class="private-toggle compact">
+                    <div class="toggle-icon"></div>
+                    <span class="toggle-label">Required</span>
+                  </div>
+                  <button class="icon-button-remove">×</button>
+                </div>
+                <div class="input-group">
+                  <input
+                    type="text"
+                    class="input-field"
+                    placeholder="Enter your question"
+                    value="What position do you prefer?"
+                  />
+                </div>
+                <div class="input-group">
+                  <label class="input-label">Options (one per line)</label>
+                  <textarea class="input-field" rows="3" placeholder="Enter options...">
+Guard
+Forward
+Center</textarea
+                  >
+                </div>
+              </div>
+
+              <div class="question-card">
+                <div class="question-header">
+                  <select class="input-field select-field" style="flex: 1; margin: 0">
+                    <option value="short-answer">Short Answer</option>
+                    <option value="multiple-choice">Multiple Choice</option>
+                    <option value="email" selected>Email</option>
+                  </select>
+                  <div class="private-toggle compact active">
+                    <div class="toggle-icon"></div>
+                    <span class="toggle-label">Required</span>
+                  </div>
+                  <button class="icon-button-remove">×</button>
+                </div>
+                <div class="input-group">
+                  <input
+                    type="text"
+                    class="input-field"
+                    placeholder="Enter your question"
+                    value="What's your email address?"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button class="btn btn-secondary" onclick="closeQuestionnaireModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="saveQuestionnaire()">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reminders Modal -->
+    <div
+      class="modal-overlay"
+      id="remindersModal"
+      onclick="if(event.target === this) closeRemindersModal()"
+    >
+      <div class="modal-content">
+        <div class="notch"></div>
+
+        <div class="modal-header">
+          <h2>Reminders</h2>
+          <div class="close-btn" onclick="closeRemindersModal()">×</div>
+        </div>
+
+        <div class="modal-body">
+          <div class="section">
+            <p style="font-size: 14px; color: rgba(255, 255, 255, 0.6); margin-bottom: 20px">
+              Set up automatic reminders to keep your guests informed and engaged.
+            </p>
+
+            <div class="reminder-section">
+              <div class="reminder-item">
+                <div class="reminder-description">Auto-remind invited & maybe guests to RSVP</div>
+                <div class="reminder-row">
+                  <div class="private-toggle compact active">
+                    <div class="toggle-icon"></div>
+                    <span class="toggle-label">RSVP Reminder</span>
+                  </div>
+                  <select
+                    class="input-field select-field"
+                    style="flex: 1; margin: 0; padding: 8px 12px; font-size: 14px"
+                  >
+                    <option value="1">1 day before</option>
+                    <option value="2" selected>2 days before</option>
+                    <option value="3">3 days before</option>
+                    <option value="7">1 week before</option>
+                    <option value="14">2 weeks before</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="reminder-item">
+                <div class="reminder-description">Remind confirmed guests before event starts</div>
+                <div class="reminder-row">
+                  <div class="private-toggle compact active">
+                    <div class="toggle-icon"></div>
+                    <span class="toggle-label">Event Reminder</span>
+                  </div>
+                  <select
+                    class="input-field select-field"
+                    style="flex: 1; margin: 0; padding: 8px 12px; font-size: 14px"
+                  >
+                    <option value="1">1 hour before</option>
+                    <option value="2" selected>2 hours before</option>
+                    <option value="3">3 hours before</option>
+                    <option value="6">6 hours before</option>
+                    <option value="12">12 hours before</option>
+                    <option value="24">24 hours before</option>
+                    <option value="48">48 hours before</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button class="btn btn-secondary" onclick="closeRemindersModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="saveReminders()">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Co-hosts Modal -->
+    <div
+      class="modal-overlay"
+      id="cohostsModal"
+      onclick="if(event.target === this) closeCohostsModal()"
+    >
+      <div class="modal-content">
+        <div class="notch"></div>
+
+        <div class="modal-header">
+          <h2>Add Co-hosts</h2>
+          <div class="close-btn" onclick="closeCohostsModal()">×</div>
+        </div>
+
+        <div class="modal-body">
+          <div class="section">
+            <p style="font-size: 14px; color: rgba(255, 255, 255, 0.6); margin-bottom: 20px">
+              Search and add co-hosts to help manage this event. Max 5 co-hosts.
+            </p>
+
+            <div class="input-group">
+              <input
+                type="text"
+                class="input-field"
+                placeholder="Search by name or sport..."
+                style="margin-bottom: 20px"
+              />
+            </div>
+
+            <div class="reminder-section">
+              <div class="list-item">
+                <div class="cohost-avatar">MJ</div>
+                <div class="list-item-info">
+                  <div class="list-item-title">Mike Johnson</div>
+                  <div class="list-item-subtitle">Level 7 • 1,890 XP • 92% Reliable</div>
+                </div>
+                <button class="icon-button-inline" style="margin-left: 0">Add</button>
+              </div>
+
+              <div class="list-item">
+                <div
+                  class="cohost-avatar"
+                  style="background: linear-gradient(135deg, #f093fb, #f5576c)"
+                >
+                  AL
+                </div>
+                <div class="list-item-info">
+                  <div class="list-item-title">Amy Lee</div>
+                  <div class="list-item-subtitle">Level 6 • 1,650 XP • 88% Reliable</div>
+                </div>
+                <button class="icon-button-inline" style="margin-left: 0">Add</button>
+              </div>
+
+              <div class="list-item">
+                <div
+                  class="cohost-avatar"
+                  style="background: linear-gradient(135deg, #4facfe, #00f2fe)"
+                >
+                  DW
+                </div>
+                <div class="list-item-info">
+                  <div class="list-item-title">David Wilson</div>
+                  <div class="list-item-subtitle">Level 9 • 3,120 XP • 96% Reliable</div>
+                </div>
+                <button class="icon-button-inline" style="margin-left: 0">Add</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button class="btn btn-secondary" onclick="closeCohostsModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="saveCohosts()">Done</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Links Modal -->
+    <div
+      class="modal-overlay"
+      id="linksModal"
+      onclick="if(event.target === this) closeLinksModal()"
+    >
+      <div class="modal-content">
+        <div class="notch"></div>
+
+        <div class="modal-header">
+          <h2>Add Link</h2>
+          <div class="close-btn" onclick="closeLinksModal()">×</div>
+        </div>
+
+        <div class="modal-body">
+          <div class="section">
+            <p style="font-size: 14px; color: rgba(255, 255, 255, 0.6); margin-bottom: 20px">
+              Share important links with your guests (rules, parking, waivers, etc.)
+            </p>
+
+            <div class="input-group">
+              <label class="input-label">Link Title</label>
+              <input type="text" class="input-field" placeholder="e.g. Court Rules" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">URL</label>
+              <input type="text" class="input-field" placeholder="https://example.com" />
+            </div>
+
+            <div class="input-group">
+              <label class="input-label">Icon (optional)</label>
+              <div style="display: flex; gap: 12px; flex-wrap: wrap">
+                <button class="link-icon-picker">📋</button>
+                <button class="link-icon-picker">📍</button>
+                <button class="link-icon-picker">🏀</button>
+                <button class="link-icon-picker">⚽</button>
+                <button class="link-icon-picker">🏐</button>
+                <button class="link-icon-picker">🎾</button>
+                <button class="link-icon-picker">🏈</button>
+                <button class="link-icon-picker">⚾</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button class="btn btn-secondary" onclick="closeLinksModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="saveLink()">Add Link</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div
+      class="modal-overlay"
+      id="paymentModal"
+      onclick="if(event.target === this) closePaymentModal()"
+    >
+      <div class="modal-content">
+        <div class="notch"></div>
+
+        <div class="modal-header">
+          <h2>Payment Settings</h2>
+          <div class="close-btn" onclick="closePaymentModal()">×</div>
+        </div>
+
+        <div class="modal-body">
+          <div class="section">
+            <p style="font-size: 14px; color: rgba(255, 255, 255, 0.6); margin-bottom: 20px">
+              Configure payment details for your event.
+            </p>
+
+            <div class="input-group">
+              <label class="input-label">Payment Type</label>
+              <select
+                class="input-field select-field"
+                id="paymentType"
+                onchange="updatePaymentFields()"
+              >
+                <option value="required">Required amount</option>
+                <option value="flexible" selected>Flexible range</option>
+                <option value="pay-what-you-can">Pay what you can</option>
+              </select>
+            </div>
+
+            <!-- Required Amount Field -->
+            <div class="input-group" id="requiredAmountField" style="display: none">
+              <label class="input-label">Amount</label>
+              <div style="position: relative">
+                <input
+                  type="number"
+                  class="input-field"
+                  placeholder="0.00"
+                  value="5.00"
+                  style="padding-left: 32px"
+                />
+                <span class="dollar-sign">$</span>
+              </div>
+            </div>
+
+            <!-- Flexible Range Fields -->
+            <div id="flexibleRangeFields">
+              <div class="cost-range-row">
+                <div class="input-group" style="position: relative; flex: 1">
+                  <label class="input-label">Minimum</label>
+                  <input
+                    type="number"
+                    class="input-field"
+                    placeholder="0"
+                    value="3.00"
+                    style="padding-left: 32px"
+                  />
+                  <span class="dollar-sign">$</span>
+                </div>
+                <div class="range-separator">to</div>
+                <div class="input-group" style="position: relative; flex: 1">
+                  <label class="input-label">Maximum</label>
+                  <input
+                    type="number"
+                    class="input-field"
+                    placeholder="0"
+                    value="5.00"
+                    style="padding-left: 32px"
+                  />
+                  <span class="dollar-sign">$</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="input-group" id="paymentDueByField">
+              <label class="input-label">Payment Due By</label>
+              <select class="input-field select-field">
+                <option value="1hour" selected>1 hour after RSVP</option>
+                <option value="24hours">24 hours before event</option>
+                <option value="at-event">At the event</option>
+              </select>
+            </div>
+
+            <div class="subsection-divider" id="paymentDivider"></div>
+
+            <label class="input-label" style="margin-bottom: 12px">Payment Methods</label>
+
+            <!-- Venmo -->
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px">
+              <div
+                class="private-toggle compact active"
+                onclick="togglePaymentMethod(event, 'venmo')"
+                style="min-width: 100px"
+              >
+                <div class="toggle-icon"></div>
+                <span class="toggle-label">Venmo</span>
+              </div>
+              <input
+                type="text"
+                class="input-field"
+                id="venmoField"
+                placeholder="@username"
+                value="@johndoe"
+                style="flex: 1"
+              />
+            </div>
+
+            <!-- PayPal -->
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px">
+              <div
+                class="private-toggle compact active"
+                onclick="togglePaymentMethod(event, 'paypal')"
+                style="min-width: 100px"
+              >
+                <div class="toggle-icon"></div>
+                <span class="toggle-label">PayPal</span>
+              </div>
+              <input
+                type="text"
+                class="input-field"
+                id="paypalField"
+                placeholder="email"
+                value="john@example.com"
+                style="flex: 1"
+              />
+            </div>
+
+            <!-- CashApp -->
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px">
+              <div
+                class="private-toggle compact"
+                onclick="togglePaymentMethod(event, 'cashapp')"
+                style="min-width: 100px"
+              >
+                <div class="toggle-icon"></div>
+                <span class="toggle-label">CashApp</span>
+              </div>
+              <input
+                type="text"
+                class="input-field"
+                id="cashappField"
+                placeholder="$cashtag"
+                style="flex: 1; opacity: 0.4"
+                disabled
+              />
+            </div>
+
+            <!-- Zelle -->
+            <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px">
+              <div
+                class="private-toggle compact"
+                onclick="togglePaymentMethod(event, 'zelle')"
+                style="min-width: 100px"
+              >
+                <div class="toggle-icon"></div>
+                <span class="toggle-label">Zelle</span>
+              </div>
+              <input
+                type="text"
+                class="input-field"
+                id="zelleField"
+                placeholder="email or phone"
+                style="flex: 1; opacity: 0.4"
+                disabled
+              />
+            </div>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button class="btn btn-secondary" onclick="closePaymentModal()">Cancel</button>
+          <button class="btn btn-primary" onclick="savePayment()">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let isPrivate = false;
+      let isWaitlist = false;
+
+      function togglePrivate() {
+        isPrivate = !isPrivate;
+        const toggle = document.querySelector('.header .private-toggle');
+        const display = document.getElementById('privacy-display');
+        if (isPrivate) {
+          toggle.classList.add('active');
+          if (display) display.textContent = 'Private Event';
+        } else {
+          toggle.classList.remove('active');
+          if (display) display.textContent = 'Public Event';
+        }
+      }
+
+      function toggleWaitlist() {
+        isWaitlist = !isWaitlist;
+        const toggle = document.querySelector('.waitlist-toggle-inline .private-toggle');
+        if (isWaitlist) {
+          toggle.classList.add('active');
+        } else {
+          toggle.classList.remove('active');
+        }
+      }
+
+      function nextStep(n) {
+        document.querySelectorAll('.step-content').forEach(s => s.classList.remove('active'));
+        document.getElementById('step' + n).classList.add('active');
+        // Scroll to top when changing steps
+        const activeStep = document.getElementById('step' + n);
+        if (activeStep) {
+          activeStep.scrollTop = 0;
+        }
+        document.querySelectorAll('.progress-segment').forEach((seg, i) => {
+          seg.classList.toggle('active', i < n);
+        });
+      }
+      function prevStep(n) {
+        nextStep(n);
+      }
+
+      function openQuestionnaireModal() {
+        document.getElementById('questionnaireModal').classList.add('active');
+      }
+
+      function closeQuestionnaireModal() {
+        document.getElementById('questionnaireModal').classList.remove('active');
+      }
+
+      function addQuestion() {
+        alert('Add question functionality - would open a form to create new question');
+      }
+
+      function saveQuestionnaire() {
+        // Update the preview section
+        const preview = document.querySelector('.questionnaire-preview');
+        preview.innerHTML = `
+          <div class="list-item">
+            <div class="link-icon-circle">📝</div>
+            <div class="list-item-info">
+              <div class="list-item-title">2 Questions Added</div>
+              <div class="list-item-subtitle">Skill level • Position preference</div>
+            </div>
+            <button class="icon-button-remove" onclick="openQuestionnaireModal()">Edit</button>
+          </div>
+        `;
+        closeQuestionnaireModal();
+      }
+
+      function openRemindersModal() {
+        document.getElementById('remindersModal').classList.add('active');
+      }
+
+      function closeRemindersModal() {
+        document.getElementById('remindersModal').classList.remove('active');
+      }
+
+      function saveReminders() {
+        // Update the preview section
+        const reminderPreviews = document.querySelectorAll('.questionnaire-preview');
+        const remindersPreview = reminderPreviews[1]; // Second preview is for reminders
+        remindersPreview.innerHTML = `
+          <div class="list-item">
+            <div class="link-icon-circle">🔔</div>
+            <div class="list-item-info">
+              <div class="list-item-title">2 Reminders Set</div>
+              <div class="list-item-subtitle">RSVP reminder • Event reminder (2hr before)</div>
+            </div>
+            <button class="icon-button-remove" onclick="openRemindersModal()">Edit</button>
+          </div>
+        `;
+        closeRemindersModal();
+      }
+
+      function openCohostsModal() {
+        document.getElementById('cohostsModal').classList.add('active');
+      }
+
+      function closeCohostsModal() {
+        document.getElementById('cohostsModal').classList.remove('active');
+      }
+
+      function saveCohosts() {
+        alert('Co-hosts would be added to the list');
+        closeCohostsModal();
+      }
+
+      function openLinksModal() {
+        document.getElementById('linksModal').classList.add('active');
+      }
+
+      function closeLinksModal() {
+        document.getElementById('linksModal').classList.remove('active');
+      }
+
+      function saveLink() {
+        alert('Link would be added to the list');
+        closeLinksModal();
+      }
+
+      function togglePaymentSection() {
+        const paymentList = document.getElementById('payment-list');
+        const toggle = event.currentTarget;
+
+        if (toggle.classList.contains('active')) {
+          // Turning off - hide payment list
+          toggle.classList.remove('active');
+          paymentList.style.display = 'none';
+        } else {
+          // Turning on - show modal to configure payment
+          toggle.classList.add('active');
+          paymentList.style.display = 'block';
+          openPaymentModal();
+        }
+      }
+
+      function openPaymentModal() {
+        document.getElementById('paymentModal').classList.add('active');
+        updatePaymentFields();
+      }
+
+      function closePaymentModal() {
+        document.getElementById('paymentModal').classList.remove('active');
+      }
+
+      function updatePaymentFields() {
+        const paymentType = document.getElementById('paymentType').value;
+        const requiredField = document.getElementById('requiredAmountField');
+        const flexibleFields = document.getElementById('flexibleRangeFields');
+        const paymentDueByField = document.getElementById('paymentDueByField');
+        const paymentDivider = document.getElementById('paymentDivider');
+
+        // Hide all amount fields first
+        requiredField.style.display = 'none';
+        flexibleFields.style.display = 'none';
+
+        // Show relevant fields based on payment type
+        if (paymentType === 'required') {
+          requiredField.style.display = 'block';
+          paymentDueByField.style.display = 'block';
+          paymentDivider.style.display = 'block';
+        } else if (paymentType === 'flexible') {
+          flexibleFields.style.display = 'block';
+          paymentDueByField.style.display = 'block';
+          paymentDivider.style.display = 'block';
+        } else if (paymentType === 'pay-what-you-can') {
+          // Pay-what-you-can: no amount fields and no payment deadline
+          paymentDueByField.style.display = 'none';
+          paymentDivider.style.display = 'none';
+        }
+      }
+
+      function togglePaymentMethod(e, method) {
+        const field = document.getElementById(method + 'Field');
+        const toggle = e.currentTarget;
+
+        if (toggle.classList.contains('active')) {
+          toggle.classList.remove('active');
+          field.disabled = true;
+          field.style.opacity = '0.4';
+        } else {
+          toggle.classList.add('active');
+          field.disabled = false;
+          field.style.opacity = '1';
+        }
+      }
+
+      function savePayment() {
+        alert('Payment settings saved');
+        closePaymentModal();
+      }
+    </script>
+  </body>
+</html>

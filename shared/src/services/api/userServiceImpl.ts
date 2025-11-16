@@ -41,7 +41,8 @@ export class UserServiceImpl extends UserService {
 
       const response = await httpClient
         .post(`users/${userId}/avatar`, {
-          body: formData,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          body: formData as any, // FormData type differs between web and RN
           headers: {}, // Let browser set Content-Type with boundary
         })
         .json<{ avatarUrl: string }>();

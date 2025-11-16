@@ -10,6 +10,9 @@ module.exports = {
     '^@shared$': '<rootDir>/../shared/src/index',
     // Mock image/asset imports
     '\\.(jpg|jpeg|png|gif|svg|webp)$': '<rootDir>/__mocks__/fileMock.js',
+    // Mock react-native-linear-gradient
+    'react-native-linear-gradient':
+      '<rootDir>/__mocks__/react-native-linear-gradient.jsx',
   },
 
   // Transform configuration
@@ -22,7 +25,7 @@ module.exports = {
 
   // Transform react-redux and other ESM packages
   transformIgnorePatterns: [
-    'node_modules/(?!(react-redux|@react-redux|@reduxjs|immer|react-native|@react-native|@react-navigation|ky|@react-native-google-signin|react-native-image-picker)/)',
+    'node_modules/(?!(react-redux|@react-redux|@reduxjs|immer|react-native|@react-native|@react-navigation|ky|@react-native-google-signin|react-native-image-picker|react-native-linear-gradient)/)',
   ],
 
   // Test file patterns

@@ -3,23 +3,24 @@
 # Version: 6.0.0-alpha.4
 # Date: 2025-11-04T02:29:13.096Z
 #
-# 🚨 CRITICAL: Before ANY work, read these in order:
-#   1. {project-root}/docs/knowledge-base/AUTONOMOUS-AGENT-QUICK-REF.md - Golden rules + NEVER interrupt builds
-#   2. {project-root}/docs/knowledge-base/LEARNING-SUMMARY-NOV-2025.md - Critical lessons learned
-#   3. {project-root}/docs/INDEX.md - Error solutions & documentation catalog
-#   4. {project-root}/docs/knowledge-base/PROJECT-CONTEXT.md - Project structure & scope
-#   5. {project-root}/docs/sprint-status.yaml - Current development status
+# 🚨 CRITICAL READ ORDER (Consolidated Knowledge Base):
+#   1. {project-root}/docs/knowledge-base/PROJECT-CONTEXT.md              → Scope, constraints, handoff protocol
+#   2. {project-root}/docs/knowledge-base/docs--architecture.md            → Structural & technical patterns
+#   3. {project-root}/docs/knowledge-base/docs--agent-autonomous-debugging-guide.md → Autonomous workflow (testing/logs/debugging)
+#   4. {project-root}/docs/knowledge-base/docs--mobile-test-and-debug-guide.md      → Mobile/iOS simulator specifics
+#   5. {project-root}/docs/knowledge-base/docs--copilot-self-retro-spec.md          → Quality & self-retro protocol
+#   6. {project-root}/docs/INDEX.md                                      → Navigation ONLY (no how-to; catalog of artifacts)
+#   7. {project-root}/docs/sprint-status.yaml                            → Active story states
 #
-# 🔍 When you encounter errors:
-#   - Check INDEX.md error resolution map FIRST (15+ common patterns mapped)
-#   - Follow protocols in knowledge-base/ docs (REPRODUCE_METRO_ERROR.md, AGENT-TESTING-GUIDE.md)
-#   - NEVER ask user for help if solution exists in documentation
+# 🔍 Error / Issue Handling:
+#   - Do NOT look in INDEX.md for fixes (index is now non-procedural).
+#   - Always extract solutions from the appropriate consolidated knowledge-base document.
+#   - NEVER request user clarification before inspecting logs & those docs.
 #
-# 🔄 Self-Improvement Protocol:
-#   - When corrected by user → Update LEARNING-SUMMARY-NOV-2025.md with issue/cause/fix
-#   - If existing doc unclear → Update that doc, don't create new one
-#   - When you miss obvious doc → Update INDEX.md
-#   - Follow {project-root}/docs/knowledge-base/copilot_self_retro_spec.md
+# 🔄 Self-Improvement Protocol (See docs--copilot-self-retro-spec.md):
+#   - On correction: perform self-retro; do NOT create duplicate docs.
+#   - Missing guidance → augment the relevant knowledge-base file (not INDEX.md).
+#   - INDEX.md changes only when artifact locations or categories change.
 
 project_name: gss_client
 include_game_planning: false

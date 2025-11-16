@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Event - Design Explorations</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: white;
+            font-size: 48px;
+            font-weight: 700;
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 20px;
+            text-align: center;
+            margin-bottom: 60px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 40px;
+            margin-bottom: 60px;
+        }
+        .card {
+            background: white;
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 28px 80px rgba(0,0,0,0.4);
+        }
+        .card-header {
+            margin-bottom: 24px;
+        }
+        .card-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .card-subtitle {
+            font-size: 16px;
+            color: #666;
+            line-height: 1.6;
+        }
+        .preview-img {
+            width: 100%;
+            height: 400px;
+            background: #f5f5f5;
+            border-radius: 16px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #999;
+            border: 2px dashed #ddd;
+            position: relative;
+            overflow: hidden;
+        }
+        .preview-img iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            transform: scale(0.5);
+            transform-origin: top left;
+            width: 200%;
+            height: 200%;
+        }
+        .features {
+            margin-bottom: 24px;
+        }
+        .feature {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .feature::before {
+            content: '✓';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            background: #10b981;
+            color: white;
+            border-radius: 10px;
+            text-align: center;
+            line-height: 20px;
+            font-weight: 700;
+            font-size: 12px;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            text-align: center;
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.4);
+        }
+        .btn-primary:hover {
+            box-shadow: 0 6px 24px rgba(102, 126, 234, 0.6);
+            transform: translateY(-2px);
+        }
+        
+        /* Card-specific styles */
+        .card-1 .card-title { color: #3b82f6; }
+        .card-1 .preview-img { background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%); }
+        
+        .card-2 .card-title { background: linear-gradient(135deg, #ff6b35 0%, #ff8c42 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .card-2 .preview-img { background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%); }
+        
+        .card-3 .card-title { color: #673ab7; }
+        .card-3 .preview-img { background: linear-gradient(135deg, #f5f3f8 0%, #e8e4f0 100%); }
+        
+        .comparison {
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            margin-top: 40px;
+        }
+        .comparison h2 {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 32px;
+            text-align: center;
+        }
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .comparison-table th,
+        .comparison-table td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .comparison-table th {
+            font-weight: 600;
+            color: #374151;
+            background: #f9fafb;
+        }
+        .comparison-table td:first-child {
+            font-weight: 500;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Create Event Redesign</h1>
+        <p class="subtitle">Choose your preferred design direction — Three modern explorations for the 4-step wizard</p>
+        
+        <div class="grid">
+            <!-- Exploration 1 -->
+            <div class="card card-1">
+                <div class="card-header">
+                    <h2 class="card-title">Modern Minimal</h2>
+                    <p class="card-subtitle">Clean blue gradients with Airbnb-inspired elegance</p>
+                </div>
+                
+                <div class="preview-img">
+                    <span>Interactive Preview Below ↓</span>
+                </div>
+                
+                <div class="features">
+                    <div class="feature">Segmented progress bar with shimmer animation</div>
+                    <div class="feature">Filled input fields with soft backgrounds</div>
+                    <div class="feature">Glassmorphism sport cards</div>
+                    <div class="feature">Gradient buttons with depth</div>
+                    <div class="feature">Tighter 12-16px spacing rhythm</div>
+                </div>
+                
+                <a href="exploration-1-modern-minimal.html" class="btn btn-primary" target="_blank">View Full Mockup →</a>
+            </div>
+            
+            <!-- Exploration 2 -->
+            <div class="card card-2">
+                <div class="card-header">
+                    <h2 class="card-title">Premium Athletic</h2>
+                    <p class="card-subtitle">Bold orange accents with dark mode energy</p>
+                </div>
+                
+                <div class="preview-img">
+                    <span>Interactive Preview Below ↓</span>
+                </div>
+                
+                <div class="features">
+                    <div class="feature">Dark theme with vibrant orange highlights</div>
+                    <div class="feature">High-contrast text on dark background</div>
+                    <div class="feature">3D button effects with hover animations</div>
+                    <div class="feature">Athletic, energetic vibe (Strava/Nike)</div>
+                    <div class="feature">Strong uppercase typography</div>
+                </div>
+                
+                <a href="exploration-2-premium-athletic.html" class="btn btn-primary" target="_blank">View Full Mockup →</a>
+            </div>
+            
+            <!-- Exploration 3 -->
+            <div class="card card-3">
+                <div class="card-header">
+                    <h2 class="card-title">Refined Professional</h2>
+                    <p class="card-subtitle">Elegant purple theme with sophisticated styling</p>
+                </div>
+                
+                <div class="preview-img">
+                    <span>Interactive Preview Below ↓</span>
+                </div>
+                
+                <div class="features">
+                    <div class="feature">Sophisticated purple color palette</div>
+                    <div class="feature">Serif header fonts for elegance</div>
+                    <div class="feature">Subtle shadows and refined borders</div>
+                    <div class="feature">ClassPass-inspired premium feel</div>
+                    <div class="feature">Balanced, professional aesthetic</div>
+                </div>
+                
+                <a href="exploration-3-refined-professional.html" class="btn btn-primary" target="_blank">View Full Mockup →</a>
+            </div>
+        </div>
+        
+        <div class="comparison">
+            <h2>Quick Comparison</h2>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Feature</th>
+                        <th>Modern Minimal</th>
+                        <th>Premium Athletic</th>
+                        <th>Refined Professional</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Primary Color</td>
+                        <td>Blue (#3b82f6)</td>
+                        <td>Orange (#ff6b35)</td>
+                        <td>Purple (#673ab7)</td>
+                    </tr>
+                    <tr>
+                        <td>Background</td>
+                        <td>White/Light</td>
+                        <td>Dark (#1e1e1e)</td>
+                        <td>White/Light</td>
+                    </tr>
+                    <tr>
+                        <td>Vibe</td>
+                        <td>Clean, Airbnb-like</td>
+                        <td>Bold, Athletic</td>
+                        <td>Elegant, Sophisticated</td>
+                    </tr>
+                    <tr>
+                        <td>Best For</td>
+                        <td>Broad appeal, approachable</td>
+                        <td>Sports enthusiasts, energy</td>
+                        <td>Premium brand, mature users</td>
+                    </tr>
+                    <tr>
+                        <td>Implementation</td>
+                        <td>Easy (RN Paper native)</td>
+                        <td>Medium (needs dark theme)</td>
+                        <td>Easy (RN Paper native)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>
