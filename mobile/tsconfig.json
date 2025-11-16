@@ -11,5 +11,12 @@
     "allowSyntheticDefaultImports": true
   },
   "include": ["**/*.ts", "**/*.tsx", "../shared/src/**/*"],
-  "exclude": ["**/node_modules", "**/Pods", "**/__tests__/**/*"]
+  "exclude": [
+    "**/node_modules",
+    "**/Pods",
+    "**/__tests__/**/*",
+    "**/e2e/**/*",
+    "**/*.backup.tsx",
+    "**/*.OLD.tsx"
+  ]
 }

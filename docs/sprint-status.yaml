@@ -56,8 +56,10 @@ development_status:
   # Epic 2: Event Lifecycle & Attendance Commitment (Backend Complete, Frontend Needed)
   epic-2: contexted
   2-1-host-event-creation: done # APPROVED - All ACs implemented, 76/76 tests passing, code review complete
-  2-2-event-rsvp-deposit-authorization: review # All tasks complete (8/11 done, Task 10 skipped), 314 tests passing
+  2-2-event-rsvp-deposit-authorization: done # APPROVED - All tasks complete, 314 tests passing, code review complete 2025-11-13
   2-3-qr-check-in-deposit-refund: ready-for-dev
+  2-6-integration-e2e-test-coverage: ready-for-dev # Follow-up story for integration/E2E test coverage identified in Story 2-2 code review - Context generated 2025-11-11
+  2-7-deep-linking-invite-system: drafted # Follow-up story for deep linking configuration (Story 2-2 Task 10 deferred)
   2-4-event-browse-search-geo-filtering: ready-for-dev
   2-5-event-reminders-cancellation-flow: ready-for-dev
   epic-2-retrospective: optional

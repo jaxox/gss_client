@@ -7,6 +7,7 @@ module.exports = {
   parserOptions: {
     requireConfigFile: false,
   },
+  ignorePatterns: ['__mocks__/**'],
   overrides: [
     {
       files: ['*.js'],

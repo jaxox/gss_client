@@ -147,7 +147,8 @@ export class AuthServiceImpl extends AuthService {
 
       const response = await httpClient
         .post(`users/${userId}/avatar`, {
-          body: formData,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          body: formData as any, // FormData type differs between web and RN
           // Don't set Content-Type header, let browser set it with boundary
           headers: {},
         })

@@ -1,6 +1,12 @@
-import React, { useState, useEffect, useMemo } from 'react';
-import { View, StyleSheet, FlatList, Modal, SafeAreaView } from 'react-native';
-import { Appbar, Text, TextInput, Divider } from 'react-native-paper';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import {
+  View,
+  StyleSheet,
+  FlatList,
+  SafeAreaView,
+  Modal as RNModal,
+} from 'react-native';
+import { Text, Divider, Appbar, TextInput } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { CoHostCard, CoHostUser } from '../../../components/cohosts';
 
@@ -96,6 +102,9 @@ export default function AddCohostsModal({
     useState<CoHostUser[]>(initialSelected);
   const [loading, setLoading] = useState(false);
   const [addedUsers, setAddedUsers] = useState<Set<string>>(new Set());
+  const addedTimersRef = useRef<Map<string, ReturnType<typeof setTimeout>>>(
+    new Map(),
+  );
 
   // Reset state when modal opens
   useEffect(() => {
@@ -105,7 +114,8 @@ export default function AddCohostsModal({
       setAddedUsers(new Set());
       // Simulate loading
       setLoading(true);
-      setTimeout(() => setLoading(false), 500);
+      const timer = setTimeout(() => setLoading(false), 500);
+      return () => clearTimeout(timer);
     }
   }, [visible, initialSelected]);
 
@@ -147,14 +157,27 @@ export default function AddCohostsModal({
     setAddedUsers(prev => new Set(prev).add(user.id));
 
     // Remove "Added" state after 300ms
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       setAddedUsers(prev => {
         const next = new Set(prev);
         next.delete(user.id);
         return next;
       });
+      addedTimersRef.current.delete(user.id);
     }, 300);
+
+    // Store timer for cleanup
+    addedTimersRef.current.set(user.id, timer);
   };
+
+  // Cleanup all timers when component unmounts or modal closes
+  useEffect(() => {
+    const timers = addedTimersRef.current;
+    return () => {
+      timers.forEach(timer => clearTimeout(timer));
+      timers.clear();
+    };
+  }, []);
 
   const handleRemoveCohost = (userId: string) => {
     setSelectedCohosts(prev => prev.filter(c => c.id !== userId));
@@ -224,7 +247,7 @@ export default function AddCohostsModal({
   if (!visible) return null;
 
   return (
-    <Modal
+    <RNModal
       visible={visible}
       animationType="slide"
       presentationStyle="fullScreen"
@@ -309,7 +332,7 @@ export default function AddCohostsModal({
           </View>
         </View>
       </SafeAreaView>
-    </Modal>
+    </RNModal>
   );
 }
 const styles = StyleSheet.create({

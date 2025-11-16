@@ -46,9 +46,10 @@ export default function LocationInputModal({
     if (visible) {
       setQuery(value);
       // Auto-focus when modal opens
-      setTimeout(() => {
+      const timer = setTimeout(() => {
         inputRef.current?.focus();
       }, 100);
+      return () => clearTimeout(timer);
     }
   }, [visible, value]);
 
@@ -86,9 +87,14 @@ export default function LocationInputModal({
         >
           {/* Header */}
           <Appbar.Header>
-            <Appbar.Action icon="close" onPress={onDismiss} />
+            <Appbar.Action
+              testID="location-modal-close-button"
+              icon="close"
+              onPress={onDismiss}
+            />
             <Appbar.Content title="Edit Location" />
             <Appbar.Action
+              testID="location-save-button"
               icon="check"
               onPress={handleSave}
               disabled={!query.trim()}
@@ -98,6 +104,7 @@ export default function LocationInputModal({
           {/* Content */}
           <View style={styles.content}>
             <TextInput
+              testID="location-search-input"
               ref={inputRef}
               label="Location"
               value={query}

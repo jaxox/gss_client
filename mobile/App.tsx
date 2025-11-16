@@ -79,38 +79,8 @@ function App() {
     };
   }, []);
 
-  // Attach unhandled promise rejection logging once.
-  useEffect(() => {
-    // React Native doesn't expose addEventListener('unhandledrejection'), so we polyfill via Promise + setTimeout trick.
-    // We patch console.error to also mirror to native when message contains 'Unhandled promise'.
-    const origConsoleError = console.error;
-    console.error = (...args: any[]) => {
-      try {
-        const joined = args
-          .map(a => (typeof a === 'string' ? a : JSON.stringify(a)))
-          .join(' ');
-        if (/Unhandled( Promise)? rejection/i.test(joined)) {
-          logJsError({
-            source: 'global',
-            name: 'ConsoleDetectedUnhandledRejection',
-            message: joined,
-            stack: [],
-          });
-        }
-      } catch {
-        // swallow
-      }
-      return origConsoleError.apply(console, args as any);
-    };
-    // Disabled: This forced rejection was for testing error logging, but breaks CI
-    // const testTimer = setTimeout(() => {
-    //   Promise.reject(new Error('FORCED_TEST_UNHANDLED_REJECTION'));
-    // }, 3500);
-    return () => {
-      // clearTimeout(testTimer);
-      console.error = origConsoleError;
-    };
-  }, []);
+  // Note: Unhandled promise rejection logging removed to prevent E2E test issues
+  // The console.error override was causing main thread blocking in Detox tests
   const isDarkMode = useColorScheme() === 'dark';
   const [currentScreen, setCurrentScreen] = useState<Screen>('menu');
 
