@@ -174,9 +174,72 @@ Filter for app process if needed.
 
 ### 4.3 Crash Logs
 
+**Location:**
+
 ```
 ~/Library/Logs/DiagnosticReports/
 ```
+
+**How to Find Recent Crash Reports:**
+
+```bash
+# Find most recent GSS_Mobile crash report (last 24 hours)
+find ~/Library/Logs/DiagnosticReports -name "GSS_Mobile*.crash" -mtime -1 -exec ls -lt {} \; | head -1 | awk '{print $NF}' | xargs tail -100
+
+# Check if app is running in simulator
+xcrun simctl spawn booted launchctl list | grep -i gss
+
+# View real-time simulator logs for crash details
+xcrun simctl spawn booted log show --predicate 'process == "GSS_Mobile"' --style syslog --last 2m 2>&1 | tail -50
+```
+
+**Reading Crash Reports:**
+
+Look for these key sections:
+
+1. **Exception Type:** `NSInvalidArgumentException`, `SIGSEGV`, etc.
+2. **Exception Message:** Describes what went wrong
+3. **Call Stack:** Shows the code path that led to the crash
+
+**Common Native Crashes:**
+
+1. **Nil Object in Dictionary:**
+
+   ```text
+   reason: '*** -[__NSPlaceholderDictionary initWithObjects:forKeys:count:]:
+           attempt to insert nil object from objects[1]'
+   ```
+
+   - Cause: Native module trying to register with a nil value
+   - Fix: Reinstall pods and rebuild iOS app
+
+   ```bash
+   cd mobile/ios
+   pod deintegrate
+   pod install
+   cd ..
+   # Rebuild app
+   npx react-native run-ios
+   ```
+
+2. **Missing Native Module:**
+
+   ```text
+   reason: 'Invariant Violation: Native module cannot be null'
+   ```
+
+   - Cause: Native module not properly linked
+   - Fix: Check auto-linking, reinstall pods, clean build
+
+3. **Hermes Engine Crash:**
+   - Cause: JavaScript syntax error or incompatibility
+   - Fix: Clear Metro cache and rebuild
+
+   ```bash
+   npm start -- --reset-cache
+   # In another terminal
+   npx react-native run-ios
+   ```
 
 ---
 

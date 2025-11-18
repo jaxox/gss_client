@@ -14,6 +14,7 @@ import {
   Platform,
 } from 'react-native';
 import { Text, TextInput, Appbar, Portal } from 'react-native-paper';
+import { theme } from '../theme';
 
 interface Location {
   id: string;
@@ -159,37 +160,41 @@ export default function LocationInputModal({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.background,
   },
   content: {
     flex: 1,
     padding: 16,
+    backgroundColor: theme.colors.background,
   },
   input: {
     marginBottom: 8,
+    backgroundColor: theme.colors.surface,
   },
   hint: {
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     marginBottom: 16,
   },
   suggestionsList: {
     flex: 1,
   },
   suggestionsHeader: {
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     marginBottom: 8,
     fontWeight: '600',
   },
   suggestionItem: {
     padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    borderBottomColor: theme.colors.border,
+    backgroundColor: theme.colors.surface,
   },
   locationName: {
     fontWeight: '600',
     marginBottom: 4,
+    color: theme.colors.text,
   },
   locationAddress: {
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
   },
 });

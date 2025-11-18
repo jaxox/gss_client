@@ -5,10 +5,13 @@ import {
   FlatList,
   SafeAreaView,
   Modal as RNModal,
+  Pressable,
+  TextInput as RNTextInput,
 } from 'react-native';
-import { Text, Divider, Appbar, TextInput } from 'react-native-paper';
+import { Text, Divider } from 'react-native-paper';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import { CoHostCard, CoHostUser } from '../../../components/cohosts';
+import { theme } from '../../../theme';
 
 // Mock user data for development
 const MOCK_USERS = [
@@ -201,18 +204,10 @@ export default function AddCohostsModal({
       <CoHostCard
         user={item}
         onPress={() => handleAddCohost(item)}
+        onAdd={() => handleAddCohost(item)}
+        addIcon={isAdded ? 'check' : 'plus'}
         disabled={maxReached || isAdded}
-        actionButton={{
-          label: isAdded ? (
-            <Icon name="account-minus" size={16} color="#fff" />
-          ) : (
-            <Icon name="account-plus" size={16} color="#fff" />
-          ),
-          mode: 'contained',
-          onPress: () => handleAddCohost(item),
-          disabled: maxReached || isAdded,
-          style: [styles.addButton, isAdded && styles.addedButton],
-        }}
+        backgroundColor="transparent"
         accessibilityLabel={`${item.name}, Level ${item.level}, ${item.xp} XP, ${item.reliability} percent reliability, add as cohost button`}
       />
     );
@@ -220,7 +215,7 @@ export default function AddCohostsModal({
 
   const renderEmptyState = () => (
     <View style={styles.emptyState}>
-      <Icon name="account-search" size={64} color="#9CA3AF" />
+      <Icon name="account-search" size={64} color="rgba(255, 255, 255, 0.3)" />
       <Text variant="titleMedium" style={styles.emptyTitle}>
         No users found
       </Text>
@@ -254,29 +249,48 @@ export default function AddCohostsModal({
       onRequestClose={handleCancel}
     >
       <SafeAreaView style={styles.container}>
-        {/* App Bar */}
-        <Appbar.Header statusBarHeight={0}>
-          <Appbar.BackAction onPress={handleCancel} />
-          <Appbar.Content title="Add Cohosts" />
-          <Appbar.Action
-            icon="check"
+        {/* Custom Header */}
+        <View style={styles.header}>
+          <Pressable onPress={handleCancel} style={styles.backButton}>
+            <Icon name="arrow-left" size={24} color="#ffffff" />
+          </Pressable>
+          <Text style={styles.headerTitle}>Add Cohosts</Text>
+          <Pressable
             onPress={handleDone}
             disabled={selectedCohosts.length === 0}
-          />
-        </Appbar.Header>
+            style={styles.checkButton}
+          >
+            <Icon
+              name="check"
+              size={24}
+              color={
+                selectedCohosts.length === 0
+                  ? 'rgba(255, 255, 255, 0.3)'
+                  : '#ff6b35'
+              }
+            />
+          </Pressable>
+        </View>
 
         <View style={styles.content}>
           {/* Search Input */}
           <View style={styles.searchContainer}>
-            <TextInput
-              mode="outlined"
-              placeholder="Search for co-hosts"
-              value={searchQuery}
-              onChangeText={setSearchQuery}
-              left={<TextInput.Icon icon="magnify" />}
-              style={styles.searchInput}
-              accessibilityLabel="Search for cohosts"
-            />
+            <View style={styles.searchInputWrapper}>
+              <Icon
+                name="magnify"
+                size={20}
+                color="rgba(255, 255, 255, 0.5)"
+                style={styles.searchIcon}
+              />
+              <RNTextInput
+                value={searchQuery}
+                onChangeText={setSearchQuery}
+                placeholder="Search for co-hosts"
+                placeholderTextColor="rgba(255, 255, 255, 0.4)"
+                style={styles.searchInput}
+                accessibilityLabel="Search for cohosts"
+              />
+            </View>
           </View>
 
           {/* Results Header */}
@@ -312,7 +326,7 @@ export default function AddCohostsModal({
                   <CoHostCard
                     key={cohost.id}
                     user={cohost}
-                    backgroundColor="#F9FAFB"
+                    backgroundColor="rgba(255, 107, 53, 0.1)"
                     onRemove={() => handleRemoveCohost(cohost.id)}
                     accessibilityLabel={`${cohost.name}, Level ${cohost.level}, ${cohost.xp} XP, ${cohost.reliability} percent reliability, remove button`}
                   />
@@ -338,7 +352,36 @@ export default function AddCohostsModal({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: theme.colors.background,
+  },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    backgroundColor: theme.colors.background,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#ffffff',
+    flex: 1,
+    textAlign: 'center',
+  },
+  checkButton: {
+    width: 40,
+    height: 40,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   content: {
     flex: 1,
@@ -347,25 +390,36 @@ const styles = StyleSheet.create({
     padding: 16,
     paddingBottom: 8,
   },
+  searchInputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    paddingHorizontal: 12,
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
   searchInput: {
-    backgroundColor: 'white',
+    flex: 1,
+    height: 48,
+    fontSize: 15,
+    color: '#ffffff',
+    padding: 0,
   },
   sectionHeader: {
     paddingHorizontal: 16,
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
     marginBottom: 8,
-    fontWeight: '600',
+    fontWeight: '700',
+    fontSize: 12,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
   },
   resultsContainer: {
     flex: 1,
-  },
-  addButton: {
-    minWidth: 48,
-    width: 48,
-    height: 36,
-  },
-  addedButton: {
-    backgroundColor: '#10B981',
   },
   emptyState: {
     alignItems: 'center',
@@ -374,11 +428,12 @@ const styles = StyleSheet.create({
   },
   emptyTitle: {
     marginTop: 16,
-    color: '#374151',
+    color: theme.colors.text,
+    fontWeight: '700',
   },
   emptySubtitle: {
     marginTop: 4,
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
   },
   loadingContainer: {
     padding: 16,
@@ -391,7 +446,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 24,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: theme.colors.surfaceElevated,
   },
   skeletonContent: {
     flex: 1,
@@ -399,7 +454,7 @@ const styles = StyleSheet.create({
   },
   skeletonLine: {
     height: 12,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: theme.colors.surfaceElevated,
     borderRadius: 4,
     marginBottom: 8,
   },
@@ -409,6 +464,7 @@ const styles = StyleSheet.create({
   divider: {
     marginVertical: 8,
     marginHorizontal: 16,
+    backgroundColor: theme.colors.border,
   },
   selectedContainer: {
     paddingBottom: 8,
@@ -419,7 +475,9 @@ const styles = StyleSheet.create({
   },
   helperText: {
     textAlign: 'center',
-    color: '#6B7280',
+    color: theme.colors.textSecondary,
+    fontSize: 12,
+    fontWeight: '600',
   },
   helperTextError: {
     color: '#EF4444',

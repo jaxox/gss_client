@@ -1,5 +1,6 @@
 /**
- * Step 2: Social Features - Following Design
+ * Step 2: Event Details & Social - Premium Athletic Design
+ * Includes: Co-hosts, Links, Questionnaire, Reminders
  */
 import React, { useState } from 'react';
 import { View, StyleSheet, ScrollView, Pressable } from 'react-native';
@@ -7,6 +8,10 @@ import { Text } from 'react-native-paper';
 import { GradientButton } from '../../../components/controls';
 import { theme } from '../../../theme';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import AddCohostsModal from './AddCohostsModal';
+import AddLinkModal from './AddLinkModal';
+import AddQuestionnaireModal from './AddQuestionnaireModal';
+import AddRemindersModal from './AddRemindersModal';
 import type { WizardData } from './CreateEventWizard';
 
 interface Props {
@@ -15,11 +20,22 @@ interface Props {
   onBack: () => void;
 }
 
-export default function Step2Social({ onNext, onBack }: Props) {
-  const [cohosts, setCohosts] = useState<string[]>([]);
-  const [links, setLinks] = useState<Array<{ label: string; url: string }>>([]);
-  const [questions, setQuestions] = useState<string[]>([]);
-  const [reminders, setReminders] = useState<string[]>([]);
+export default function Step2Social({ data, onNext, onBack }: Props) {
+  const [cohosts, setCohosts] = useState<WizardData['cohosts']>(
+    data.cohosts || [],
+  );
+  const [links, setLinks] = useState<WizardData['links']>(data.links || []);
+  const [questions, setQuestions] = useState<WizardData['questions']>(
+    data.questions || [],
+  );
+  const [reminders, setReminders] = useState<WizardData['reminders']>(
+    data.reminders || null,
+  );
+
+  const [showCohostsModal, setShowCohostsModal] = useState(false);
+  const [showLinksModal, setShowLinksModal] = useState(false);
+  const [showQuestionnaireModal, setShowQuestionnaireModal] = useState(false);
+  const [showRemindersModal, setShowRemindersModal] = useState(false);
 
   const handleNext = () => {
     onNext({ cohosts, links, questions, reminders });
@@ -78,7 +94,7 @@ export default function Step2Social({ onNext, onBack }: Props) {
             links.map((link, idx) => (
               <View key={idx} style={styles.listItem}>
                 <View>
-                  <Text style={styles.listItemText}>{link.label}</Text>
+                  <Text style={styles.listItemText}>{link.title}</Text>
                   <Text style={styles.listItemSubtext}>{link.url}</Text>
                 </View>
                 <Pressable

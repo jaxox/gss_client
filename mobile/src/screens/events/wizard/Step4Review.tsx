@@ -1,11 +1,12 @@
 /**
- * Step 4: Review & Publish - Following Design
+ * Step 4: Review & Publish - Premium Athletic Design
  */
 import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Alert } from 'react-native';
+import { View, StyleSheet, ScrollView, Alert, Pressable } from 'react-native';
 import { Text } from 'react-native-paper';
 import { GradientButton } from '../../../components/controls';
 import { theme } from '../../../theme';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
 import type { WizardData } from './CreateEventWizard';
 
 interface Props {
@@ -60,12 +61,12 @@ export default function Step4Review({ data, onBack, onPublish }: Props) {
       <ScrollView
         testID="step4-scroll-view"
         contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
       >
-        {/* Review Card */}
         <View style={styles.reviewCard}>
           {/* Event Title */}
           <View style={styles.reviewSection}>
-            <Text style={styles.reviewLabel}>Event Title</Text>
+            <Text style={styles.reviewLabel}>EVENT TITLE</Text>
             <Text style={styles.reviewValue}>{data.title}</Text>
           </View>
 
@@ -73,7 +74,7 @@ export default function Step4Review({ data, onBack, onPublish }: Props) {
 
           {/* Description */}
           <View style={styles.reviewSection}>
-            <Text style={styles.reviewLabel}>Description</Text>
+            <Text style={styles.reviewLabel}>DESCRIPTION</Text>
             <Text style={styles.reviewValue}>{data.description}</Text>
           </View>
 
@@ -81,9 +82,9 @@ export default function Step4Review({ data, onBack, onPublish }: Props) {
 
           {/* Sport */}
           <View style={styles.reviewSection}>
-            <Text style={styles.reviewLabel}>Sport</Text>
+            <Text style={styles.reviewLabel}>SPORT</Text>
             <Text style={styles.reviewValue}>
-              🏀 {data.sportId.toUpperCase()}
+              🏀 {data.sportId.charAt(0).toUpperCase() + data.sportId.slice(1)}
             </Text>
           </View>
 
@@ -91,7 +92,7 @@ export default function Step4Review({ data, onBack, onPublish }: Props) {
 
           {/* Location */}
           <View style={styles.reviewSection}>
-            <Text style={styles.reviewLabel}>Location</Text>
+            <Text style={styles.reviewLabel}>LOCATION</Text>
             <Text style={styles.reviewValue}>{data.location}</Text>
           </View>
 
@@ -99,7 +100,7 @@ export default function Step4Review({ data, onBack, onPublish }: Props) {
 
           {/* Date & Time */}
           <View style={styles.reviewSection}>
-            <Text style={styles.reviewLabel}>Date & Time</Text>
+            <Text style={styles.reviewLabel}>DATE & TIME</Text>
             <Text style={styles.reviewValue}>
               {formatDate(data.date)}
               {'\n'}
@@ -108,23 +109,20 @@ export default function Step4Review({ data, onBack, onPublish }: Props) {
             </Text>
           </View>
 
-          {/* Show Capacity & Settings if any */}
+          {/* Capacity & Settings */}
           {(data.capacity ||
             data.waitlistEnabled !== undefined ||
             data.guestCanInvite !== undefined ||
-            data.guestCanPlusOne !== undefined ||
-            data.cost) && (
+            data.guestCanPlusOne !== undefined) && (
             <>
               <View style={styles.divider} />
               <View style={styles.reviewSection}>
-                <Text style={styles.reviewLabel}>Capacity & Settings</Text>
-                {data.capacity ? (
-                  <Text style={styles.reviewValue}>
-                    {data.capacity} participants{'\n'}
-                  </Text>
-                ) : (
-                  <Text style={styles.reviewValue}>Unlimited{'\n'}</Text>
-                )}
+                <Text style={styles.reviewLabel}>CAPACITY & SETTINGS</Text>
+                <Text style={styles.reviewValue}>
+                  {data.capacity
+                    ? `${data.capacity} participants`
+                    : 'Unlimited'}
+                </Text>
                 <Text style={styles.reviewSubValue}>
                   • Waitlist {data.waitlistEnabled ? 'enabled' : 'disabled'}
                   {'\n'}• Guests {data.guestCanInvite ? 'can' : 'cannot'} invite
@@ -135,45 +133,150 @@ export default function Step4Review({ data, onBack, onPublish }: Props) {
             </>
           )}
 
-          {/* Show Payment if set */}
-          {data.cost && (
+          {/* Payment */}
+          {data.paymentConfig && (
             <>
               <View style={styles.divider} />
               <View style={styles.reviewSection}>
-                <Text style={styles.reviewLabel}>Payment</Text>
+                <Text style={styles.reviewLabel}>PAYMENT</Text>
                 <Text style={styles.reviewValue}>
-                  ${data.cost} per person{'\n'}
+                  {data.paymentConfig.type === 'required' &&
+                    `$${data.paymentConfig.amount}`}
+                  {data.paymentConfig.type === 'flexible' &&
+                    `Flexible Range: $${data.paymentConfig.minAmount} - $${data.paymentConfig.maxAmount}`}
+                  {data.paymentConfig.type === 'pay-what-you-can' &&
+                    'Pay What You Can'}
                 </Text>
                 <Text style={styles.reviewSubValue}>
-                  Due 1hr after RSVP • Venmo, PayPal
+                  Due:{' '}
+                  {data.paymentConfig.dueBy === '1hour' && '1 hour after RSVP'}
+                  {data.paymentConfig.dueBy === '24hours' &&
+                    '24 hours before event'}
+                  {data.paymentConfig.dueBy === 'at-event' && 'At the event'}
+                </Text>
+              </View>
+              <View style={styles.divider} />
+              <View style={styles.reviewSection}>
+                <Text style={styles.reviewLabel}>PAYMENT METHODS</Text>
+                {Object.entries(data.paymentConfig.methods).map(
+                  ([method, value]) =>
+                    value && (
+                      <Text key={method} style={styles.reviewValue}>
+                        {method.charAt(0).toUpperCase() + method.slice(1)}:{' '}
+                        {value}
+                      </Text>
+                    ),
+                )}
+              </View>
+            </>
+          )}
+
+          {/* Co-hosts */}
+          {data.cohosts && data.cohosts.length > 0 && (
+            <>
+              <View style={styles.divider} />
+              <View style={styles.reviewSection}>
+                <Text style={styles.reviewLabel}>CO-HOSTS</Text>
+                {data.cohosts.map((cohost, index) => (
+                  <Text key={cohost.id} style={styles.reviewValue}>
+                    {cohost.name} (Level {cohost.level}, {cohost.reliability}%
+                    Reliable)
+                    {index < data.cohosts!.length - 1 && '\n'}
+                  </Text>
+                ))}
+              </View>
+            </>
+          )}
+
+          {/* Links */}
+          {data.links && data.links.length > 0 && (
+            <>
+              <View style={styles.divider} />
+              <View style={styles.reviewSection}>
+                <Text style={styles.reviewLabel}>LINKS</Text>
+                {data.links.map((link, index) => (
+                  <View key={index} style={styles.linkItem}>
+                    <Text style={styles.reviewValue}>
+                      {link.icon} {link.title}
+                    </Text>
+                    <Text style={styles.linkUrl}>{link.url}</Text>
+                    {index < data.links!.length - 1 && (
+                      <View style={styles.linkSpacer} />
+                    )}
+                  </View>
+                ))}
+              </View>
+            </>
+          )}
+
+          {/* Questionnaire */}
+          {data.questions && data.questions.length > 0 && (
+            <>
+              <View style={styles.divider} />
+              <View style={styles.reviewSection}>
+                <Text style={styles.reviewLabel}>QUESTIONNAIRE</Text>
+                <Text style={styles.reviewValue}>
+                  {data.questions.length} custom{' '}
+                  {data.questions.length === 1 ? 'question' : 'questions'}
+                </Text>
+                <Text style={styles.reviewSubValue}>
+                  {data.questions.map(q => `• ${q.question}`).join('\n')}
                 </Text>
               </View>
             </>
           )}
-        </View>
 
-        {/* Buttons */}
-        <View style={styles.buttonContainer}>
-          <GradientButton
-            testID="step4-back-button"
-            onPress={onBack}
-            icon="arrow-left"
-            style={styles.backButton}
-            disabled={publishing}
-          >
-            BACK
-          </GradientButton>
-          <GradientButton
-            testID="step4-publish-button"
-            onPress={handlePublish}
-            icon="check-circle"
-            style={styles.publishButton}
-            disabled={publishing}
-          >
-            {publishing ? 'PUBLISHING...' : 'PUBLISH'}
-          </GradientButton>
+          {/* Reminders */}
+          {data.reminders && (
+            <>
+              <View style={styles.divider} />
+              <View style={styles.reviewSection}>
+                <Text style={styles.reviewLabel}>REMINDERS</Text>
+                {data.reminders.rsvpReminder.enabled && (
+                  <Text style={styles.reviewValue}>
+                    RSVP Reminder: {data.reminders.rsvpReminder.daysBefore}{' '}
+                    {data.reminders.rsvpReminder.daysBefore === 1
+                      ? 'day'
+                      : 'days'}{' '}
+                    before deadline
+                  </Text>
+                )}
+                {data.reminders.eventReminder.enabled && (
+                  <Text style={styles.reviewValue}>
+                    Event Reminder: {data.reminders.eventReminder.hoursBefore}{' '}
+                    {data.reminders.eventReminder.hoursBefore === 1
+                      ? 'hour'
+                      : 'hours'}{' '}
+                    before event
+                  </Text>
+                )}
+              </View>
+            </>
+          )}
         </View>
       </ScrollView>
+
+      <View style={styles.buttonContainer}>
+        <Pressable
+          testID="step4-back-button"
+          style={styles.backButton}
+          onPress={onBack}
+          disabled={publishing}
+        >
+          <Icon name="arrow-left" size={18} color={theme.colors.text} />
+          <Text style={styles.backButtonText}>BACK</Text>
+        </Pressable>
+        <GradientButton
+          testID="step4-publish-button"
+          onPress={handlePublish}
+          icon="check-circle"
+          disabled={publishing}
+          loading={publishing}
+          style={styles.publishButton}
+        >
+          {publishing ? 'PUBLISHING...' : 'PUBLISH'}
+        </GradientButton>
+      </View>
     </View>
   );
 }
@@ -184,46 +287,33 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   scrollContent: {
-    padding: theme.spacing.lg,
-    paddingBottom: 32,
-  },
-  sectionHeader: {
-    fontSize: theme.fontSizes.md,
-    fontWeight: theme.fontWeights.bold,
-    color: theme.colors.textSecondary,
-    letterSpacing: 1.2,
-    textTransform: 'uppercase',
-    marginBottom: theme.spacing.sm,
-    marginTop: theme.spacing.md,
-  },
-  subtitle: {
-    fontSize: theme.fontSizes.sm,
-    color: theme.colors.textMuted,
-    marginBottom: theme.spacing.xl,
+    padding: 20,
+    paddingBottom: 100,
   },
   reviewCard: {
     backgroundColor: theme.colors.surface,
     borderRadius: 16,
-    padding: theme.spacing.lg,
+    padding: 20,
     borderWidth: 1,
     borderColor: theme.colors.border,
   },
   reviewSection: {
-    marginVertical: theme.spacing.sm,
+    marginVertical: 0,
   },
   reviewLabel: {
     fontSize: 12,
-    fontWeight: theme.fontWeights.bold,
+    fontWeight: '700',
     color: 'rgba(255, 107, 53, 0.8)',
     letterSpacing: 1,
-    marginBottom: theme.spacing.xs,
+    marginBottom: 6,
     textTransform: 'uppercase',
   },
   reviewValue: {
     fontSize: 16,
     color: theme.colors.text,
-    fontWeight: theme.fontWeights.semibold,
+    fontWeight: '600',
     lineHeight: 22,
+    marginBottom: 4,
   },
   reviewSubValue: {
     fontSize: 13,
@@ -233,17 +323,48 @@ const styles = StyleSheet.create({
   divider: {
     height: 1,
     backgroundColor: theme.colors.border,
-    marginVertical: theme.spacing.md,
+    marginVertical: 16,
+  },
+  linkItem: {
+    marginBottom: 8,
+  },
+  linkUrl: {
+    fontSize: 12,
+    color: 'rgba(255, 107, 53, 0.8)',
+    marginTop: 2,
+  },
+  linkSpacer: {
+    height: 12,
   },
   buttonContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
     flexDirection: 'row',
-    gap: theme.spacing.md,
-    marginTop: theme.spacing.xl,
+    gap: 12,
+    padding: 20,
+    backgroundColor: theme.colors.background,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
   },
   backButton: {
     flex: 1,
+    height: 48,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
+    borderRadius: theme.radius.lg,
+    backgroundColor: theme.colors.surfaceElevated,
+  },
+  backButtonText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: theme.colors.text,
+    letterSpacing: 1,
   },
   publishButton: {
-    flex: 2,
+    flex: 1,
   },
 });

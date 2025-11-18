@@ -4,12 +4,12 @@
  */
 
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, Pressable } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { StyleSheet, View, Text } from 'react-native';
 import { theme } from '../../../theme';
+import { CheckboxButton, FABButton } from '../../../components/buttons';
 import Step1BasicInfo from './Step1BasicInfo';
-import Step2Social from './Step2Social';
-import Step3Details from './Step3Details';
+import Step2Social from './Step2Social.premium';
+import Step3SettingsPayment from './Step3SettingsPayment.premium';
 import Step4Review from './Step4Review';
 
 export interface WizardData {
@@ -23,20 +23,60 @@ export interface WizardData {
   endTime?: Date | null;
   duration: number; // in minutes
 
-  // Step 2: Social Features
-  cohosts?: string[];
-  links?: Array<{ label: string; url: string }>;
-  questions?: string[];
-  reminders?: string[];
-
+  // Step 2: Social Features (legacy)
   // Step 3: Settings & Payment
   capacity?: number | null;
   waitlistEnabled?: boolean;
   guestCanInvite?: boolean;
   guestCanPlusOne?: boolean;
-  cost?: number | null;
+
+  // Step 3: New Premium Features
+  paymentConfig?: {
+    type: 'required' | 'flexible' | 'pay-what-you-can';
+    amount?: number;
+    minAmount?: number;
+    maxAmount?: number;
+    dueBy: '1hour' | '24hours' | 'at-event';
+    methods: {
+      venmo?: string;
+      paypal?: string;
+      cashapp?: string;
+      zelle?: string;
+    };
+  } | null;
+  cohosts?: Array<{
+    id: string;
+    name: string;
+    level: number;
+    xp: number;
+    reliability: number;
+  }>;
+  links?: Array<{
+    icon: string;
+    iconName: string;
+    title: string;
+    url: string;
+  }>;
+  questions?: Array<{
+    id: string;
+    type: 'short-answer' | 'multiple-choice' | 'email';
+    question: string;
+    required: boolean;
+    options?: string[]; // For multiple choice
+  }>;
+  reminders?: {
+    rsvpReminder: {
+      enabled: boolean;
+      daysBefore: number;
+    };
+    eventReminder: {
+      enabled: boolean;
+      hoursBefore: number;
+    };
+  } | null;
 
   // Legacy fields
+  cost?: number | null;
   paymentDueBy?: '1h_after' | '24h_before' | 'at_event';
   paymentMethods?: {
     venmo: string;
@@ -60,11 +100,12 @@ const initialData: WizardData = {
   waitlistEnabled: false,
   guestCanInvite: true,
   guestCanPlusOne: false,
-  cost: null,
+  paymentConfig: null,
   cohosts: [],
   links: [],
   questions: [],
-  reminders: [],
+  reminders: null,
+  cost: null,
 };
 
 interface Props {
@@ -75,6 +116,10 @@ export default function CreateEventWizard({ onCancel }: Props = {}) {
   const [currentStep, setCurrentStep] = useState(1);
   const [wizardData, setWizardData] = useState<WizardData>(initialData);
   const [isPrivate, setIsPrivate] = useState(false);
+
+  const handleUpdateData = (stepData: Partial<WizardData>) => {
+    setWizardData(prev => ({ ...prev, ...stepData }));
+  };
 
   const handleNext = (stepData: Partial<WizardData>) => {
     setWizardData(prev => ({ ...prev, ...stepData }));
@@ -114,14 +159,16 @@ export default function CreateEventWizard({ onCancel }: Props = {}) {
           <Step2Social
             data={wizardData}
             onNext={handleNext}
+            onUpdate={handleUpdateData}
             onBack={handleBack}
           />
         );
       case 3:
         return (
-          <Step3Details
+          <Step3SettingsPayment
             data={wizardData}
             onNext={handleNext}
+            onUpdate={handleUpdateData}
             onBack={handleBack}
           />
         );
@@ -144,24 +191,18 @@ export default function CreateEventWizard({ onCancel }: Props = {}) {
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Text style={styles.headerTitle}>Create Event</Text>
-          <Pressable
-            style={[
-              styles.privateToggle,
-              isPrivate && styles.privateToggleActive,
-            ]}
+          <CheckboxButton
+            label="Private"
+            checked={isPrivate}
             onPress={() => setIsPrivate(!isPrivate)}
-          >
-            <View
-              style={[styles.toggleIcon, isPrivate && styles.toggleIconActive]}
-            >
-              {isPrivate && <Icon name="check" size={12} color="#fff" />}
-            </View>
-            <Text style={styles.toggleLabel}>Private</Text>
-          </Pressable>
+          />
         </View>
-        <Pressable style={styles.closeButton} onPress={handleCancel}>
-          <Icon name="close" size={20} color="#ff6b35" />
-        </Pressable>
+        <FABButton
+          onPress={handleCancel}
+          icon="close"
+          size="medium"
+          variant="remove"
+        />
       </View>
 
       {/* Progress Bar */}
@@ -214,49 +255,6 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(255, 140, 66, 0.6)',
     textShadowOffset: { width: 0, height: 0 },
     textShadowRadius: 0,
-  },
-  privateToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.15)',
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-  },
-  privateToggleActive: {
-    backgroundColor: 'rgba(255, 107, 53, 0.25)',
-    borderColor: '#ff6b35',
-  },
-  toggleIcon: {
-    width: 18,
-    height: 18,
-    borderWidth: 2,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
-    borderRadius: 5,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  toggleIconActive: {
-    backgroundColor: '#ff6b35',
-    borderColor: '#ff6b35',
-  },
-  toggleLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.8)',
-  },
-  closeButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(255, 107, 53, 0.15)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 107, 53, 0.3)',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   progressBar: {
     flexDirection: 'row',

@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Step 2 Reminders Section Redesign</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #121212;
+      color: #ffffff;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 28px;
+      margin-bottom: 12px;
+      color: #ff6b35;
+    }
+    h2 {
+      font-size: 20px;
+      margin-top: 40px;
+      margin-bottom: 20px;
+      color: #ff6b35;
+      border-bottom: 2px solid rgba(255, 107, 53, 0.3);
+      padding-bottom: 8px;
+    }
+    h3 {
+      font-size: 16px;
+      margin-bottom: 12px;
+      color: #ffffff;
+      font-weight: 600;
+    }
+    .intro {
+      background: rgba(255, 107, 53, 0.1);
+      border-left: 4px solid #ff6b35;
+      padding: 16px;
+      margin-bottom: 30px;
+      border-radius: 8px;
+    }
+    .current {
+      background: rgba(239, 68, 68, 0.1);
+      border-left: 4px solid #ef4444;
+      padding: 16px;
+      margin-bottom: 30px;
+      border-radius: 8px;
+    }
+    .option {
+      background: #1e1e1e;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+    .option-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .option-number {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #ff6b35, #ff8a5c);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    .option-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+    .mockup {
+      background: #0a0a0a;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 16px 0;
+      max-width: 375px;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    .section-title-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.6);
+      letter-spacing: 1px;
+    }
+    .icon {
+      width: 20px;
+      height: 20px;
+      color: #ff6b35;
+    }
+    .fab-button {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #ff6b35, #ff8a5c);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 20px;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+      transition: all 0.2s;
+    }
+    .fab-button:active {
+      transform: scale(0.95);
+      opacity: 0.8;
+    }
+    .reminder-card {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .reminder-card:active {
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .reminder-icon {
+      width: 40px;
+      height: 40px;
+      background: rgba(255, 107, 53, 0.15);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ff6b35;
+      flex-shrink: 0;
+    }
+    .reminder-info {
+      flex: 1;
+    }
+    .reminder-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 2px;
+    }
+    .reminder-subtitle {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+    .toggle-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .toggle-card:active {
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .toggle-card.active {
+      background: rgba(255, 107, 53, 0.1);
+      border-color: rgba(255, 107, 53, 0.3);
+    }
+    .toggle-info {
+      flex: 1;
+    }
+    .toggle-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 2px;
+    }
+    .toggle-subtitle {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+    .toggle-switch {
+      width: 28px;
+      height: 28px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+    .toggle-switch.active {
+      background: rgba(255, 107, 53, 0.15);
+      border-color: #ff6b35;
+      border-width: 2px;
+    }
+    .compact-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      margin-bottom: 6px;
+      cursor: pointer;
+    }
+    .compact-row:active {
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .compact-row.active {
+      background: rgba(255, 107, 53, 0.1);
+      border-color: rgba(255, 107, 53, 0.3);
+    }
+    .compact-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .compact-icon {
+      width: 28px;
+      height: 28px;
+      background: rgba(255, 107, 53, 0.15);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ff6b35;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .compact-text {
+      font-size: 13px;
+      font-weight: 500;
+      color: #ffffff;
+    }
+    .compact-value {
+      font-size: 12px;
+      font-weight: 600;
+      color: #ff6b35;
+      background: rgba(255, 107, 53, 0.15);
+      padding: 4px 10px;
+      border-radius: 8px;
+    }
+    .empty-state {
+      padding: 24px 16px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px dashed rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      margin-top: 8px;
+    }
+    .empty-icon {
+      font-size: 40px;
+      margin-bottom: 8px;
+      opacity: 0.3;
+    }
+    .empty-text {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.5);
+      margin-bottom: 4px;
+    }
+    .empty-hint {
+      font-size: 11px;
+      color: rgba(255, 255, 255, 0.3);
+    }
+    .pros {
+      background: rgba(34, 197, 94, 0.1);
+      border-left: 3px solid #22c55e;
+      padding: 12px;
+      margin: 12px 0;
+      border-radius: 4px;
+    }
+    .cons {
+      background: rgba(239, 68, 68, 0.1);
+      border-left: 3px solid #ef4444;
+      padding: 12px;
+      margin: 12px 0;
+      border-radius: 4px;
+    }
+    .pros h4, .cons h4 {
+      font-size: 13px;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    .pros ul, .cons ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    .pros li, .cons li {
+      font-size: 13px;
+      margin-bottom: 4px;
+      padding-left: 16px;
+      position: relative;
+    }
+    .pros li:before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: #22c55e;
+      font-weight: bold;
+    }
+    .cons li:before {
+      content: "×";
+      position: absolute;
+      left: 0;
+      color: #ef4444;
+      font-weight: bold;
+    }
+    .recommendation {
+      background: linear-gradient(135deg, rgba(255, 107, 53, 0.2), rgba(255, 138, 92, 0.1));
+      border: 2px solid #ff6b35;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 40px;
+    }
+    .recommendation h3 {
+      color: #ff6b35;
+      margin-bottom: 12px;
+      font-size: 20px;
+    }
+    .clicks {
+      display: inline-block;
+      background: rgba(255, 107, 53, 0.2);
+      color: #ff6b35;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-left: 8px;
+    }
+    .badge {
+      display: inline-block;
+      background: rgba(34, 197, 94, 0.2);
+      color: #22c55e;
+      padding: 2px 8px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-left: 8px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔔 Step 2 Reminders Section Redesign</h1>
+    
+    <div class="intro">
+      <strong>Goal:</strong> Make the Reminders section on Step 2 more consistent, reduce clicks, and show status at a glance
+    </div>
+
+    <div class="current">
+      <h3>Current Implementation Issues:</h3>
+      <ul style="margin-left: 20px; margin-top: 8px;">
+        <li><strong>Header + FAB pattern:</strong> "REMINDERS" label with separate "+" button (requires modal)</li>
+        <li><strong>Empty state:</strong> No visual feedback when no reminders are set</li>
+        <li><strong>Cards show after configuration:</strong> 2 separate cards for RSVP and Event reminders</li>
+        <li><strong>Click to edit:</strong> Must tap card → opens modal to modify</li>
+        <li><strong>Pattern inconsistency:</strong> Other sections (Links, Questionnaire) show inline cards differently</li>
+        <li><strong>No quick toggle:</strong> Can't quickly disable/enable without opening modal</li>
+      </ul>
+    </div>
+
+    <h2>Current Design (for reference)</h2>
+    <div class="mockup">
+      <div class="section-header">
+        <div class="section-title-row">
+          <div class="icon">🔔</div>
+          <span class="section-label">REMINDERS</span>
+        </div>
+        <div class="fab-button">+</div>
+      </div>
+
+      <!-- After reminders are configured -->
+      <div class="reminder-card">
+        <div class="reminder-icon">📨</div>
+        <div class="reminder-info">
+          <div class="reminder-title">RSVP Reminder</div>
+          <div class="reminder-subtitle">Send 7 days before event</div>
+        </div>
+        <div style="color: rgba(255,255,255,0.3)">›</div>
+      </div>
+
+      <div class="reminder-card">
+        <div class="reminder-icon">⏰</div>
+        <div class="reminder-info">
+          <div class="reminder-title">Event Reminder</div>
+          <div class="reminder-subtitle">Send 24 hours before event</div>
+        </div>
+        <div style="color: rgba(255,255,255,0.3)">›</div>
+      </div>
+    </div>
+
+    <h2>Redesign Options</h2>
+
+    <!-- Option 1 -->
+    <div class="option">
+      <div class="option-header">
+        <div class="option-number">1</div>
+        <div>
+          <div class="option-title">Always-Visible Toggle Cards</div>
+          <span class="clicks">1 click to enable</span>
+          <span class="badge">Recommended</span>
+        </div>
+      </div>
+
+      <h3>Design:</h3>
+      <div class="mockup">
+        <div class="section-header">
+          <div class="section-title-row">
+            <div class="icon">🔔</div>
+            <span class="section-label">REMINDERS</span>
+          </div>
+        </div>
+
+        <!-- Always visible, even when disabled -->
+        <div class="toggle-card active">
+          <div class="toggle-info">
+            <div class="toggle-title">RSVP Reminder</div>
+            <div class="toggle-subtitle">7 days before deadline</div>
+          </div>
+          <div class="toggle-switch active">✓</div>
+        </div>
+
+        <div class="toggle-card">
+          <div class="toggle-info">
+            <div class="toggle-title">Event Reminder</div>
+            <div class="toggle-subtitle">24 hours before event</div>
+          </div>
+          <div class="toggle-switch">○</div>
+        </div>
+
+        <div style="font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 8px; text-align: center;">
+          Tap card to customize timing
+        </div>
+      </div>
+
+      <div class="pros">
+        <h4>Pros:</h4>
+        <ul>
+          <li>No "+ ADD" button needed - options always visible</li>
+          <li>One tap to enable with smart defaults (7d, 24h)</li>
+          <li>See both options at once, know what's available</li>
+          <li>Quick toggle on/off without modal</li>
+          <li>Tap card body for advanced timing (opens modal)</li>
+          <li>Consistent space usage - no jumping layout</li>
+          <li>Visual feedback: enabled cards are highlighted</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>Cons:</h4>
+        <ul>
+          <li>Takes vertical space even when not used</li>
+          <li>Different pattern from other sections (Cohosts, Links)</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Option 2 -->
+    <div class="option">
+      <div class="option-header">
+        <div class="option-number">2</div>
+        <div>
+          <div class="option-title">Compact Inline Rows</div>
+          <span class="clicks">1 click to enable</span>
+        </div>
+      </div>
+
+      <h3>Design:</h3>
+      <div class="mockup">
+        <div class="section-header">
+          <div class="section-title-row">
+            <div class="icon">🔔</div>
+            <span class="section-label">REMINDERS</span>
+          </div>
+        </div>
+
+        <div class="compact-row active">
+          <div class="compact-left">
+            <div class="compact-icon">📨</div>
+            <span class="compact-text">RSVP Reminder</span>
+          </div>
+          <div class="compact-value">7 days</div>
+        </div>
+
+        <div class="compact-row">
+          <div class="compact-left">
+            <div class="compact-icon">⏰</div>
+            <span class="compact-text">Event Reminder</span>
+          </div>
+          <div class="compact-value" style="opacity: 0.3">Off</div>
+        </div>
+      </div>
+
+      <div class="pros">
+        <h4>Pros:</h4>
+        <ul>
+          <li>Most space-efficient option</li>
+          <li>Shows current value inline (7 days, 24h, or "Off")</li>
+          <li>Tap to toggle and/or modify timing</li>
+          <li>Clean, scannable layout</li>
+          <li>Always visible options</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>Cons:</h4>
+        <ul>
+          <li>Less clear that it's toggleable</li>
+          <li>Value badge might be missed</li>
+          <li>No explicit on/off switch visual</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Option 3 -->
+    <div class="option">
+      <div class="option-header">
+        <div class="option-number">3</div>
+        <div>
+          <div class="option-title">Smart Empty State + FAB (Current+)</div>
+          <span class="clicks">1-2 clicks</span>
+        </div>
+      </div>
+
+      <h3>Design:</h3>
+      <div class="mockup">
+        <div class="section-header">
+          <div class="section-title-row">
+            <div class="icon">🔔</div>
+            <span class="section-label">REMINDERS</span>
+          </div>
+          <div class="fab-button">+</div>
+        </div>
+
+        <!-- When empty -->
+        <div class="empty-state">
+          <div class="empty-icon">🔔</div>
+          <div class="empty-text">No reminders set</div>
+          <div class="empty-hint">Tap + to notify guests automatically</div>
+        </div>
+
+        <!-- When configured (same as current) -->
+        <!-- Shows the 2 cards as in current design -->
+      </div>
+
+      <div class="pros">
+        <h4>Pros:</h4>
+        <ul>
+          <li>Keeps existing pattern familiar</li>
+          <li>Clear empty state guides user</li>
+          <li>Minimal change from current implementation</li>
+          <li>Follows same pattern as other sections</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>Cons:</h4>
+        <ul>
+          <li>Still requires modal for everything</li>
+          <li>No quick enable/disable</li>
+          <li>Empty state takes space but provides no function</li>
+          <li>Most clicks of all options</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Option 4 -->
+    <div class="option">
+      <div class="option-header">
+        <div class="option-number">4</div>
+        <div>
+          <div class="option-title">Hybrid: Toggles When Empty, Cards When Set</div>
+          <span class="clicks">1-2 clicks</span>
+        </div>
+      </div>
+
+      <h3>Design:</h3>
+      <div class="mockup">
+        <div class="section-header">
+          <div class="section-title-row">
+            <div class="icon">🔔</div>
+            <span class="section-label">REMINDERS</span>
+          </div>
+        </div>
+
+        <div style="font-size: 11px; color: rgba(255,255,255,0.5); margin-bottom: 10px;">
+          Quick Setup:
+        </div>
+
+        <!-- Initial state: compact toggles -->
+        <div class="toggle-card active">
+          <div class="toggle-info">
+            <div class="toggle-title">RSVP Reminder</div>
+            <div class="toggle-subtitle">7 days before</div>
+          </div>
+          <div class="toggle-switch active">✓</div>
+        </div>
+
+        <div class="toggle-card">
+          <div class="toggle-info">
+            <div class="toggle-title">Event Reminder</div>
+            <div class="toggle-subtitle">24h before</div>
+          </div>
+          <div class="toggle-switch">○</div>
+        </div>
+
+        <div style="font-size: 11px; color: rgba(255,255,255,0.4); margin-top: 8px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.05);">
+          Once enabled, tap to customize • Long-press to disable
+        </div>
+      </div>
+
+      <div class="pros">
+        <h4>Pros:</h4>
+        <ul>
+          <li>Progressive disclosure: simple start, detailed later</li>
+          <li>One tap to enable with defaults</li>
+          <li>Can tap again to customize timing</li>
+          <li>Shows more detail after user commits</li>
+          <li>Balances simplicity and power</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>Cons:</h4>
+        <ul>
+          <li>Layout changes after interaction (cards expand)</li>
+          <li>More complex state management</li>
+          <li>Long-press pattern might not be discoverable</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Recommendation -->
+    <div class="recommendation">
+      <h3>🏆 Recommended: Option 1 (Always-Visible Toggle Cards)</h3>
+      <p style="margin-bottom: 16px;">
+        This provides the <strong>best user experience</strong> for Step 2 because:
+      </p>
+      <ul style="margin-left: 20px; margin-bottom: 16px;">
+        <li><strong>Discoverability:</strong> Users immediately see both reminder options without hunting</li>
+        <li><strong>Speed:</strong> One tap to enable with smart defaults (7d RSVP, 24h Event)</li>
+        <li><strong>Consistency:</strong> Similar to modern mobile settings patterns (iOS, Android)</li>
+        <li><strong>Progressive disclosure:</strong> Simple toggle first, tap card for advanced timing</li>
+        <li><strong>Status at-a-glance:</strong> Colored highlight shows what's enabled</li>
+        <li><strong>No modal required:</strong> For basic enable/disable (60-70% less friction)</li>
+      </ul>
+
+      <h3 style="margin-top: 20px; font-size: 16px;">Implementation Notes:</h3>
+      <div style="background: rgba(255,255,255,0.05); padding: 12px; border-radius: 8px; margin-top: 8px;">
+        <ul style="margin-left: 20px; font-size: 14px;">
+          <li><strong>Tap toggle button:</strong> Enable/disable with defaults</li>
+          <li><strong>Tap card body:</strong> Opens modal for custom timing</li>
+          <li><strong>Visual feedback:</strong> Enabled cards have orange tint + border</li>
+          <li><strong>Defaults:</strong> 7 days for RSVP, 24 hours for Event</li>
+          <li><strong>Space cost:</strong> ~120px vertical (vs ~50px for header+FAB)</li>
+        </ul>
+      </div>
+
+      <h3 style="margin-top: 20px; font-size: 16px;">Why Not Other Options:</h3>
+      <ul style="margin-left: 20px; font-size: 13px; color: rgba(255,255,255,0.8); margin-top: 8px;">
+        <li><strong>Option 2:</strong> Too subtle, users might not realize it's interactive</li>
+        <li><strong>Option 3:</strong> Empty state wastes space, still requires modal for everything</li>
+        <li><strong>Option 4:</strong> Clever but complex state changes confuse users</li>
+      </ul>
+    </div>
+
+    <h2>Comparison Table</h2>
+    <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 8px; margin-top: 20px; overflow-x: auto;">
+      <table style="width: 100%; font-size: 13px; border-collapse: collapse;">
+        <thead>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <th style="text-align: left; padding: 8px; color: rgba(255,255,255,0.6);">Feature</th>
+            <th style="padding: 8px; color: #ff6b35;">Option 1</th>
+            <th style="padding: 8px; color: rgba(255,255,255,0.6);">Option 2</th>
+            <th style="padding: 8px; color: rgba(255,255,255,0.6);">Option 3</th>
+            <th style="padding: 8px; color: rgba(255,255,255,0.6);">Option 4</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 8px;">Clicks to enable</td>
+            <td style="padding: 8px; text-align: center; color: #22c55e;">1</td>
+            <td style="padding: 8px; text-align: center;">1</td>
+            <td style="padding: 8px; text-align: center; color: #ef4444;">2-3</td>
+            <td style="padding: 8px; text-align: center;">1-2</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 8px;">Always visible</td>
+            <td style="padding: 8px; text-align: center; color: #22c55e;">✓</td>
+            <td style="padding: 8px; text-align: center; color: #22c55e;">✓</td>
+            <td style="padding: 8px; text-align: center; color: #ef4444;">✗</td>
+            <td style="padding: 8px; text-align: center; color: #22c55e;">✓</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 8px;">Quick toggle</td>
+            <td style="padding: 8px; text-align: center; color: #22c55e;">✓</td>
+            <td style="padding: 8px; text-align: center;">~</td>
+            <td style="padding: 8px; text-align: center; color: #ef4444;">✗</td>
+            <td style="padding: 8px; text-align: center; color: #22c55e;">✓</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 8px;">Space efficiency</td>
+            <td style="padding: 8px; text-align: center;">Medium</td>
+            <td style="padding: 8px; text-align: center; color: #22c55e;">High</td>
+            <td style="padding: 8px; text-align: center;">Low</td>
+            <td style="padding: 8px; text-align: center;">Medium</td>
+          </tr>
+          <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <td style="padding: 8px;">Clear affordance</td>
+            <td style="padding: 8px; text-align: center; color: #22c55e;">High</td>
+            <td style="padding: 8px; text-align: center;">Low</td>
+            <td style="padding: 8px; text-align: center;">Medium</td>
+            <td style="padding: 8px; text-align: center;">Medium</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px;">Implementation complexity</td>
+            <td style="padding: 8px; text-align: center; color: #22c55e;">Low</td>
+            <td style="padding: 8px; text-align: center; color: #22c55e;">Low</td>
+            <td style="padding: 8px; text-align: center; color: #22c55e;">Low</td>
+            <td style="padding: 8px; text-align: center; color: #ef4444;">High</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reminders UI Redesign Options</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #121212;
+      color: #ffffff;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    h1 {
+      font-size: 28px;
+      margin-bottom: 12px;
+      color: #ff6b35;
+    }
+    h2 {
+      font-size: 20px;
+      margin-top: 40px;
+      margin-bottom: 20px;
+      color: #ff6b35;
+      border-bottom: 2px solid rgba(255, 107, 53, 0.3);
+      padding-bottom: 8px;
+    }
+    h3 {
+      font-size: 16px;
+      margin-bottom: 12px;
+      color: #ffffff;
+      font-weight: 600;
+    }
+    .intro {
+      background: rgba(255, 107, 53, 0.1);
+      border-left: 4px solid #ff6b35;
+      padding: 16px;
+      margin-bottom: 30px;
+      border-radius: 8px;
+    }
+    .problem {
+      background: rgba(239, 68, 68, 0.1);
+      border-left: 4px solid #ef4444;
+      padding: 16px;
+      margin-bottom: 30px;
+      border-radius: 8px;
+    }
+    .option {
+      background: #1e1e1e;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+    .option-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .option-number {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #ff6b35, #ff8a5c);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 18px;
+    }
+    .option-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+    .mockup {
+      background: #0a0a0a;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 16px;
+      margin: 16px 0;
+      max-width: 375px;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .section-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(255, 255, 255, 0.6);
+      letter-spacing: 1px;
+    }
+    .inline-toggle-group {
+      display: flex;
+      gap: 8px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 12px;
+    }
+    .inline-option {
+      flex: 1;
+      padding: 12px 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .inline-option.active {
+      background: rgba(255, 107, 53, 0.2);
+      border-color: #ff6b35;
+      border-width: 2px;
+    }
+    .inline-option:active {
+      transform: scale(0.98);
+    }
+    .inline-option-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: rgba(255, 255, 255, 0.6);
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .inline-option.active .inline-option-label {
+      color: #ff6b35;
+    }
+    .inline-option-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+    .chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .chip {
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .chip.active {
+      background: rgba(255, 107, 53, 0.2);
+      border-color: #ff6b35;
+      border-width: 2px;
+      color: #ff6b35;
+    }
+    .chip:active {
+      transform: scale(0.95);
+    }
+    .toggle-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      cursor: pointer;
+    }
+    .toggle-card:active {
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .toggle-info {
+      flex: 1;
+    }
+    .toggle-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #ffffff;
+      margin-bottom: 4px;
+    }
+    .toggle-subtitle {
+      font-size: 12px;
+      color: rgba(255, 255, 255, 0.6);
+    }
+    .toggle-switch {
+      width: 32px;
+      height: 32px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .toggle-switch.active {
+      background: rgba(255, 107, 53, 0.15);
+      border-color: #ff6b35;
+      border-width: 2px;
+    }
+    .stepper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      margin-top: 8px;
+    }
+    .stepper-btn {
+      width: 32px;
+      height: 32px;
+      background: rgba(255, 107, 53, 0.2);
+      border: 1px solid #ff6b35;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ff6b35;
+      font-weight: bold;
+      font-size: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .stepper-btn:active {
+      transform: scale(0.9);
+      background: rgba(255, 107, 53, 0.3);
+    }
+    .stepper-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: #ffffff;
+    }
+    .pros {
+      background: rgba(34, 197, 94, 0.1);
+      border-left: 3px solid #22c55e;
+      padding: 12px;
+      margin: 12px 0;
+      border-radius: 4px;
+    }
+    .cons {
+      background: rgba(239, 68, 68, 0.1);
+      border-left: 3px solid #ef4444;
+      padding: 12px;
+      margin: 12px 0;
+      border-radius: 4px;
+    }
+    .pros h4, .cons h4 {
+      font-size: 13px;
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    .pros ul, .cons ul {
+      list-style: none;
+      padding-left: 0;
+    }
+    .pros li, .cons li {
+      font-size: 13px;
+      margin-bottom: 4px;
+      padding-left: 16px;
+      position: relative;
+    }
+    .pros li:before {
+      content: "✓";
+      position: absolute;
+      left: 0;
+      color: #22c55e;
+      font-weight: bold;
+    }
+    .cons li:before {
+      content: "×";
+      position: absolute;
+      left: 0;
+      color: #ef4444;
+      font-weight: bold;
+    }
+    .recommendation {
+      background: linear-gradient(135deg, rgba(255, 107, 53, 0.2), rgba(255, 138, 92, 0.1));
+      border: 2px solid #ff6b35;
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 40px;
+    }
+    .recommendation h3 {
+      color: #ff6b35;
+      margin-bottom: 12px;
+      font-size: 20px;
+    }
+    .clicks {
+      display: inline-block;
+      background: rgba(255, 107, 53, 0.2);
+      color: #ff6b35;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 700;
+      margin-left: 8px;
+    }
+    .summary {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 16px;
+      border-radius: 8px;
+      margin-top: 12px;
+    }
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 14px;
+    }
+    .summary-label {
+      color: rgba(255, 255, 255, 0.6);
+    }
+    .summary-value {
+      color: #ffffff;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔔 Reminders UI Redesign Options</h1>
+    
+    <div class="intro">
+      <strong>Goal:</strong> Make reminders more consistent and reduce clicks while maintaining clarity
+    </div>
+
+    <div class="problem">
+      <h3>Current Problems:</h3>
+      <ul style="margin-left: 20px; margin-top: 8px;">
+        <li>Modal requires 5+ clicks: Open → Enable RSVP → Select days → Enable Event → Select hours → Save</li>
+        <li>Picker wheels take up too much space and hide other options</li>
+        <li>Can't see both reminders configured at once when editing</li>
+        <li>No quick preset options (most users want 7 days / 24 hours)</li>
+        <li>Inconsistent with inline patterns used elsewhere in the app</li>
+      </ul>
+    </div>
+
+    <h2>Redesign Options</h2>
+
+    <!-- Option 1 -->
+    <div class="option">
+      <div class="option-header">
+        <div class="option-number">1</div>
+        <div>
+          <div class="option-title">Inline Toggle + Chip Presets</div>
+          <span class="clicks">2-3 clicks</span>
+        </div>
+      </div>
+
+      <h3>Design:</h3>
+      <div class="mockup">
+        <div class="section-header">
+          <span class="section-label">REMINDERS</span>
+        </div>
+        
+        <div class="toggle-card">
+          <div class="toggle-info">
+            <div class="toggle-title">RSVP Reminder</div>
+            <div class="toggle-subtitle">7 days before deadline</div>
+          </div>
+          <div class="toggle-switch active">✓</div>
+        </div>
+
+        <div class="chip-group" style="margin-left: 16px; margin-bottom: 16px;">
+          <div class="chip">1d</div>
+          <div class="chip">3d</div>
+          <div class="chip active">7d</div>
+          <div class="chip">14d</div>
+        </div>
+
+        <div class="toggle-card">
+          <div class="toggle-info">
+            <div class="toggle-title">Event Reminder</div>
+            <div class="toggle-subtitle">1 hour before event</div>
+          </div>
+          <div class="toggle-switch">○</div>
+        </div>
+      </div>
+
+      <div class="pros">
+        <h4>Pros:</h4>
+        <ul>
+          <li>Only 2 clicks: enable + select time (vs 5+ currently)</li>
+          <li>Common presets (1d, 3d, 7d, 14d) accessible in one tap</li>
+          <li>See both reminders on same screen</li>
+          <li>Consistent with app's inline editing pattern</li>
+          <li>Chip presets are mobile-friendly and fast</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>Cons:</h4>
+        <ul>
+          <li>Limited to preset values (could add "Custom" chip for picker)</li>
+          <li>Takes slightly more vertical space in Step 2</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Option 2 -->
+    <div class="option">
+      <div class="option-header">
+        <div class="option-number">2</div>
+        <div>
+          <div class="option-title">Smart Toggle Cards (Auto-Default)</div>
+          <span class="clicks">1-2 clicks</span>
+        </div>
+      </div>
+
+      <h3>Design:</h3>
+      <div class="mockup">
+        <div class="section-header">
+          <span class="section-label">REMINDERS</span>
+        </div>
+        
+        <div class="toggle-card">
+          <div class="toggle-info">
+            <div class="toggle-title">RSVP Reminder</div>
+            <div class="toggle-subtitle">Notify 7 days before</div>
+          </div>
+          <div class="toggle-switch active">✓</div>
+        </div>
+
+        <div class="toggle-card">
+          <div class="toggle-info">
+            <div class="toggle-title">Event Reminder</div>
+            <div class="toggle-subtitle">Notify 24 hours before</div>
+          </div>
+          <div class="toggle-switch active">✓</div>
+        </div>
+
+        <div style="font-size: 12px; color: rgba(255, 255, 255, 0.5); margin-top: 12px; text-align: center;">
+          Tap card to customize timing
+        </div>
+      </div>
+
+      <div class="pros">
+        <h4>Pros:</h4>
+        <ul>
+          <li>FASTEST: 1 click to enable with smart defaults</li>
+          <li>Defaults (7d, 24h) match 80% of use cases</li>
+          <li>Tap card itself to open time picker if customization needed</li>
+          <li>Extremely clean UI</li>
+          <li>Progressive disclosure - simple first, complex optional</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>Cons:</h4>
+        <ul>
+          <li>Users might not know they can customize</li>
+          <li>Still requires modal for custom times</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Option 3 -->
+    <div class="option">
+      <div class="option-header">
+        <div class="option-number">3</div>
+        <div>
+          <div class="option-title">Inline Stepper Controls</div>
+          <span class="clicks">2-4 clicks</span>
+        </div>
+      </div>
+
+      <h3>Design:</h3>
+      <div class="mockup">
+        <div class="section-header">
+          <span class="section-label">REMINDERS</span>
+        </div>
+        
+        <div class="toggle-card">
+          <div class="toggle-info">
+            <div class="toggle-title">RSVP Reminder</div>
+            <div class="toggle-subtitle">Days before deadline</div>
+          </div>
+          <div class="toggle-switch active">✓</div>
+        </div>
+
+        <div class="stepper">
+          <div class="stepper-btn">−</div>
+          <div class="stepper-value">7 days</div>
+          <div class="stepper-btn">+</div>
+        </div>
+
+        <div class="toggle-card" style="margin-top: 16px;">
+          <div class="toggle-info">
+            <div class="toggle-title">Event Reminder</div>
+            <div class="toggle-subtitle">Hours before event</div>
+          </div>
+          <div class="toggle-switch">○</div>
+        </div>
+      </div>
+
+      <div class="pros">
+        <h4>Pros:</h4>
+        <ul>
+          <li>No modal needed - all inline</li>
+          <li>Precise control over any value</li>
+          <li>Familiar stepper pattern from iOS</li>
+          <li>Visual feedback with +/- buttons</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>Cons:</h4>
+        <ul>
+          <li>Takes more clicks for large changes (1 → 14 = 13 clicks)</li>
+          <li>Takes more vertical space</li>
+          <li>Less efficient than presets for common values</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Option 4 -->
+    <div class="option">
+      <div class="option-header">
+        <div class="option-number">4</div>
+        <div>
+          <div class="option-title">Quick Select Grid</div>
+          <span class="clicks">2 clicks</span>
+        </div>
+      </div>
+
+      <h3>Design:</h3>
+      <div class="mockup">
+        <div class="section-header">
+          <span class="section-label">REMINDERS</span>
+        </div>
+        
+        <div class="toggle-card">
+          <div class="toggle-info">
+            <div class="toggle-title">RSVP Reminder</div>
+          </div>
+          <div class="toggle-switch active">✓</div>
+        </div>
+
+        <div class="inline-toggle-group">
+          <div class="inline-option">
+            <div class="inline-option-label">Quick</div>
+            <div class="inline-option-value">1d</div>
+          </div>
+          <div class="inline-option">
+            <div class="inline-option-label">Normal</div>
+            <div class="inline-option-value">3d</div>
+          </div>
+          <div class="inline-option active">
+            <div class="inline-option-label">Standard</div>
+            <div class="inline-option-value">7d</div>
+          </div>
+          <div class="inline-option">
+            <div class="inline-option-label">Early</div>
+            <div class="inline-option-value">14d</div>
+          </div>
+        </div>
+
+        <div class="toggle-card">
+          <div class="toggle-info">
+            <div class="toggle-title">Event Reminder</div>
+          </div>
+          <div class="toggle-switch">○</div>
+        </div>
+      </div>
+
+      <div class="pros">
+        <h4>Pros:</h4>
+        <ul>
+          <li>Clear labels make options intuitive</li>
+          <li>2 clicks: enable + select preset</li>
+          <li>Grid layout maximizes screen real estate</li>
+          <li>Easy to add "Custom" option</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>Cons:</h4>
+        <ul>
+          <li>Labels like "Standard" need localization</li>
+          <li>More complex visual design</li>
+          <li>Takes most vertical space of all options</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Recommendation -->
+    <div class="recommendation">
+      <h3>🏆 Recommended: Option 2 (Smart Toggle Cards)</h3>
+      <p style="margin-bottom: 16px;">
+        This option provides the <strong>best balance of simplicity and power</strong>. Most users want standard reminders (7 days / 24 hours), so enabling with one tap is fastest. Power users can tap the card to customize.
+      </p>
+
+      <div class="summary">
+        <div class="summary-row">
+          <span class="summary-label">Most Common Flow:</span>
+          <span class="summary-value">2 clicks (enable both)</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Current Flow:</span>
+          <span class="summary-value">5-7 clicks</span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">Time Saved:</span>
+          <span class="summary-value" style="color: #22c55e;">60-70%</span>
+        </div>
+      </div>
+
+      <h3 style="margin-top: 20px; font-size: 16px;">Alternative: Option 1 + Hybrid</h3>
+      <p style="font-size: 14px; color: rgba(255, 255, 255, 0.8);">
+        If data shows users frequently change defaults, combine Option 2's smart defaults with Option 1's chip presets. Enable with defaults, show chips for quick adjustment, tap card for full picker.
+      </p>
+    </div>
+
+    <h2>Implementation Priority</h2>
+    <div style="background: rgba(255, 255, 255, 0.05); padding: 16px; border-radius: 8px; margin-top: 20px;">
+      <ol style="margin-left: 20px;">
+        <li style="margin-bottom: 12px;"><strong>Phase 1:</strong> Implement Option 2 with smart defaults (7d, 24h)</li>
+        <li style="margin-bottom: 12px;"><strong>Phase 2:</strong> Add chip presets if analytics show high customization rate</li>
+        <li style="margin-bottom: 12px;"><strong>Phase 3:</strong> A/B test to validate reduced friction</li>
+      </ol>
+    </div>
+  </div>
+</body>
+</html>

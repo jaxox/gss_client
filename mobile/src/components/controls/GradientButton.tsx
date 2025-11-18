@@ -73,8 +73,8 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   gradient: {
-    paddingVertical: 14,
-    paddingHorizontal: 20,
+    paddingVertical: 0,
+    paddingHorizontal: 0,
     borderRadius: theme.radius.xl,
     flexDirection: 'row',
     alignItems: 'center',

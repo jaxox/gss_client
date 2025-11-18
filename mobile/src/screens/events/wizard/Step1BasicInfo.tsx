@@ -120,7 +120,9 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
   }, [isE2E, date]);
 
   const locationError =
-    touched.location && !location.trim() ? 'Location is required' : null;
+    touched.location && location.trim().length > 0 && location.trim().length < 7
+      ? 'Location must be at least 7 characters'
+      : null;
 
   const dateError =
     touched.date && !date
@@ -138,12 +140,24 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
         ? 'End time must be after start time'
         : null;
 
+  const titleError =
+    touched.title && title.trim().length > 0 && title.trim().length < 7
+      ? 'Title must be at least 7 characters'
+      : null;
+
+  const descriptionError =
+    touched.description &&
+    description.trim().length > 0 &&
+    description.trim().length < 10
+      ? 'Description must be at least 10 characters'
+      : null;
+
   const isValid =
-    title.trim().length >= 3 &&
+    title.trim().length >= 7 &&
     title.length <= 50 &&
     description.trim().length >= 10 &&
     description.length <= 1000 &&
-    location.trim() !== '' &&
+    location.trim().length >= 7 &&
     date !== null &&
     time !== null &&
     endTime !== null &&
@@ -227,7 +241,7 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
         keyboardShouldPersistTaps="handled"
       >
         {/* Title Input */}
-        <View style={styles.inputGroup}>
+        <View style={styles.inputContainer}>
           <TextInput
             testID="event-title-input"
             mode="outlined"
@@ -236,33 +250,29 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
             placeholderTextColor="rgba(255,255,255,0.4)"
             value={title}
             onChangeText={setTitle}
+            onBlur={() => setTouched(prev => ({ ...prev, title: true }))}
             maxLength={50}
-            style={[styles.input, styles.inputWithShadow]}
+            error={!!titleError}
             outlineColor="rgba(255,255,255,0.15)"
             activeOutlineColor={theme.colors.primary}
             textColor="#ffffff"
             outlineStyle={{ borderWidth: 1 }}
             theme={{
-              colors: {
-                // background: 'rgba(255,255,255,0.08)',
-                // onSurfaceVariant: 'rgba(255,255,255,0.7)',
-                // primary: theme.colors.primary,
-                // primary: '#ffffff', // floating label when focused
-                // onSurfaceVariant: '#bbbbbb', // label when not focused
-              },
               roundness: theme.radius.lg,
               fonts: {
                 bodyLarge: { fontSize: 15, fontWeight: '600' },
               },
             }}
           />
-          <HelperText type="info" style={styles.helperText}>
-            {title.length}/50 characters
-          </HelperText>
+          {titleError && (
+            <HelperText type="error" visible={true} style={styles.helper}>
+              {titleError}
+            </HelperText>
+          )}
         </View>
 
         {/* Description Input */}
-        <View style={styles.inputGroup}>
+        <View style={[styles.inputContainer, { marginTop: theme.spacing.sm }]}>
           <TextInput
             testID="event-description-input"
             mode="outlined"
@@ -271,9 +281,11 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
             placeholderTextColor="rgba(255,255,255,0.4)"
             value={description}
             onChangeText={setDescription}
+            onBlur={() => setTouched(prev => ({ ...prev, description: true }))}
             multiline
-            numberOfLines={3}
-            maxLength={1000}
+            numberOfLines={5}
+            scrollEnabled
+            error={!!descriptionError}
             style={[
               styles.input,
               styles.multilineInput,
@@ -284,20 +296,17 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
             textColor="#ffffff"
             outlineStyle={{ borderWidth: 1 }}
             theme={{
-              colors: {
-                background: 'rgba(255,255,255,0.08)',
-                onSurfaceVariant: 'rgba(255,255,255,0.7)',
-                primary: theme.colors.primary,
-              },
               roundness: theme.radius.lg,
               fonts: {
                 bodyLarge: { fontSize: 15, fontWeight: '600' },
               },
             }}
           />
-          <HelperText type="info" style={styles.helperText}>
-            {description.length}/1000 characters
-          </HelperText>
+          {descriptionError && (
+            <HelperText type="error" visible={true} style={styles.helper}>
+              {descriptionError}
+            </HelperText>
+          )}
         </View>
 
         {/* Sport Selector */}
@@ -373,11 +382,6 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
                 textColor="#ffffff"
                 outlineStyle={{ borderWidth: 1 }}
                 theme={{
-                  colors: {
-                    background: 'rgba(255,255,255,0.08)',
-                    onSurfaceVariant: 'rgba(255,255,255,0.7)',
-                    primary: theme.colors.primary,
-                  },
                   roundness: theme.radius.lg,
                   fonts: {
                     bodyLarge: { fontSize: 15, fontWeight: '600' },
@@ -398,13 +402,11 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
               />
             </View>
           </Pressable>
-          <HelperText
-            type="error"
-            visible={!!locationError}
-            style={styles.helper}
-          >
-            {locationError}
-          </HelperText>
+          {locationError && (
+            <HelperText type="error" visible={true} style={styles.helper}>
+              {locationError}
+            </HelperText>
+          )}
         </View>
 
         <LocationInputModal
@@ -419,7 +421,7 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
         />
 
         {/* Date Input */}
-        <View style={styles.inputContainer}>
+        <View style={[styles.inputContainer, { marginTop: theme.spacing.sm }]}>
           <Pressable
             testID="date-input-pressable"
             onPress={() => setShowDatePicker(true)}
@@ -433,17 +435,11 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
                 placeholder="Select date"
                 placeholderTextColor="rgba(255,255,255,0.4)"
                 editable={false}
-                style={[styles.input, styles.inputWithShadow]}
                 outlineColor="rgba(255,255,255,0.15)"
                 activeOutlineColor={theme.colors.primary}
-                textColor="#ffffff"
+                // textColor="#ffffff"
                 outlineStyle={{ borderWidth: 1 }}
                 theme={{
-                  colors: {
-                    background: 'rgba(255,255,255,0.08)',
-                    onSurfaceVariant: 'rgba(255,255,255,0.7)',
-                    primary: theme.colors.primary,
-                  },
                   roundness: theme.radius.lg,
                   fonts: {
                     bodyLarge: { fontSize: 15, fontWeight: '600' },
@@ -459,9 +455,11 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
               />
             </View>
           </Pressable>
-          <HelperText type="error" visible={!!dateError} style={styles.helper}>
-            {dateError}
-          </HelperText>
+          {dateError && (
+            <HelperText type="error" visible={true} style={styles.helper}>
+              {dateError}
+            </HelperText>
+          )}
         </View>
 
         <DatePickerModal
@@ -470,6 +468,7 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
           visible={showDatePicker}
           onDismiss={() => setShowDatePicker(false)}
           date={date || new Date()}
+          label="Select Event Date"
           onConfirm={params => {
             setShowDatePicker(false);
             setDate(params.date || null);
@@ -508,7 +507,7 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
                 placeholder="14:30"
                 placeholderTextColor="rgba(255,255,255,0.4)"
                 keyboardType="numeric"
-                style={[styles.input, styles.inputWithShadow]}
+                // style={[styles.input, styles.inputWithShadow]}
                 outlineColor="rgba(255,255,255,0.15)"
                 activeOutlineColor={theme.colors.primary}
                 textColor="#ffffff"
@@ -540,15 +539,15 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
                       placeholder="Select time"
                       placeholderTextColor="rgba(255,255,255,0.4)"
                       editable={false}
-                      style={[styles.input, styles.inputWithShadow]}
+                      // style={[styles.input, styles.inputWithShadow]}
                       outlineColor="rgba(255,255,255,0.15)"
                       activeOutlineColor={theme.colors.primary}
                       textColor="#ffffff"
                       outlineStyle={{ borderWidth: 1 }}
                       theme={{
                         colors: {
-                          background: 'rgba(255,255,255,0.08)',
-                          onSurfaceVariant: 'rgba(255,255,255,0.7)',
+                          // background: 'rgba(255,255,255,0.08)',
+                          // onSurfaceVariant: 'rgba(255,255,255,0.7)',
                           primary: theme.colors.primary,
                         },
                         roundness: theme.radius.lg,
@@ -570,6 +569,7 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
                   locale="en"
                   visible={showTimePicker}
                   onDismiss={() => setShowTimePicker(false)}
+                  label="Select Start Time"
                   onConfirm={params => {
                     setShowTimePicker(false);
                     const newTime = new Date();
@@ -617,9 +617,9 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
                 outlineStyle={{ borderWidth: 1 }}
                 theme={{
                   colors: {
-                    background: 'rgba(255,255,255,0.08)',
-                    onSurfaceVariant: 'rgba(255,255,255,0.7)',
-                    primary: theme.colors.primary,
+                    // background: 'rgba(255,255,255,0.08)',
+                    // onSurfaceVariant: 'rgba(255,255,255,0.7)',
+                    // primary: theme.colors.primary,
                   },
                   roundness: theme.radius.lg,
                   fonts: {
@@ -649,9 +649,9 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
                       outlineStyle={{ borderWidth: 1 }}
                       theme={{
                         colors: {
-                          background: 'rgba(255,255,255,0.08)',
-                          onSurfaceVariant: 'rgba(255,255,255,0.7)',
-                          primary: theme.colors.primary,
+                          // background: 'rgba(255,255,255,0.08)',
+                          // onSurfaceVariant: 'rgba(255,255,255,0.7)',
+                          // primary: theme.colors.primary,
                         },
                         roundness: theme.radius.lg,
                         fonts: {
@@ -672,6 +672,7 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
                   locale="en"
                   visible={showEndTimePicker}
                   onDismiss={() => setShowEndTimePicker(false)}
+                  label="Select End Time"
                   onConfirm={params => {
                     setShowEndTimePicker(false);
                     const newEndTime = new Date();
@@ -687,13 +688,11 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
           </View>
         </View>
 
-        <HelperText
-          type="error"
-          visible={!!timeError || !!endTimeError}
-          style={styles.helper}
-        >
-          {timeError || endTimeError}
-        </HelperText>
+        {(timeError || endTimeError) && (
+          <HelperText type="error" visible={true} style={styles.helper}>
+            {timeError || endTimeError}
+          </HelperText>
+        )}
 
         {!timeError && !endTimeError && time && endTime && (
           <View style={styles.durationCard}>
@@ -738,11 +737,11 @@ const styles = StyleSheet.create({
     fontWeight: theme.fontWeights.bold,
     color: theme.colors.textSecondary,
     letterSpacing: 1.2,
-    marginBottom: theme.spacing.lg,
-    marginTop: theme.spacing.sm,
+    marginBottom: theme.spacing.sm,
+    marginTop: theme.spacing.md,
   },
   inputContainer: {
-    marginBottom: theme.spacing.lg,
+    marginBottom: 0,
   },
   label: {
     fontSize: theme.fontSizes.xs,
@@ -752,7 +751,7 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.sm,
   },
   input: {
-    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    // backgroundColor: 'rgba(255, 255, 255, 0.08)',
     fontSize: theme.fontSizes.lg,
   },
   inputWithShadow: {
@@ -766,10 +765,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   inputGroup: {
-    marginBottom: theme.spacing.lg,
+    marginBottom: theme.spacing.md,
   },
   multilineInput: {
-    minHeight: 100,
+    minHeight: 120,
+    maxHeight: 300,
     textAlignVertical: 'top',
   },
   helperText: {
@@ -792,7 +792,8 @@ const styles = StyleSheet.create({
   timeRow: {
     flexDirection: 'row',
     gap: theme.spacing.md,
-    marginBottom: theme.spacing.sm,
+    marginBottom: 0,
+    marginTop: theme.spacing.sm,
   },
   timeInputContainer: {
     flex: 1,
@@ -804,9 +805,8 @@ const styles = StyleSheet.create({
     gap: theme.spacing.sm,
     backgroundColor: 'rgba(255, 107, 53, 0.1)',
     borderRadius: 8,
-    padding: theme.spacing.md,
-    marginTop: theme.spacing.md,
-    marginBottom: theme.spacing.lg,
+    padding: theme.spacing.xs,
+    marginTop: theme.spacing.sm,
   },
   durationText: {
     fontSize: 13,
@@ -817,7 +817,7 @@ const styles = StyleSheet.create({
   sportScrollContent: {
     gap: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
-    marginBottom: theme.spacing.xxl,
+    marginBottom: theme.spacing.md,
   },
   sportCardPressable: {
     position: 'relative',
@@ -871,7 +871,7 @@ const styles = StyleSheet.create({
   },
   cancelButton: {
     flex: 1,
-    paddingVertical: 14,
+    height: 48,
     borderRadius: theme.radius.xl,
     borderWidth: 2,
     borderColor: theme.colors.border,
@@ -885,6 +885,7 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
   },
   nextButton: {
-    flex: 2.5,
+    flex: 1,
+    height: 48,
   },
 });

@@ -1,99 +1,86 @@
-# Create Event Wizard - Design vs Implementation Discrepancy
+# Create Event Wizard - Design Implementation Status
 
-## Issue
+## ✅ RESOLVED - Now Matches Premium Athletic V2 Design!
 
-The current wizard implementation does NOT match the approved design spec in `docs/design/explorations/exploration-2-premium-athletic-v2.html`.
+**Date Fixed**: November 16, 2025
 
-## Design Spec (Premium Athletic V2)
+## Current Implementation (CORRECT)
 
-### Step 1: Basic Event Info
+### Step 1: Complete Basic Event Info ✅
+
+**File**: `Step1BasicInfo.tsx`
 
 - Title
 - Description
-- **Sport selection (horizontal scroll cards)**
-- **Location**
-- **Date**
-- **Start Time**
-- **End Time**
+- Sport selection (horizontal scroll cards)
+- **Location** ✅
+- **Date** ✅
+- **Start Time** ✅
+- **End Time** ✅
 - Duration display
 
-### Step 2: Event Details & Social
+### Step 2: Event Details & Social ✅
 
-- Co-hosts (with search modal)
-- Links (with icon picker modal)
-- Questionnaire (with question builder modal)
-- Reminders (RSVP + Event reminders)
+**File**: `Step2Social.premium.tsx`
 
-### Step 3: Settings & Payment
+- Co-hosts (with search modal) ✅
+- Links (with icon picker modal) ✅
+- Questionnaire (with question builder modal) ✅
+- Reminders (RSVP + Event reminders) ✅
 
-- Capacity
-- Waitlist toggle
-- Guest invite settings
-- Guest +1 settings
-- Payment configuration (Fixed/Flexible/PWYW)
-- Payment methods (Venmo, PayPal, CashApp, Zelle)
+### Step 3: Settings & Payment ✅
 
-### Step 4: Review & Publish
+**File**: `Step3SettingsPayment.premium.tsx`
 
-- Complete review of all settings
-- Edit buttons to go back to specific sections
-- Publish button
+- Capacity ✅
+- Waitlist toggle ✅
+- Guest invite settings ✅
+- Guest +1 settings ✅
+- Payment configuration (Fixed/Flexible/PWYW) ✅
+- Payment methods (Venmo, PayPal, CashApp, Zelle) ✅
 
-## Current Implementation
+### Step 4: Review & Publish ✅
 
-### Step 1: Basic Info ONLY
+**File**: `Step4Review.tsx`
 
-- Title
-- Description
-- Sport selection
-- ❌ Location (MISSING - moved to Step 2)
-- ❌ Date (MISSING - moved to Step 2)
-- ❌ Start/End Time (MISSING - moved to Step 2)
+- Complete review of all settings ✅
+- Edit buttons to go back to specific sections ✅
+- Publish button ✅
 
-### Step 2: Location & Time ONLY
+## Files Used
 
-- ❌ Should be "Event Details & Social" per design
-- ✅ Has location/time but these belong in Step 1
-- ❌ Missing: Co-hosts, Links, Questionnaire, Reminders
+**Active Files (Premium Athletic V2)**:
 
-### Step 3: Details
+- `CreateEventWizard.tsx` - Main wizard controller
+- `Step1BasicInfo.tsx` - Complete basic info with location/date/time
+- `Step2Social.premium.tsx` - Event details & social features
+- `Step3SettingsPayment.premium.tsx` - Settings & payment
+- `Step4Review.tsx` - Review & publish
 
-- ❌ Name doesn't match design ("Settings & Payment")
-- Has some settings but incomplete
+**Deprecated Files (Not Used)**:
 
-### Step 4: Review
+- `Step2LocationTime.premium.tsx` - No longer used
+- `Step2Social.tsx` - Replaced by Step2Social.premium.tsx
+- `Step3Details.tsx` - Replaced by Step3SettingsPayment.premium.tsx
 
-- ✅ Matches design concept
+## E2E Tests Status
 
-## Impact on E2E Tests
+E2E tests need to be updated to match the new 4-step flow:
 
-The E2E tests were written for the CURRENT implementation (which is wrong), not the design spec. Tests expect:
+- Step 1: Complete Basic Info (Title, Description, Sport, Location, Date, Time)
+- Step 2: Event Details & Social (Co-hosts, Links, Questionnaire, Reminders)
+- Step 3: Settings & Payment (Capacity, toggles, payment config)
+- Step 4: Review & Publish
 
-- Step 1: Basic info + Sport (no location/time)
-- Step 2: Location & Time
-- Step 3: Details/Settings
-- Step 4: Review
+## Next Steps
 
-## Recommendation
-
-**AFTER E2E tests pass**, the wizard should be refactored to match the design spec:
-
-1. Move Location/Date/Time fields from Step2 back to Step1
-2. Rename Step2 to match design purpose
-3. Add Co-hosts modal and functionality
-4. Add Links modal with icon picker
-5. Add Questionnaire builder modal
-6. Add Reminders configuration
-7. Enhance Step3 with complete payment settings
-8. Update E2E tests to match new flow
-
-## Priority
-
-- **Immediate**: Fix E2E tests for current implementation
-- **Next Sprint**: Refactor to match design spec
-- **Update**: E2E tests after refactor
+1. ✅ DONE: Fixed wizard imports to use correct step files
+2. ✅ DONE: Created Step2Social.premium.tsx with full modal integration
+3. 🔄 PENDING: Update E2E tests to match new flow
+4. 🔄 PENDING: Test complete wizard in simulator
 
 ---
 
 **Created**: Nov 15, 2025
-**Status**: Documented, pending refactor
+**Updated**: Nov 16, 2025
+**Status**: ✅ Implementation matches design spec!

@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add/Remove Button Styles - Premium Athletic</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        background: #1e1e1e;
+        color: #ffffff;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        padding: 40px;
+        line-height: 1.6;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      h1 {
+        font-size: 32px;
+        margin-bottom: 12px;
+        color: #ff6b35;
+      }
+      .subtitle {
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 40px;
+        font-size: 16px;
+      }
+      .subtitle strong {
+        color: #ff6b35;
+      }
+      .style-section {
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 16px;
+        padding: 32px;
+        margin-bottom: 32px;
+      }
+      .style-section h2 {
+        font-size: 20px;
+        margin-bottom: 8px;
+        color: #ff6b35;
+      }
+      .style-section .description {
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 24px;
+        font-size: 14px;
+      }
+      .pros {
+        color: #4ade80;
+        font-size: 13px;
+        margin-bottom: 4px;
+      }
+      .cons {
+        color: #ff6b35;
+        font-size: 13px;
+        margin-bottom: 16px;
+      }
+      .button-demo {
+        display: flex;
+        gap: 16px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      .demo-label {
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      /* Style 1: Circular Icon Buttons (Current) */
+      .btn-circular {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .btn-circular.add {
+        background: rgba(255, 107, 53, 0.15);
+        color: #ff6b35;
+        border: 1px solid #ff6b35;
+      }
+      .btn-circular.remove {
+        background: rgba(255, 59, 48, 0.15);
+        color: #ff3b30;
+        border: 1px solid #ff3b30;
+      }
+      .btn-circular:active {
+        opacity: 0.6;
+        transform: scale(0.95);
+      }
+
+      /* Style 2: Rounded Square */
+      .btn-square {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .btn-square.add {
+        background: rgba(255, 107, 53, 0.15);
+        color: #ff6b35;
+        border: 1px solid rgba(255, 107, 53, 0.3);
+      }
+      .btn-square.remove {
+        background: rgba(255, 59, 48, 0.15);
+        color: #ff3b30;
+        border: 1px solid rgba(255, 59, 48, 0.3);
+      }
+      .btn-square:active {
+        opacity: 0.7;
+        transform: scale(0.95);
+      }
+
+      /* Style 3: Text with Icon */
+      .btn-text {
+        background: transparent;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 600;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .btn-text.add {
+        color: #ff6b35;
+      }
+      .btn-text.remove {
+        color: #ff3b30;
+      }
+      .btn-text:active {
+        background: rgba(255, 107, 53, 0.2);
+        opacity: 0.8;
+      }
+
+      /* Style 4: Pill Buttons */
+      .btn-pill {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+        border-radius: 20px;
+        padding: 6px 12px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        color: rgba(255, 255, 255, 0.8);
+      }
+      .btn-pill.add {
+        border-color: #ff6b35;
+        color: #ff6b35;
+      }
+      .btn-pill.remove {
+        border-color: #ff3b30;
+        color: #ff3b30;
+      }
+      .btn-pill:active {
+        background: rgba(255, 107, 53, 0.25);
+        transform: scale(0.97);
+      }
+
+      /* Style 5: Ghost */
+      .btn-ghost {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        border: none;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .btn-ghost.add {
+        color: #ff6b35;
+      }
+      .btn-ghost.remove {
+        color: #ff3b30;
+      }
+      .btn-ghost:active {
+        background: rgba(255, 107, 53, 0.25);
+        opacity: 0.7;
+      }
+
+      /* Style 6: Outlined */
+      .btn-outlined {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: transparent;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .btn-outlined.add {
+        border: 2px solid #ff6b35;
+        color: #ff6b35;
+      }
+      .btn-outlined.remove {
+        border: 2px solid #ff3b30;
+        color: #ff3b30;
+      }
+      .btn-outlined:active {
+        background: rgba(255, 107, 53, 0.2);
+        opacity: 0.7;
+      }
+
+      /* Style 7: FAB */
+      .btn-fab {
+        width: 36px;
+        height: 36px;
+        border-radius: 12px;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      }
+      .btn-fab.add {
+        background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+        color: #ffffff;
+      }
+      .btn-fab.remove {
+        background: linear-gradient(135deg, #ff3b30 0%, #ff5a50 100%);
+        color: #ffffff;
+      }
+      .btn-fab:active {
+        transform: scale(0.95);
+        opacity: 0.8;
+      }
+
+      /* Style 8: Link */
+      .btn-link {
+        background: transparent;
+        border: none;
+        padding: 4px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.2s;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+      }
+      .btn-link.add {
+        color: #ff6b35;
+      }
+      .btn-link.remove {
+        color: #ff3b30;
+      }
+      .btn-link:active {
+        opacity: 0.5;
+      }
+
+      /* Style 9: Card Edge */
+      .btn-edge {
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .btn-edge.add {
+        background: rgba(255, 107, 53, 0.1);
+        color: #ff6b35;
+      }
+      .btn-edge.remove {
+        background: rgba(255, 59, 48, 0.1);
+        color: #ff3b30;
+      }
+      .btn-edge:active {
+        background: rgba(255, 107, 53, 0.3);
+        opacity: 0.8;
+      }
+
+      /* Style 10: Swipe Action */
+      .btn-swipe {
+        padding: 8px 16px;
+        border-radius: 8px;
+        border: none;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 700;
+        transition: all 0.2s;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .btn-swipe.add {
+        background: rgba(255, 107, 53, 0.2);
+        color: #ff6b35;
+      }
+      .btn-swipe.remove {
+        background: rgba(255, 59, 48, 0.2);
+        color: #ff3b30;
+      }
+      .btn-swipe:active {
+        opacity: 0.7;
+        transform: scale(0.98);
+      }
+
+      .recommendation {
+        background: rgba(255, 107, 53, 0.1);
+        border-left: 3px solid #ff6b35;
+        padding: 16px;
+        margin-top: 32px;
+        border-radius: 8px;
+      }
+      .recommendation h3 {
+        color: #ff6b35;
+        font-size: 16px;
+        margin-bottom: 8px;
+      }
+      .recommendation p {
+        color: rgba(255, 255, 255, 0.8);
+        font-size: 14px;
+        line-height: 1.6;
+      }
+      .icon {
+        font-size: 18px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Add/Remove Button Styles</h1>
+      <p class="subtitle">
+        10 different button styles for <strong>React Native mobile app</strong> - Premium Athletic
+        dark theme<br />
+        <em style="font-size: 13px"
+          >Tap the buttons to see mobile press states (not hover effects)</em
+        >
+      </p>
+
+      <div class="style-section">
+        <h2>Style 1: Circular Icon Buttons (Current)</h2>
+        <p class="description">Your current implementation - clean circles with borders</p>
+        <p class="pros">✓ Clear, recognizable, minimal</p>
+        <p class="cons">⚠ Can feel clinical/medical</p>
+        <div class="button-demo">
+          <div class="demo-label">Add Button</div>
+          <button class="btn-circular add"><span class="icon">+</span></button>
+          <div class="demo-label">Remove Button</div>
+          <button class="btn-circular remove"><span class="icon">×</span></button>
+        </div>
+      </div>
+
+      <div class="style-section">
+        <h2>Style 2: Rounded Square Icon Buttons ⭐</h2>
+        <p class="description">Square with rounded corners - modern athletic feel</p>
+        <p class="pros">✓ Modern, sporty, better tap feedback, athletic vibe</p>
+        <p class="cons">⚠ Slightly larger footprint</p>
+        <div class="button-demo">
+          <div class="demo-label">Add Button</div>
+          <button class="btn-square add"><span class="icon">+</span></button>
+          <div class="demo-label">Remove Button</div>
+          <button class="btn-square remove"><span class="icon">×</span></button>
+        </div>
+      </div>
+
+      <div class="style-section">
+        <h2>Style 3: Minimal Text Buttons</h2>
+        <p class="description">Text-based with icon - clear intent</p>
+        <p class="pros">✓ Very clear, great accessibility</p>
+        <p class="cons">⚠ Takes more horizontal space</p>
+        <div class="button-demo">
+          <div class="demo-label">Add Button</div>
+          <button class="btn-text add"><span class="icon">+</span> Add</button>
+          <div class="demo-label">Remove Button</div>
+          <button class="btn-text remove"><span class="icon">×</span> Remove</button>
+        </div>
+      </div>
+
+      <div class="style-section">
+        <h2>Style 4: Pill Buttons</h2>
+        <p class="description">Rounded pill shape - friendly</p>
+        <p class="pros">✓ Friendly, modern, clear labels</p>
+        <p class="cons">⚠ Might look too casual</p>
+        <div class="button-demo">
+          <div class="demo-label">Add Button</div>
+          <button class="btn-pill add"><span class="icon">+</span> Add</button>
+          <div class="demo-label">Remove Button</div>
+          <button class="btn-pill remove"><span class="icon">×</span> Remove</button>
+        </div>
+      </div>
+
+      <div class="style-section">
+        <h2>Style 5: Ghost Icon Buttons</h2>
+        <p class="description">Ultra minimal ghost style</p>
+        <p class="pros">✓ Very minimal, saves space</p>
+        <p class="cons">⚠ Too subtle, less discoverable</p>
+        <div class="button-demo">
+          <div class="demo-label">Add Button</div>
+          <button class="btn-ghost add"><span class="icon">+</span></button>
+          <div class="demo-label">Remove Button</div>
+          <button class="btn-ghost remove"><span class="icon">×</span></button>
+        </div>
+      </div>
+
+      <div class="style-section">
+        <h2>Style 6: Outlined Icon Buttons</h2>
+        <p class="description">Strong outlines - bold</p>
+        <p class="pros">✓ Bold, athletic, high contrast</p>
+        <p class="cons">⚠ Heavy with thick borders</p>
+        <div class="button-demo">
+          <div class="demo-label">Add Button</div>
+          <button class="btn-outlined add"><span class="icon">+</span></button>
+          <div class="demo-label">Remove Button</div>
+          <button class="btn-outlined remove"><span class="icon">×</span></button>
+        </div>
+      </div>
+
+      <div class="style-section">
+        <h2>Style 7: Floating Action (FAB) ⭐</h2>
+        <p class="description">Material Design - gradient with shadow</p>
+        <p class="pros">✓ Eye-catching, premium, clear action</p>
+        <p class="cons">⚠ Too prominent for inline</p>
+        <div class="button-demo">
+          <div class="demo-label">Add Button</div>
+          <button class="btn-fab add"><span class="icon">+</span></button>
+          <div class="demo-label">Remove Button</div>
+          <button class="btn-fab remove"><span class="icon">×</span></button>
+        </div>
+      </div>
+
+      <div class="style-section">
+        <h2>Style 8: Compact Link Style</h2>
+        <p class="description">Underlined text - subtle</p>
+        <p class="pros">✓ Very compact, minimal weight</p>
+        <p class="cons">⚠ Less discoverable</p>
+        <div class="button-demo">
+          <div class="demo-label">Add Button</div>
+          <button class="btn-link add">+ Add</button>
+          <div class="demo-label">Remove Button</div>
+          <button class="btn-link remove">× Remove</button>
+        </div>
+      </div>
+
+      <div class="style-section">
+        <h2>Style 9: Card Edge Buttons ⭐</h2>
+        <p class="description">Compact - perfect for card edges</p>
+        <p class="pros">✓ Compact, fits well at edges, subtle</p>
+        <p class="cons">⚠ Small target area</p>
+        <div class="button-demo">
+          <div class="demo-label">Add Button</div>
+          <button class="btn-edge add"><span class="icon">+</span></button>
+          <div class="demo-label">Remove Button</div>
+          <button class="btn-edge remove"><span class="icon">×</span></button>
+        </div>
+      </div>
+
+      <div class="style-section">
+        <h2>Style 10: Swipe Action Style</h2>
+        <p class="description">iOS swipe-action inspired</p>
+        <p class="pros">✓ Clear labels, native feel</p>
+        <p class="cons">⚠ Takes horizontal space</p>
+        <div class="button-demo">
+          <div class="demo-label">Add Button</div>
+          <button class="btn-swipe add">ADD</button>
+          <div class="demo-label">Remove Button</div>
+          <button class="btn-swipe remove">DELETE</button>
+        </div>
+      </div>
+
+      <div class="recommendation">
+        <h3>🏆 My Recommendations</h3>
+        <p>
+          <strong>Best Overall: Style 2 (Rounded Square)</strong><br />
+          Modern sporty feel with better hover. Square with rounded corners feels more athletic than
+          circles.
+        </p>
+
+        <p style="margin-top: 16px">
+          <strong>Best for Primary Actions: Style 7 (FAB)</strong><br />
+          Use for main "+ Add" at bottom of lists. Gradient/shadow feels premium.
+        </p>
+
+        <p style="margin-top: 16px">
+          <strong>Best for Inline Remove: Style 9 (Card Edge)</strong><br />
+          Perfect for × on cards - compact, subtle, easy to tap.
+        </p>
+
+        <p style="margin-top: 16px">
+          <strong>Mix & Match:</strong><br />
+          • Main "+ Add" buttons → Style 7 (FAB) or Style 2 (Square)<br />
+          • Inline × remove → Style 9 (Edge) or Style 5 (Ghost)<br />
+          • Multiple choice "+ Add" → Style 3 (Text) or Style 2 (Square)
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

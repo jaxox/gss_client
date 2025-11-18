@@ -36,7 +36,7 @@ export const colors = {
   // Semantic colors
   success: '#10B981',
   warning: '#F59E0B',
-  error: '#EF4444',
+  error: '#ff3333',
   info: '#3B82F6',
 
   // UI colors (dark theme)

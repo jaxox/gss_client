@@ -40,13 +40,12 @@ check_metro() {
 
 # Function to start Metro in background
 start_metro() {
-  echo -e "${YELLOW}📦 Starting Metro bundler...${NC}"
+  echo -e "${YELLOW}📦 Starting Metro bundler with cache reset...${NC}"
   
   # Create logs directory if it doesn't exist
   mkdir -p logs
-  
-  # Start Metro in background and redirect output to log file
-  npm start > logs/metro-bundler.log 2>&1 &
+  # Start Metro in background with cache reset and redirect output to log file
+  npm start -- --reset-cache > logs/metro-bundler.log 2>&1 &
   METRO_PID=$!
   
   echo -e "${GREEN}✓ Metro bundler started (PID: $METRO_PID)${NC}"

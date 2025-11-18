@@ -8,7 +8,13 @@
 import React, { useState, useEffect } from 'react';
 import { StatusBar, useColorScheme, View, StyleSheet } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Provider as PaperProvider, Button, Text } from 'react-native-paper';
+import {
+  Provider as PaperProvider,
+  Button,
+  Text,
+  MD3DarkTheme,
+} from 'react-native-paper';
+import { theme as appTheme } from './src/theme';
 import { Provider as ReduxProvider } from 'react-redux';
 import { store } from './src/store';
 import LoginScreen from './src/screens/auth/LoginScreen';
@@ -208,10 +214,41 @@ function App() {
     );
   };
 
+  const paperTheme = {
+    ...MD3DarkTheme,
+    colors: {
+      ...MD3DarkTheme.colors,
+      primary: appTheme.colors.primary,
+      primaryContainer: appTheme.colors.primary,
+      onPrimary: '#ffffff',
+      onPrimaryContainer: '#ffffff',
+      secondary: appTheme.colors.primary,
+      secondaryContainer: appTheme.colors.primary,
+      onSecondary: '#ffffff',
+      onSecondaryContainer: '#ffffff',
+      background: appTheme.colors.background,
+      onBackground: appTheme.colors.text,
+      surface: appTheme.colors.surface,
+      surfaceVariant: appTheme.colors.surfaceElevated,
+      onSurface: appTheme.colors.text,
+      onSurfaceVariant: appTheme.colors.textSecondary,
+      error: appTheme.colors.error,
+      outline: appTheme.colors.border,
+      elevation: {
+        level0: 'transparent',
+        level1: appTheme.colors.surface,
+        level2: appTheme.colors.surfaceElevated,
+        level3: appTheme.colors.surfaceElevated,
+        level4: appTheme.colors.surfaceElevated,
+        level5: appTheme.colors.surfaceElevated,
+      },
+    },
+  };
+
   return (
     <SafeAreaProvider>
       <ReduxProvider store={store}>
-        <PaperProvider>
+        <PaperProvider theme={paperTheme}>
           <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
           {renderScreen()}
         </PaperProvider>

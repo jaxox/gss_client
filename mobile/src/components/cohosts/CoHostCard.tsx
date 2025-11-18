@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 import { Text, Avatar, Button } from 'react-native-paper';
-import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import { FABButton } from '../buttons';
 
 export interface CoHostUser {
   id: string;
@@ -27,9 +27,13 @@ interface CoHostCardProps {
   };
   // Convenience prop for Remove button (simplified API)
   onRemove?: () => void;
+  // Convenience prop for Add button (simplified API)
+  onAdd?: () => void;
+  addIcon?: string;
   backgroundColor?: string;
   disabled?: boolean;
   accessibilityLabel?: string;
+  style?: any;
 }
 
 export default function CoHostCard({
@@ -37,9 +41,12 @@ export default function CoHostCard({
   onPress,
   actionButton,
   onRemove,
-  backgroundColor = 'white',
+  onAdd,
+  addIcon = 'plus',
+  backgroundColor = 'rgba(255, 255, 255, 0.05)',
   disabled = false,
   accessibilityLabel,
+  style,
 }: CoHostCardProps) {
   const getReliabilityColor = (rate: number) => {
     if (rate >= 85) return '#10B981'; // Green - Reliable
@@ -58,21 +65,9 @@ export default function CoHostCard({
 
   const defaultAccessibilityLabel = `${user.name}, Level ${user.level}, ${user.xp} XP, ${user.reliability} percent reliability`;
 
-  // If onRemove is provided, create a standard Remove button
-  const finalActionButton = onRemove
-    ? {
-        label: <Icon name="account-minus" size={16} color="#EF4444" />,
-        mode: 'outlined' as const,
-        onPress: onRemove,
-        disabled: false,
-        textColor: '#EF4444',
-        style: styles.removeButton,
-      }
-    : actionButton;
-
   return (
     <Pressable
-      style={[styles.card, { backgroundColor }]}
+      style={[styles.card, { backgroundColor }, style]}
       onPress={onPress}
       disabled={disabled || !onPress}
       accessibilityRole="button"
@@ -116,19 +111,44 @@ export default function CoHostCard({
         </View>
       </View>
 
-      {finalActionButton && (
+      {onRemove ? (
+        <View
+          onStartShouldSetResponder={() => true}
+          onTouchEnd={e => e.stopPropagation()}
+        >
+          <FABButton
+            onPress={onRemove}
+            size="small"
+            variant="remove"
+            icon="close"
+          />
+        </View>
+      ) : onAdd ? (
+        <View
+          onStartShouldSetResponder={() => true}
+          onTouchEnd={e => e.stopPropagation()}
+        >
+          <FABButton
+            onPress={onAdd}
+            size="small"
+            variant="add"
+            icon={addIcon}
+            disabled={disabled}
+          />
+        </View>
+      ) : actionButton ? (
         <Button
-          mode={finalActionButton.mode}
+          mode={actionButton.mode}
           compact
-          onPress={finalActionButton.onPress}
-          disabled={finalActionButton.disabled}
-          style={finalActionButton.style}
-          textColor={finalActionButton.textColor}
+          onPress={actionButton.onPress}
+          disabled={actionButton.disabled}
+          style={actionButton.style}
+          textColor={actionButton.textColor}
           labelStyle={styles.buttonLabel}
         >
-          {finalActionButton.label}
+          {actionButton.label}
         </Button>
-      )}
+      ) : null}
     </Pressable>
   );
 }
@@ -137,17 +157,18 @@ const styles = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 10,
     paddingHorizontal: 12,
     marginHorizontal: 16,
-    marginBottom: 6,
-    minHeight: 56,
+    marginBottom: 8,
+    minHeight: 60,
     borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 8,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 12,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
   },
   avatar: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: '#ff6b35',
   },
   avatarLabel: {
     color: 'white',
@@ -156,14 +177,14 @@ const styles = StyleSheet.create({
   },
   userInfo: {
     flex: 1,
-    marginLeft: 10,
+    marginLeft: 12,
     justifyContent: 'center',
   },
   userName: {
     fontWeight: '600',
     fontSize: 15,
-    color: '#111827',
-    marginBottom: 3,
+    color: '#ffffff',
+    marginBottom: 4,
   },
   statsRow: {
     flexDirection: 'row',
@@ -171,33 +192,27 @@ const styles = StyleSheet.create({
     gap: 6,
   },
   levelBadge: {
-    backgroundColor: '#3B82F6',
+    backgroundColor: '#ff6b35',
     paddingHorizontal: 6,
-    paddingVertical: 1,
-    borderRadius: 3,
+    paddingVertical: 2,
+    borderRadius: 4,
   },
   levelText: {
     color: '#FFFFFF',
     fontWeight: '700',
-    fontSize: 9,
+    fontSize: 10,
   },
   xpText: {
-    color: '#6B7280',
-    fontSize: 9,
+    color: 'rgba(255, 255, 255, 0.6)',
+    fontSize: 11,
     fontWeight: '500',
   },
   reliabilityText: {
-    fontSize: 9,
+    fontSize: 11,
     fontWeight: '600',
   },
   buttonLabel: {
     fontSize: 12,
     lineHeight: 14,
-  },
-  removeButton: {
-    minWidth: 48,
-    width: 48,
-    height: 36,
-    borderColor: '#EF4444',
   },
 });

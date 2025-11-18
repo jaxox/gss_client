@@ -1,197 +1,510 @@
 /**
- * Create Event Wizard - Step 1: Basic Info (Premium Athletic Design)
+ * Create Event Wizard - Step 2: Location & Time (Premium Athletic Design)
  * Dark theme with orange gradient accents
  */
 
-import React, { useState } from 'react';
-import { View, StyleSheet, ScrollView, Pressable } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  StyleSheet,
+  ScrollView,
+  Pressable,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { Text, TextInput, HelperText } from 'react-native-paper';
+import { DatePickerModal, TimePickerModal } from 'react-native-paper-dates';
 import {
   GradientButton,
   PremiumProgressBar,
 } from '../../../components/controls';
 import { theme } from '../../../theme';
 import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import LocationInputModal from '../../../components/LocationInputModal';
 import type { WizardData } from './CreateEventWizard';
 
 interface Props {
   data: WizardData;
   onNext: (data: Partial<WizardData>) => void;
-  onCancel: () => void;
+  onBack: () => void;
 }
 
-const SPORTS = [
-  { id: 'pickleball', label: 'Pickleball', icon: 'badminton' },
-  { id: 'tennis', label: 'Tennis', icon: 'tennis' },
-  { id: 'table-tennis', label: 'Table Tennis', icon: 'table-tennis' },
-  { id: 'badminton', label: 'Badminton', icon: 'badminton' },
-  { id: 'padel', label: 'Padel', icon: 'tennis' },
+const MOCK_LOCATIONS = [
+  {
+    id: '1',
+    name: 'Golden Gate Park Tennis Courts',
+    address: '1100 John F Kennedy Dr',
+    city: 'San Francisco',
+    state: 'CA',
+  },
+  {
+    id: '2',
+    name: 'Dolores Park Recreation Center',
+    address: '500 Dolores St',
+    city: 'San Francisco',
+    state: 'CA',
+  },
+  {
+    id: '3',
+    name: 'Mission Bay Pickleball Courts',
+    address: '170 Channel St',
+    city: 'San Francisco',
+    state: 'CA',
+  },
 ];
 
-export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
-  const [title, setTitle] = useState(data.title);
-  const [description, setDescription] = useState(data.description);
-  const [sportId, setSportId] = useState(data.sportId);
-  const [touched, setTouched] = useState({ title: false, description: false });
+const getFutureDate = (daysAhead = 1) => {
+  const d = new Date();
+  d.setDate(d.getDate() + daysAhead);
+  return d;
+};
 
-  const titleError =
-    touched.title && title.trim().length < 3
-      ? 'Title must be at least 3 characters'
-      : title.length > 50
-        ? 'Title cannot exceed 50 characters'
+export default function Step2LocationTime({ data, onNext, onBack }: Props) {
+  const isE2E = !!(globalThis as any).__E2E__;
+
+  const [location, setLocation] = useState(data.location || '');
+  const [date, setDate] = useState<Date | null>(data.date);
+  const [time, setTime] = useState<Date | null>(data.time);
+
+  const calculateEndTime = () => {
+    if (!time) return null;
+    const endTime = new Date(time);
+    endTime.setMinutes(endTime.getMinutes() + (data.duration || 120));
+    return endTime;
+  };
+
+  const [endTime, setEndTime] = useState<Date | null>(calculateEndTime());
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showTimePicker, setShowTimePicker] = useState(false);
+  const [showEndTimePicker, setShowEndTimePicker] = useState(false);
+
+  const [touched, setTouched] = useState({
+    location: false,
+    date: false,
+    time: false,
+    endTime: false,
+  });
+
+  useEffect(() => {
+    if (isE2E && !date) {
+      setDate(getFutureDate(2));
+      setTouched(prev => ({ ...prev, date: true }));
+    }
+  }, [isE2E, date]);
+
+  const locationError =
+    touched.location && location.trim().length > 0 && location.trim().length < 7
+      ? 'Location must be at least 7 characters'
+      : null;
+
+  const dateError =
+    touched.date && !date
+      ? 'Date is required'
+      : date && date < new Date(new Date().setHours(0, 0, 0, 0))
+        ? 'Date must be in the future'
         : null;
 
-  const descriptionError =
-    touched.description && description.trim().length < 10
-      ? 'Description must be at least 10 characters'
-      : description.length > 1000
-        ? 'Description cannot exceed 1000 characters'
+  const timeError = touched.time && !time ? 'Start time is required' : null;
+
+  const endTimeError =
+    touched.endTime && !endTime
+      ? 'End time is required'
+      : endTime && time && endTime <= time
+        ? 'End time must be after start time'
         : null;
 
   const isValid =
-    title.trim().length >= 3 &&
-    title.length <= 50 &&
-    description.trim().length >= 10 &&
-    description.length <= 1000;
+    location.trim().length >= 7 &&
+    date !== null &&
+    time !== null &&
+    endTime !== null &&
+    !endTimeError;
+
+  const calculateDuration = () => {
+    if (!time || !endTime) return 120;
+    const diff = endTime.getTime() - time.getTime();
+    return Math.round(diff / (1000 * 60));
+  };
 
   const handleNext = () => {
     if (!isValid) {
-      setTouched({ title: true, description: true });
+      setTouched({
+        location: true,
+        date: true,
+        time: true,
+        endTime: true,
+      });
       return;
     }
-    onNext({ title, description, sportId });
+    const duration = calculateDuration();
+    onNext({ location, date, time, endTime, duration });
+  };
+
+  const formatDate = (d: Date | null) => {
+    if (!d) return '';
+    return d.toLocaleDateString('en-US', {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    });
+  };
+
+  const formatTime = (t: Date | null) => {
+    if (!t) return '';
+    return t.toLocaleTimeString('en-US', {
+      hour: 'numeric',
+      minute: '2-digit',
+      hour12: true,
+    });
+  };
+
+  const formatDuration = (minutes: number) => {
+    if (minutes < 60) return `${minutes} minutes`;
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (mins === 0) return `${hours} hour${hours > 1 ? 's' : ''}`;
+    return `${hours}h ${mins}m`;
+  };
+
+  const parseTimeString = (timeStr: string): Date | null => {
+    const match = timeStr.match(/^(\d{1,2}):(\d{2})$/);
+    if (!match) return null;
+    const hours = parseInt(match[1], 10);
+    const minutes = parseInt(match[2], 10);
+    if (hours < 0 || hours > 23 || minutes < 0 || minutes > 59) return null;
+    const newDate = new Date();
+    newDate.setHours(hours, minutes, 0, 0);
+    return newDate;
+  };
+
+  const formatTimeE2E = (t: Date | null): string => {
+    if (!t) return '';
+    const hours = t.getHours().toString().padStart(2, '0');
+    const minutes = t.getMinutes().toString().padStart(2, '0');
+    return `${hours}:${minutes}`;
   };
 
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.container}
+    >
       <ScrollView
-        testID="step1-scroll-view"
+        testID="step2-scroll-view"
         contentContainerStyle={styles.scrollContent}
         keyboardShouldPersistTaps="handled"
       >
         {/* Progress Bar */}
-        <PremiumProgressBar currentStep={1} totalSteps={4} />
+        <PremiumProgressBar currentStep={2} totalSteps={4} />
 
         {/* Section Header */}
-        <Text style={styles.sectionHeader}>BASIC INFORMATION</Text>
+        <Text style={styles.sectionHeader}>LOCATION & SCHEDULE</Text>
 
-        {/* Title Input */}
+        {/* Location Input */}
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>EVENT TITLE *</Text>
-          <TextInput
-            testID="event-title-input"
-            value={title}
-            onChangeText={setTitle}
-            onBlur={() => setTouched(prev => ({ ...prev, title: true }))}
-            mode="outlined"
-            error={!!titleError}
-            maxLength={50}
-            placeholder="Enter event title"
-            placeholderTextColor={theme.colors.textMuted}
-            style={styles.input}
-            outlineColor={theme.colors.border}
-            activeOutlineColor={theme.colors.primary}
-            textColor={theme.colors.text}
-            theme={{
-              colors: {
-                background: theme.colors.surface,
-              },
-            }}
-          />
-          <HelperText
-            type={titleError ? 'error' : 'info'}
-            visible
-            style={styles.helper}
+          <Text style={styles.label}>LOCATION *</Text>
+          <Pressable
+            testID="location-input-pressable"
+            onPress={() => setShowLocationModal(true)}
           >
-            {titleError || `${title.length}/50 characters`}
-          </HelperText>
+            <View pointerEvents="none">
+              <TextInput
+                value={location}
+                mode="outlined"
+                error={!!locationError}
+                placeholder="Search for venue or enter address"
+                placeholderTextColor={theme.colors.textMuted}
+                multiline
+                numberOfLines={2}
+                editable={false}
+                style={[styles.input, styles.locationInput]}
+                outlineColor={theme.colors.border}
+                activeOutlineColor={theme.colors.primary}
+                textColor={theme.colors.text}
+                theme={{
+                  colors: {
+                    background: theme.colors.surface,
+                  },
+                }}
+                right={
+                  <TextInput.Icon
+                    icon="map-marker"
+                    color={theme.colors.primary}
+                  />
+                }
+              />
+            </View>
+          </Pressable>
+          {locationError && (
+            <HelperText type="error" visible style={styles.helper}>
+              {locationError}
+            </HelperText>
+          )}
         </View>
 
-        {/* Description Input */}
+        <LocationInputModal
+          visible={showLocationModal}
+          value={location}
+          locations={MOCK_LOCATIONS}
+          onSave={newLocation => {
+            setLocation(newLocation);
+            setTouched(prev => ({ ...prev, location: true }));
+          }}
+          onDismiss={() => setShowLocationModal(false)}
+        />
+
+        {/* Date Input */}
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>DESCRIPTION *</Text>
-          <TextInput
-            testID="event-description-input"
-            value={description}
-            onChangeText={setDescription}
-            onBlur={() => setTouched(prev => ({ ...prev, description: true }))}
-            mode="outlined"
-            multiline
-            numberOfLines={4}
-            error={!!descriptionError}
-            maxLength={1000}
-            placeholder="Describe your event"
-            placeholderTextColor={theme.colors.textMuted}
-            style={[styles.input, styles.descriptionInput]}
-            outlineColor={theme.colors.border}
-            activeOutlineColor={theme.colors.primary}
-            textColor={theme.colors.text}
-            theme={{
-              colors: {
-                background: theme.colors.surface,
-              },
-            }}
-          />
-          <HelperText
-            type={descriptionError ? 'error' : 'info'}
-            visible
-            style={styles.helper}
+          <Text style={styles.label}>DATE *</Text>
+          <Pressable
+            testID="date-input-pressable"
+            onPress={() => setShowDatePicker(true)}
           >
-            {descriptionError || `${description.length}/1000 characters`}
-          </HelperText>
+            <View pointerEvents="none">
+              <TextInput
+                value={formatDate(date)}
+                mode="outlined"
+                error={!!dateError}
+                placeholder="Select date"
+                placeholderTextColor={theme.colors.textMuted}
+                editable={false}
+                style={styles.input}
+                outlineColor={theme.colors.border}
+                activeOutlineColor={theme.colors.primary}
+                textColor={theme.colors.text}
+                theme={{
+                  colors: {
+                    background: theme.colors.surface,
+                  },
+                }}
+                right={
+                  <TextInput.Icon
+                    icon="calendar"
+                    color={theme.colors.primary}
+                  />
+                }
+              />
+            </View>
+          </Pressable>
+          {dateError && (
+            <HelperText type="error" visible style={styles.helper}>
+              {dateError}
+            </HelperText>
+          )}
         </View>
 
-        {/* Sport Selector */}
-        <Text style={styles.sectionHeader}>SELECT SPORT</Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.sportScrollContent}
-        >
-          {SPORTS.map(sport => {
-            const isSelected = sportId === sport.id;
-            return (
+        <DatePickerModal
+          locale="en"
+          mode="single"
+          visible={showDatePicker}
+          onDismiss={() => setShowDatePicker(false)}
+          date={date || new Date()}
+          label="Select Event Date"
+          onConfirm={params => {
+            setShowDatePicker(false);
+            setDate(params.date || null);
+            setTouched(prev => ({ ...prev, date: true }));
+          }}
+          validRange={{
+            startDate: new Date(),
+          }}
+        />
+
+        {/* Time Inputs Row */}
+        <View style={styles.timeRow}>
+          <View style={styles.timeInputContainer}>
+            <Text style={styles.label}>START TIME *</Text>
+            {isE2E ? (
+              <TextInput
+                testID="time-input"
+                value={formatTimeE2E(time)}
+                onChangeText={text => {
+                  const parsed = parseTimeString(text);
+                  if (parsed) {
+                    setTime(parsed);
+                    if (!endTime) {
+                      const autoEndTime = new Date(parsed);
+                      autoEndTime.setHours(autoEndTime.getHours() + 2);
+                      setEndTime(autoEndTime);
+                    }
+                    setTouched(prev => ({ ...prev, time: true }));
+                  }
+                }}
+                mode="outlined"
+                error={!!timeError}
+                placeholder="14:00"
+                placeholderTextColor={theme.colors.textMuted}
+                keyboardType="numeric"
+                style={styles.input}
+                outlineColor={theme.colors.border}
+                activeOutlineColor={theme.colors.primary}
+                textColor={theme.colors.text}
+                theme={{
+                  colors: {
+                    background: theme.colors.surface,
+                  },
+                }}
+              />
+            ) : (
               <Pressable
-                key={sport.id}
-                testID={`sport-card-${sport.label.toLowerCase()}`}
-                onPress={() => setSportId(sport.id)}
-                style={styles.sportCardPressable}
+                testID="time-input-pressable"
+                onPress={() => setShowTimePicker(true)}
               >
-                <View
-                  style={[
-                    styles.sportCard,
-                    isSelected && styles.sportCardSelected,
-                  ]}
-                >
-                  {isSelected && <View style={styles.sportCardAccent} />}
-                  <Icon
-                    name={sport.icon}
-                    size={40}
-                    color={
-                      isSelected
-                        ? theme.colors.primary
-                        : theme.colors.textSecondary
+                <View pointerEvents="none">
+                  <TextInput
+                    value={formatTime(time)}
+                    mode="outlined"
+                    error={!!timeError}
+                    placeholder="Select time"
+                    placeholderTextColor={theme.colors.textMuted}
+                    editable={false}
+                    style={styles.input}
+                    outlineColor={theme.colors.border}
+                    activeOutlineColor={theme.colors.primary}
+                    textColor={theme.colors.text}
+                    theme={{
+                      colors: {
+                        background: theme.colors.surface,
+                      },
+                    }}
+                    right={
+                      <TextInput.Icon
+                        icon="clock-outline"
+                        color={theme.colors.primary}
+                      />
                     }
                   />
-                  <Text
-                    style={[
-                      styles.sportLabel,
-                      isSelected && styles.sportLabelSelected,
-                    ]}
-                    numberOfLines={1}
-                  >
-                    {sport.label.toUpperCase()}
-                  </Text>
                 </View>
               </Pressable>
-            );
-          })}
-        </ScrollView>
+            )}
+            <TimePickerModal
+              locale="en"
+              visible={showTimePicker}
+              onDismiss={() => setShowTimePicker(false)}
+              label="Select Start Time"
+              onConfirm={params => {
+                setShowTimePicker(false);
+                const newTime = new Date();
+                newTime.setHours(params.hours, params.minutes);
+                setTime(newTime);
+                if (!endTime) {
+                  const autoEndTime = new Date(newTime);
+                  autoEndTime.setHours(autoEndTime.getHours() + 2);
+                  setEndTime(autoEndTime);
+                }
+                setTouched(prev => ({ ...prev, time: true }));
+              }}
+              hours={time?.getHours() || 12}
+              minutes={time?.getMinutes() || 0}
+            />
+          </View>
+
+          <View style={styles.timeInputContainer}>
+            <Text style={styles.label}>END TIME *</Text>
+            {isE2E ? (
+              <TextInput
+                testID="end-time-input"
+                value={formatTimeE2E(endTime)}
+                onChangeText={text => {
+                  const parsed = parseTimeString(text);
+                  if (parsed) {
+                    setEndTime(parsed);
+                    setTouched(prev => ({ ...prev, endTime: true }));
+                  }
+                }}
+                mode="outlined"
+                error={!!endTimeError}
+                placeholder="16:00"
+                placeholderTextColor={theme.colors.textMuted}
+                keyboardType="numeric"
+                style={styles.input}
+                outlineColor={theme.colors.border}
+                activeOutlineColor={theme.colors.primary}
+                textColor={theme.colors.text}
+                theme={{
+                  colors: {
+                    background: theme.colors.surface,
+                  },
+                }}
+              />
+            ) : (
+              <Pressable
+                testID="end-time-input-pressable"
+                onPress={() => setShowEndTimePicker(true)}
+              >
+                <View pointerEvents="none">
+                  <TextInput
+                    value={formatTime(endTime)}
+                    mode="outlined"
+                    error={!!endTimeError}
+                    placeholder="Select time"
+                    placeholderTextColor={theme.colors.textMuted}
+                    editable={false}
+                    style={styles.input}
+                    outlineColor={theme.colors.border}
+                    activeOutlineColor={theme.colors.primary}
+                    textColor={theme.colors.text}
+                    theme={{
+                      colors: {
+                        background: theme.colors.surface,
+                      },
+                    }}
+                    right={
+                      <TextInput.Icon
+                        icon="clock-outline"
+                        color={theme.colors.primary}
+                      />
+                    }
+                  />
+                </View>
+              </Pressable>
+            )}
+            <TimePickerModal
+              locale="en"
+              visible={showEndTimePicker}
+              onDismiss={() => setShowEndTimePicker(false)}
+              label="Select End Time"
+              onConfirm={params => {
+                setShowEndTimePicker(false);
+                const newEndTime = new Date();
+                newEndTime.setHours(params.hours, params.minutes);
+                setEndTime(newEndTime);
+                setTouched(prev => ({ ...prev, endTime: true }));
+              }}
+              hours={endTime?.getHours() || 14}
+              minutes={endTime?.getMinutes() || 0}
+            />
+          </View>
+        </View>
+
+        {(timeError || endTimeError) && (
+          <HelperText type="error" visible style={styles.helper}>
+            {timeError || endTimeError}
+          </HelperText>
+        )}
+
+        {/* Duration Display Card */}
+        {!timeError && !endTimeError && time && endTime && (
+          <View style={styles.durationCard}>
+            <View style={styles.durationCardAccent} />
+            <Icon name="timer-outline" size={20} color={theme.colors.primary} />
+            <Text style={styles.durationText}>
+              Duration: {formatDuration(calculateDuration())}
+            </Text>
+          </View>
+        )}
 
         {/* Action Buttons */}
         <View style={styles.buttonContainer}>
-          <Pressable onPress={onCancel} style={styles.cancelButton}>
-            <Text style={styles.cancelText}>CANCEL</Text>
+          <Pressable
+            onPress={onBack}
+            style={styles.backButton}
+            testID="back-button"
+          >
+            <Icon name="arrow-left" size={20} color={theme.colors.text} />
+            <Text style={styles.backText}>BACK</Text>
           </Pressable>
           <GradientButton
             testID="next-button"
@@ -204,7 +517,7 @@ export default function Step1BasicInfo({ data, onNext, onCancel }: Props) {
           </GradientButton>
         </View>
       </ScrollView>
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 
@@ -239,39 +552,36 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.surface,
     fontSize: theme.fontSizes.lg,
   },
-  descriptionInput: {
-    minHeight: 100,
-    textAlignVertical: 'top',
-  },
   helper: {
     color: theme.colors.textMuted,
     fontSize: theme.fontSizes.xs,
   },
-  sportScrollContent: {
-    gap: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    marginBottom: theme.spacing.xxl,
+  locationInput: {
+    minHeight: 64,
+    maxHeight: 80,
+    fontSize: theme.fontSizes.md,
   },
-  sportCardPressable: {
+  timeRow: {
+    flexDirection: 'row',
+    gap: theme.spacing.md,
+    marginTop: theme.spacing.md,
+  },
+  timeInputContainer: {
+    flex: 1,
+  },
+  durationCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+    backgroundColor: 'rgba(255, 107, 53, 0.1)',
+    borderRadius: theme.radius.lg,
+    padding: theme.spacing.md,
+    marginTop: theme.spacing.lg,
+    borderWidth: 2,
+    borderColor: 'rgba(255, 107, 53, 0.2)',
     position: 'relative',
   },
-  sportCard: {
-    width: 100,
-    height: 100,
-    backgroundColor: theme.colors.surfaceElevated,
-    borderRadius: theme.radius.lg,
-    borderWidth: 2,
-    borderColor: theme.colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: theme.spacing.sm,
-  },
-  sportCardSelected: {
-    borderColor: theme.colors.primary,
-    borderWidth: 2,
-    backgroundColor: theme.colors.surface,
-  },
-  sportCardAccent: {
+  durationCardAccent: {
     position: 'absolute',
     left: 0,
     top: 0,
@@ -281,32 +591,29 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: theme.radius.lg,
     borderBottomLeftRadius: theme.radius.lg,
   },
-  sportLabel: {
-    marginTop: theme.spacing.sm,
-    fontSize: theme.fontSizes.xs,
+  durationText: {
+    fontSize: theme.fontSizes.sm,
     fontWeight: theme.fontWeights.bold,
-    color: theme.colors.textSecondary,
-    textAlign: 'center',
-    letterSpacing: 0.5,
-  },
-  sportLabelSelected: {
     color: theme.colors.primary,
+    letterSpacing: 0.5,
   },
   buttonContainer: {
     flexDirection: 'row',
     gap: theme.spacing.md,
-    marginTop: theme.spacing.lg,
+    marginTop: theme.spacing.xxl,
   },
-  cancelButton: {
+  backButton: {
     flex: 1,
-    paddingVertical: 14,
+    height: 48,
     borderRadius: theme.radius.xl,
     borderWidth: 2,
     borderColor: theme.colors.border,
+    flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    gap: theme.spacing.xs,
   },
-  cancelText: {
+  backText: {
     color: theme.colors.text,
     fontSize: theme.fontSizes.lg,
     fontWeight: theme.fontWeights.bold,
@@ -314,5 +621,6 @@ const styles = StyleSheet.create({
   },
   nextButton: {
     flex: 2,
+    height: 48,
   },
 });
